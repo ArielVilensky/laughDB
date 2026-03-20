@@ -25,31 +25,34 @@ TRANSCRIPTS_PATH = os.path.join(DATA_DIR, "4300_transcripts.json")
 # -------------------------------------------------------------------
 
 def parse_title_metadata(title: str) -> Tuple[str, str, str]:
+
     comedian = ""
     special_title = ""
     release_date = ""
 
     cleaned_title = re.sub(
-        r"\s*[–-]\s*Full Transcript\s*$",
+        r"\s*[(:|–-]*\s*(Full )?Transcript\s*[):|–-]*\s*",
         "",
         title,
         flags=re.IGNORECASE
     ).strip()
 
-    year_match = re.search(r"\((\d{4})\)", cleaned_title)
+    year_match = re.search(r"(?:20|19)\d\d", cleaned_title)
+
     if year_match:
-        release_date = year_match.group(1)
-        cleaned_title = re.sub(r"\s*\(\d{4}\)", "", cleaned_title).strip()
+        release_date = year_match.group()
+        cleaned_title = re.sub(r"\s*[(:|–-]*\s*(20|19)\d\d\s*[):|–-]*\s*", "", cleaned_title).strip()
 
     if ":" in cleaned_title:
-        comedian, special_title = cleaned_title.split(":", 1)
-        comedian = comedian.strip()
-        special_title = special_title.strip()
+        comedian = cleaned_title.split(":", 1)[0].strip()
+        special_title = cleaned_title
+        # comedian, special_title = cleaned_title.split(":", 1)
+        # comedian = comedian.strip()
+        # special_title = special_title.strip()
     else:
         special_title = cleaned_title
 
     return comedian, special_title, release_date
-
 
 def infer_platform(url: str, title: str = "") -> str:
     text = f"{url} {title}".lower()
@@ -94,15 +97,23 @@ def restructure_transcripts(transcripts: List[Dict[str, str]]) -> List[Dict[str,
     return structured
 
 
+def bracket_if_valid(brackets: str) -> str:
+    inside_str = brackets[1:-1].lower().replace('\n', '')
+    if re.match(r"^((audience|crowd)( member(s)?)?|all|laughs)$", inside_str):
+        return brackets
+    elif re.match(r".*(applau|cheer|laugh|audience|crowd|all|clap|whoo[^sh]|music).*", inside_str):
+        return ' '
+    return brackets
+
+
 def remove_bracketed_descriptions(text: str) -> str:
-    return re.sub(r"\[[^\]]*\]", " ", text)
+    return re.sub(r"\[[^\]]*\]", lambda match : bracket_if_valid(match.group()), text)
 
 
 def normalize_text(text: str) -> str:
     text = remove_bracketed_descriptions(text)
-    text = text.replace("’", "'")
-    text = text.replace("“", '"')
-    text = text.replace("”", '"')
+    text = re.sub(r"‘|’", "'", text)
+    text = re.sub(r"“|”", '"', text)
     text = re.sub(r"\s+", " ", text)
     return text.strip()
 
@@ -112,12 +123,23 @@ def tokenize(text: str) -> List[str]:
     return re.findall(r"[a-z]+", text)
 
 
+def merge_spaced_letters(text):
+    """
+    Example: "m i d g e t" --> "midget"
+    """
+    return re.sub(
+        r'\b(?:[A-Za-z]\s+){1,}[A-Za-z]\b',
+        lambda match: re.sub(r'\s+', '', match.group(0)),
+        text
+    )
+
+
 def remove_stop_words(tokens: List[str]) -> List[str]:
     return [tok for tok in tokens if tok not in ENGLISH_STOP_WORDS]
 
 
 def clean_and_tokenize_text(text: str) -> List[str]:
-    text = normalize_text(text)
+    text = merge_spaced_letters(normalize_text(text))
     tokens = tokenize(text)
     tokens = remove_stop_words(tokens)
     return tokens
@@ -256,7 +278,7 @@ def vectorize_query(query: str, word_to_index: Dict[str, int], idf: Dict[str, fl
 
 def split_transcript_into_sentences(content: str) -> List[str]:
     text = normalize_text(content)
-    sentences = re.split(r'(?<=[.!?])\s+', text)
+    sentences = re.split(r'(?<!\w\.\w.)(?<!\b[A-Z][a-z]\.)(?<![A-Z]\.)(?<=\.|\?)\s|\\n', text)
     sentences = [s.strip() for s in sentences if s.strip()]
 
     refined = []
