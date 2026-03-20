@@ -120,7 +120,7 @@ def normalize_text(text: str) -> str:
 
 def tokenize(text: str) -> List[str]:
     text = text.lower()
-    return re.findall(r"[a-z]+", text)
+    return re.findall(r"(?:\d+/)*\d+|[a-zA-Z0-9]+", text)
 
 
 def merge_spaced_letters(text):
