@@ -26,4 +26,5 @@ frontend/dist/
 frontend/node_modules/
 package-lock.json
 
-.envsrc/data/search_index.pkl
+.env
+src/data/search_index.pkl

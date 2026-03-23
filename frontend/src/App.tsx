@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import SearchIcon from './assets/mag.png'
 import { SearchResult } from './types'
@@ -8,6 +8,7 @@ function App(): JSX.Element {
   const [useLlm, setUseLlm] = useState<boolean | null>(null)
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [results, setResults] = useState<SearchResult[]>([])
+  const debounceRef = useRef<number | null>(null)
 
   useEffect(() => {
     fetch('/api/config')
@@ -15,17 +16,27 @@ function App(): JSX.Element {
       .then(data => setUseLlm(data.use_llm))
   }, [])
 
-  const handleSearch = async (value: string): Promise<void> => {
+  const handleSearch = (value: string): void => {
     setSearchTerm(value)
+
+    if (debounceRef.current) {
+      window.clearTimeout(debounceRef.current)
+    }
 
     if (value.trim() === '') {
       setResults([])
       return
     }
 
-    const response = await fetch(`/api/search?query=${encodeURIComponent(value)}`)
-    const data: SearchResult[] = await response.json()
-    setResults(data)
+    debounceRef.current = window.setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/search?query=${encodeURIComponent(value)}`)
+        const data: SearchResult[] = await response.json()
+        setResults(data)
+      } catch (e) {
+        console.error("Search failed:", e)
+      }
+    }, 300)
   }
 
   if (useLlm === null) return <></>

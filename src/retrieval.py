@@ -7,6 +7,7 @@ from collections import Counter, defaultdict
 from typing import Dict, List, Tuple, Any
 
 import numpy as np
+import scipy.sparse as sp
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 
 
@@ -44,11 +45,17 @@ def parse_title_metadata(title: str) -> Tuple[str, str, str]:
         cleaned_title = re.sub(rf"\s*[|\-\–:]?\s*(?:[(\[{{].*)?{release_date}(?:.*[)\]}}])?\s*[|\-\–:]?\s*", " ", cleaned_title).strip()
 
     if ":" in cleaned_title:
-        comedian = cleaned_title.split(":", 1)[0].strip()
+        parts = cleaned_title.split(":", 1)
+        comedian = parts[0].strip()
+        special_title = parts[1].strip()
+    elif " on " in cleaned_title.lower():
+        parts = re.split(r"(?i)\s+on\s+", cleaned_title, maxsplit=1)
+        comedian = parts[0].strip()
         special_title = cleaned_title
-        # comedian, special_title = cleaned_title.split(":", 1)
-        # comedian = comedian.strip()
-        # special_title = special_title.strip()
+    elif " at " in cleaned_title.lower():
+        parts = re.split(r"(?i)\s+at\s+", cleaned_title, maxsplit=1)
+        comedian = parts[0].strip()
+        special_title = cleaned_title
     else:
         special_title = cleaned_title
 
@@ -241,10 +248,13 @@ def create_tfidf_matrix(
     word_to_index: Dict[str, int],
     idf: Dict[str, float],
     normalize_tf: bool = False
-) -> np.ndarray:
+) -> Any:
     n_docs = len(transcripts)
     vocab_size = len(word_to_index)
-    mat = np.zeros((n_docs, vocab_size), dtype=float)
+    
+    rows = []
+    cols = []
+    data = []
 
     for doc_id, doc in enumerate(transcripts):
         counts = Counter(doc["tokens"])
@@ -259,8 +269,11 @@ def create_tfidf_matrix(
             else:
                 tf = raw_tf
 
-            mat[doc_id, word_to_index[term]] = tf * idf[term]
+            rows.append(doc_id)
+            cols.append(word_to_index[term])
+            data.append(tf * idf[term])
 
+    mat = sp.csr_matrix((data, (rows, cols)), shape=(n_docs, vocab_size), dtype=float)
     return mat
 
 
@@ -373,7 +386,7 @@ def load_search_index(index_path: str = INDEX_PATH) -> Dict[str, Any]:
 
 def retrieve_by_cosine(
     query: str,
-    tfidf_matrix: np.ndarray,
+    tfidf_matrix: Any,
     transcripts: List[Dict[str, Any]],
     word_to_index: Dict[str, int],
     idf: Dict[str, float],
@@ -385,8 +398,12 @@ def retrieve_by_cosine(
     if q_norm == 0:
         return []
 
-    doc_norms = np.linalg.norm(tfidf_matrix, axis=1)
-    numerators = tfidf_matrix @ q_vec
+    if sp.issparse(tfidf_matrix):
+        numerators = tfidf_matrix.dot(q_vec)
+        doc_norms = np.sqrt(tfidf_matrix.multiply(tfidf_matrix).sum(axis=1)).A1
+    else:
+        doc_norms = np.linalg.norm(tfidf_matrix, axis=1)
+        numerators = tfidf_matrix @ q_vec
 
     scores = []
     for doc_id in range(len(transcripts)):
@@ -455,7 +472,7 @@ def get_sentence_context(sentences: List[str], center_idx: int | None, window: i
 def retrieve_top_transcripts_with_sentence_context(
     query: str,
     transcripts: List[Dict[str, Any]],
-    tfidf_matrix: np.ndarray,
+    tfidf_matrix: Any,
     word_to_index: Dict[str, int],
     idf: Dict[str, float],
     top_k: int = 5,
@@ -528,8 +545,18 @@ def initialize_search() -> None:
     if _SEARCH_DATA is not None:
         return
 
-    if os.path.exists(INDEX_PATH):
-        _SEARCH_DATA = load_search_index(INDEX_PATH)
+    rebuild = True
+    if os.path.exists(INDEX_PATH) and os.path.exists(TRANSCRIPTS_PATH):
+        index_mtime = os.path.getmtime(INDEX_PATH)
+        transcripts_mtime = os.path.getmtime(TRANSCRIPTS_PATH)
+        if index_mtime >= transcripts_mtime:
+            rebuild = False
+
+    if not rebuild:
+        try:
+            _SEARCH_DATA = load_search_index(INDEX_PATH)
+        except Exception:
+            _SEARCH_DATA = build_search_index()
     else:
         _SEARCH_DATA = build_search_index()
 
