@@ -8,6 +8,8 @@ function App(): JSX.Element {
   const [useLlm, setUseLlm] = useState<boolean | null>(null)
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [results, setResults] = useState<SearchResult[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [searchError, setSearchError] = useState<string | null>(null)
   const debounceRef = useRef<number | null>(null)
 
   useEffect(() => {
@@ -28,13 +30,20 @@ function App(): JSX.Element {
       return
     }
 
+    setIsLoading(true)
+    setSearchError(null)
     debounceRef.current = window.setTimeout(async () => {
       try {
         const response = await fetch(`/api/search?query=${encodeURIComponent(value)}`)
+        if (!response.ok) throw new Error(`Server error: ${response.status}`)
         const data: SearchResult[] = await response.json()
         setResults(data)
       } catch (e) {
         console.error("Search failed:", e)
+        setSearchError("Search failed. Please try again.")
+        setResults([])
+      } finally {
+        setIsLoading(false)
       }
     }, 300)
   }
@@ -64,7 +73,9 @@ function App(): JSX.Element {
       </div>
 
       <div id="answer-box">
-        {results.map((result, index) => (
+        {isLoading && <p className="search-status">Searching…</p>}
+        {searchError && <p className="search-status search-error">{searchError}</p>}
+        {!isLoading && !searchError && results.map((result, index) => (
           <div key={index} className="episode-item">
             <h3 className="episode-title">
               {result.comedian || 'Unknown Comedian'}
@@ -77,7 +88,7 @@ function App(): JSX.Element {
 
             <p className="episode-desc">
               {result.context_sentences.map((sentence, i) => {
-                const isBest = sentence === result.best_sentence
+                const isBest = sentence.trim() === result.best_sentence.trim()
                 return (
                   <span
                     key={i}

@@ -3,12 +3,26 @@ import math
 import os
 import pickle
 import re
+import threading
 from collections import Counter, defaultdict
 from typing import Dict, List, Tuple, Any
 
+import nltk
 import numpy as np
 import scipy.sparse as sp
+from nltk.stem import PorterStemmer
+from nltk.tokenize import sent_tokenize
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+
+# Download required NLTK data if not already present
+for _resource in ("tokenizers/punkt_tab", "tokenizers/punkt"):
+    try:
+        nltk.data.find(_resource)
+        break
+    except LookupError:
+        pass
+else:
+    nltk.download("punkt_tab", quiet=True)
 
 
 # -------------------------------------------------------------------
@@ -19,6 +33,12 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 INDEX_PATH = os.path.join(DATA_DIR, "search_index.pkl")
 TRANSCRIPTS_PATH = os.path.join(DATA_DIR, "4300_transcripts.json")
+
+# Bump this whenever the index format or preprocessing pipeline changes so that
+# stale pickles are automatically rebuilt instead of silently giving bad results.
+INDEX_VERSION = 2
+
+_stemmer = PorterStemmer()
 
 
 # -------------------------------------------------------------------
@@ -153,6 +173,7 @@ def clean_and_tokenize_text(text: str) -> List[str]:
     text = merge_spaced_letters(normalize_text(text))
     tokens = tokenize(text)
     tokens = remove_stop_words(tokens)
+    tokens = [_stemmer.stem(t) for t in tokens]
     return tokens
 
 
@@ -290,13 +311,18 @@ def vectorize_tokens(tokens: List[str], word_to_index: Dict[str, int], idf: Dict
 
 def vectorize_query(query: str, word_to_index: Dict[str, int], idf: Dict[str, float]) -> np.ndarray:
     tokens = clean_and_tokenize_text(query)
-    return vectorize_tokens(tokens, word_to_index, idf)
+    counts = Counter(tokens)
+    vec = np.zeros(len(word_to_index), dtype=float)
+    n_tokens = len(tokens) or 1
+    for term, tf in counts.items():
+        if term in word_to_index and term in idf:
+            vec[word_to_index[term]] = (tf / n_tokens) * idf[term]
+    return vec
 
 
 def split_transcript_into_sentences(content: str) -> List[str]:
     text = normalize_text(content)
-    sentences = re.split(r'(?<!\w\.\w.)(?<!\b[A-Z][a-z]\.)(?<![A-Z]\.)(?<=\.|\?)\s|\\n', text)
-    sentences = [s.strip() for s in sentences if s.strip()]
+    sentences = [s.strip() for s in sent_tokenize(text) if s.strip()]
 
     refined = []
     for s in sentences:
@@ -361,6 +387,7 @@ def build_search_index(
     tfidf_matrix = create_tfidf_matrix(transcripts, word_to_index, idf)
 
     payload = {
+        "version": INDEX_VERSION,
         "transcripts": transcripts,
         "idf": idf,
         "word_to_index": word_to_index,
@@ -479,19 +506,29 @@ def retrieve_top_transcripts_with_sentence_context(
     context_window: int = 3,
     match_window: int = 1
 ) -> List[Dict[str, Any]]:
+    # Fetch extra candidates so we still return top_k results after deduplication
     top_docs = retrieve_by_cosine(
         query=query,
         tfidf_matrix=tfidf_matrix,
         transcripts=transcripts,
         word_to_index=word_to_index,
         idf=idf,
-        top_k=top_k
+        top_k=top_k * 3
     )
 
     results = []
+    seen_specials: set = set()
 
     for transcript_score, doc_id in top_docs:
+        if len(results) >= top_k:
+            break
         transcript = transcripts[doc_id]
+
+        dedup_key = transcript["special_title"] or transcript["title"]
+        if dedup_key and dedup_key in seen_specials:
+            continue
+        if dedup_key:
+            seen_specials.add(dedup_key)
 
         best_idx, sentence_score, sentences = find_best_matching_sentence_window(
             query=query,
@@ -537,28 +574,31 @@ def retrieve_top_transcripts_with_sentence_context(
 # -------------------------------------------------------------------
 
 _SEARCH_DATA: Dict[str, Any] | None = None
+_SEARCH_LOCK = threading.Lock()
 
 
 def initialize_search() -> None:
     global _SEARCH_DATA
 
-    if _SEARCH_DATA is not None:
-        return
+    with _SEARCH_LOCK:
+        if _SEARCH_DATA is not None:
+            return
 
-    rebuild = True
-    if os.path.exists(INDEX_PATH) and os.path.exists(TRANSCRIPTS_PATH):
-        index_mtime = os.path.getmtime(INDEX_PATH)
-        transcripts_mtime = os.path.getmtime(TRANSCRIPTS_PATH)
-        if index_mtime >= transcripts_mtime:
-            rebuild = False
+        rebuild = True
+        if os.path.exists(INDEX_PATH) and os.path.exists(TRANSCRIPTS_PATH):
+            index_mtime = os.path.getmtime(INDEX_PATH)
+            transcripts_mtime = os.path.getmtime(TRANSCRIPTS_PATH)
+            if index_mtime >= transcripts_mtime:
+                try:
+                    candidate = load_search_index(INDEX_PATH)
+                    if candidate.get("version") == INDEX_VERSION:
+                        _SEARCH_DATA = candidate
+                        rebuild = False
+                except Exception:
+                    pass
 
-    if not rebuild:
-        try:
-            _SEARCH_DATA = load_search_index(INDEX_PATH)
-        except Exception:
+        if rebuild:
             _SEARCH_DATA = build_search_index()
-    else:
-        _SEARCH_DATA = build_search_index()
 
 
 def search(

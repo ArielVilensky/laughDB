@@ -6,7 +6,7 @@ db = SQLAlchemy()
 class Episode(db.Model):
     __tablename__ = 'episodes'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(64), nullable=False)
+    title = db.Column(db.Text, nullable=False)
     descr = db.Column(db.String(1024), nullable=False)
     
     def __repr__(self):
