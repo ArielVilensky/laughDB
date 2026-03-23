@@ -31,17 +31,17 @@ def parse_title_metadata(title: str) -> Tuple[str, str, str]:
     release_date = ""
 
     cleaned_title = re.sub(
-        r"\s*[(:|–-]*\s*(Full )?Transcript\s*[):|–-]*\s*",
-        "",
+        r"\s*[|\-\–:]?\s*[(\[{]?(?:Full )?Transcript[)\]}]?\s*[|\-\–:]?\s*",
+        " ",
         title,
         flags=re.IGNORECASE
     ).strip()
 
-    year_match = re.search(r"(?:20|19)\d\d", cleaned_title)
+    year_match = re.search(r"(?:20|19)\d\d|(?:\d{1,2}\/){1,2}\d{2,4}", cleaned_title)
 
     if year_match:
         release_date = year_match.group()
-        cleaned_title = re.sub(r"\s*[(:|–-]*\s*(20|19)\d\d\s*[):|–-]*\s*", "", cleaned_title).strip()
+        cleaned_title = re.sub(rf"\s*[|\-\–:]?\s*(?:[(\[{{].*)?{release_date}(?:.*[)\]}}])?\s*[|\-\–:]?\s*", " ", cleaned_title).strip()
 
     if ":" in cleaned_title:
         comedian = cleaned_title.split(":", 1)[0].strip()
@@ -53,6 +53,10 @@ def parse_title_metadata(title: str) -> Tuple[str, str, str]:
         special_title = cleaned_title
 
     return comedian, special_title, release_date
+
+
+
+
 
 def infer_platform(url: str, title: str = "") -> str:
     text = f"{url} {title}".lower()
