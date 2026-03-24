@@ -4,6 +4,7 @@ import os
 import pickle
 import re
 import threading
+import gzip
 from collections import Counter, defaultdict
 from typing import Dict, List, Tuple, Any
 
@@ -31,7 +32,7 @@ else:
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
-INDEX_PATH = os.path.join(DATA_DIR, "search_index.pkl")
+INDEX_PATH = os.path.join(DATA_DIR, "search_index.pkl.gz")
 TRANSCRIPTS_PATH = os.path.join(DATA_DIR, "4300_transcripts.json")
 
 # Bump this whenever the index format or preprocessing pipeline changes so that
@@ -480,14 +481,14 @@ def build_search_index(
     }
 
     os.makedirs(os.path.dirname(index_path), exist_ok=True)
-    with open(index_path, "wb") as f:
+    with gzip.open(index_path, "wb") as f:
         pickle.dump(payload, f)
 
     return payload
 
 
 def load_search_index(index_path: str = INDEX_PATH) -> Dict[str, Any]:
-    with open(index_path, "rb") as f:
+    with gzip.open(index_path, "rb") as f:
         return pickle.load(f)
 
 
