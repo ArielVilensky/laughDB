@@ -10,7 +10,8 @@ function App(): JSX.Element {
   const [results, setResults] = useState<SearchResult[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [searchError, setSearchError] = useState<string | null>(null)
-  const debounceRef = useRef<number | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
+  const loadingTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
     fetch('/api/config')
@@ -18,34 +19,43 @@ function App(): JSX.Element {
       .then(data => setUseLlm(data.use_llm))
   }, [])
 
-  const handleSearch = (value: string): void => {
+  const handleSearch = async (value: string): Promise<void> => {
     setSearchTerm(value)
 
-    if (debounceRef.current) {
-      window.clearTimeout(debounceRef.current)
-    }
+    // Cancel any in-flight request and pending loading indicator
+    abortRef.current?.abort()
+    if (loadingTimerRef.current) window.clearTimeout(loadingTimerRef.current)
 
     if (value.trim() === '') {
       setResults([])
+      setIsLoading(false)
       return
     }
 
-    setIsLoading(true)
+    const controller = new AbortController()
+    abortRef.current = controller
+
+    // Only show the loading indicator if the request takes longer than 500ms
     setSearchError(null)
-    debounceRef.current = window.setTimeout(async () => {
-      try {
-        const response = await fetch(`/api/search?query=${encodeURIComponent(value)}`)
-        if (!response.ok) throw new Error(`Server error: ${response.status}`)
-        const data: SearchResult[] = await response.json()
-        setResults(data)
-      } catch (e) {
-        console.error("Search failed:", e)
-        setSearchError("Search failed. Please try again.")
-        setResults([])
-      } finally {
+    loadingTimerRef.current = window.setTimeout(() => setIsLoading(true), 500)
+    try {
+      const response = await fetch(`/api/search?query=${encodeURIComponent(value)}`, {
+        signal: controller.signal,
+      })
+      if (!response.ok) throw new Error(`Server error: ${response.status}`)
+      const data: SearchResult[] = await response.json()
+      setResults(data)
+    } catch (e) {
+      if ((e as Error).name === 'AbortError') return  // superseded by newer keystroke
+      console.error("Search failed:", e)
+      setSearchError("Search failed. Please try again.")
+      setResults([])
+    } finally {
+      if (!controller.signal.aborted) {
+        window.clearTimeout(loadingTimerRef.current!)
         setIsLoading(false)
       }
-    }, 300)
+    }
   }
 
   if (useLlm === null) return <></>
