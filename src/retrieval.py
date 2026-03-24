@@ -36,7 +36,7 @@ TRANSCRIPTS_PATH = os.path.join(DATA_DIR, "4300_transcripts.json")
 
 # Bump this whenever the index format or preprocessing pipeline changes so that
 # stale pickles are automatically rebuilt instead of silently giving bad results.
-INDEX_VERSION = 2
+INDEX_VERSION = 3
 
 _stemmer = PorterStemmer()
 
@@ -335,6 +335,83 @@ def split_transcript_into_sentences(content: str) -> List[str]:
     return refined
 
 
+def build_sentence_data(
+    transcripts: List[Dict[str, Any]],
+    word_to_index: Dict[str, int],
+    idf: Dict[str, float],
+) -> Tuple[Any, np.ndarray, List[Tuple[int, int]]]:
+    """
+    Pre-compute sentence-level TF-IDF vectors for all transcripts.
+
+    Caches `transcript["sentences"]` in-place and returns:
+      - sentence_matrix  : sparse CSR (total_sentences × vocab_size)
+      - sentence_norms   : 1-D array  (total_sentences,)
+      - sentence_offsets : [(start, end), ...] row range per transcript
+    """
+    sent_rows: List[int] = []
+    sent_cols: List[int] = []
+    sent_data: List[float] = []
+    sentence_offsets: List[Tuple[int, int]] = []
+    offset = 0
+
+    for doc in transcripts:
+        sentences = split_transcript_into_sentences(doc["content"])
+        doc["sentences"] = sentences
+        start = offset
+        for sentence in sentences:
+            tokens = clean_and_tokenize_text(sentence)
+            counts = Counter(tokens)
+            global_idx = offset
+            for term, tf in counts.items():
+                if term in word_to_index and term in idf:
+                    sent_rows.append(global_idx)
+                    sent_cols.append(word_to_index[term])
+                    sent_data.append(tf * idf[term])
+            offset += 1
+        sentence_offsets.append((start, offset))
+
+    vocab_size = len(word_to_index)
+    total_sentences = offset
+
+    if total_sentences == 0:
+        empty = sp.csr_matrix((0, vocab_size), dtype=float)
+        return empty, np.array([], dtype=float), sentence_offsets
+
+    sentence_matrix = sp.csr_matrix(
+        (sent_data, (sent_rows, sent_cols)),
+        shape=(total_sentences, vocab_size),
+        dtype=float,
+    )
+    sentence_norms = np.sqrt(sentence_matrix.multiply(sentence_matrix).sum(axis=1)).A1
+    return sentence_matrix, sentence_norms, sentence_offsets
+
+
+def find_best_sentence_precomputed(
+    query_vec: np.ndarray,
+    query_norm: float,
+    sent_start: int,
+    n_sentences: int,
+    sentence_matrix: Any,
+    sentence_norms: np.ndarray,
+) -> Tuple[int | None, float]:
+    """Vectorized sentence scoring using pre-computed sparse matrix — no tokenization at query time."""
+    if n_sentences == 0 or query_norm == 0:
+        return None, 0.0
+
+    doc_sents = sentence_matrix[sent_start:sent_start + n_sentences]
+    doc_norms = sentence_norms[sent_start:sent_start + n_sentences]
+
+    numerators = doc_sents.dot(query_vec)
+    denoms = doc_norms * query_norm
+    valid = denoms > 0
+    if not valid.any():
+        return None, 0.0
+
+    scores = np.where(valid, numerators / np.where(valid, denoms, 1.0), -1.0)
+    best_local = int(np.argmax(scores))
+    return best_local, float(scores[best_local])
+
+
 # -------------------------------------------------------------------
 # Index build / load
 # -------------------------------------------------------------------
@@ -386,6 +463,10 @@ def build_search_index(
     vocab, word_to_index, _ = create_vocab(idf)
     tfidf_matrix = create_tfidf_matrix(transcripts, word_to_index, idf)
 
+    sentence_matrix, sentence_norms, sentence_offsets = build_sentence_data(
+        transcripts, word_to_index, idf
+    )
+
     payload = {
         "version": INDEX_VERSION,
         "transcripts": transcripts,
@@ -393,6 +474,9 @@ def build_search_index(
         "word_to_index": word_to_index,
         "vocab": vocab,
         "tfidf_matrix": tfidf_matrix,
+        "sentence_matrix": sentence_matrix,
+        "sentence_norms": sentence_norms,
+        "sentence_offsets": sentence_offsets,
     }
 
     os.makedirs(os.path.dirname(index_path), exist_ok=True)
@@ -502,10 +586,26 @@ def retrieve_top_transcripts_with_sentence_context(
     tfidf_matrix: Any,
     word_to_index: Dict[str, int],
     idf: Dict[str, float],
+    sentence_matrix: Any = None,
+    sentence_norms: np.ndarray = None,
+    sentence_offsets: List[Tuple[int, int]] = None,
     top_k: int = 5,
     context_window: int = 3,
     match_window: int = 1
 ) -> List[Dict[str, Any]]:
+    use_precomputed = (
+        sentence_matrix is not None
+        and sentence_norms is not None
+        and sentence_offsets is not None
+    )
+
+    # Vectorize query once for both doc-level and sentence-level scoring
+    q_vec = vectorize_query(query, word_to_index, idf)
+    q_norm = np.linalg.norm(q_vec)
+
+    if q_norm == 0:
+        return []
+
     # Fetch extra candidates so we still return top_k results after deduplication
     top_docs = retrieve_by_cosine(
         query=query,
@@ -530,13 +630,25 @@ def retrieve_top_transcripts_with_sentence_context(
         if dedup_key:
             seen_specials.add(dedup_key)
 
-        best_idx, sentence_score, sentences = find_best_matching_sentence_window(
-            query=query,
-            transcript=transcript,
-            word_to_index=word_to_index,
-            idf=idf,
-            match_window=match_window
-        )
+        if use_precomputed:
+            sentences = transcript.get("sentences") or split_transcript_into_sentences(transcript["content"])
+            sent_start, sent_end = sentence_offsets[doc_id]
+            best_idx, sentence_score = find_best_sentence_precomputed(
+                query_vec=q_vec,
+                query_norm=q_norm,
+                sent_start=sent_start,
+                n_sentences=sent_end - sent_start,
+                sentence_matrix=sentence_matrix,
+                sentence_norms=sentence_norms,
+            )
+        else:
+            best_idx, sentence_score, sentences = find_best_matching_sentence_window(
+                query=query,
+                transcript=transcript,
+                word_to_index=word_to_index,
+                idf=idf,
+                match_window=match_window
+            )
 
         context_sentences = get_sentence_context(
             sentences=sentences,
@@ -620,6 +732,9 @@ def search(
         tfidf_matrix=_SEARCH_DATA["tfidf_matrix"],
         word_to_index=_SEARCH_DATA["word_to_index"],
         idf=_SEARCH_DATA["idf"],
+        sentence_matrix=_SEARCH_DATA.get("sentence_matrix"),
+        sentence_norms=_SEARCH_DATA.get("sentence_norms"),
+        sentence_offsets=_SEARCH_DATA.get("sentence_offsets"),
         top_k=top_k,
         context_window=context_window,
         match_window=match_window,
