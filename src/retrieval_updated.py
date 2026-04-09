@@ -24,7 +24,7 @@ class BuildTimeoutError(Exception):
     pass
 
 
-BUILD_TIMEOUT_SECONDS = 300
+BUILD_TIMEOUT_SECONDS = 600
 
 
 def _handle_build_timeout(signum, frame):
