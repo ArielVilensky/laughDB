@@ -52,6 +52,9 @@ export interface SearchResult {
 
   svd_positive_dimensions?: SvdDimensionMatch[]
   svd_negative_dimensions?: SvdDimensionMatch[]
+
+  watch_url: string
+  watch_platform: string
 }
 
 export interface SearchResponse {

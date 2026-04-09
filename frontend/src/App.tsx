@@ -23,6 +23,39 @@ const SPECIAL_TYPE_OPTIONS = [
 
 const MAX_CHUNKS_PER_TRANSCRIPT_OPTIONS = [1, 2, 3, 4, 5]
 
+interface WatchLink {
+  label: string
+  url: string
+  cls: string
+}
+
+const PLATFORM_CLS: Record<string, string> = {
+  'Netflix': 'watch-netflix',
+  'Max': 'watch-hbo',
+  'Amazon Prime': 'watch-amazon',
+  'Amazon Prime Video': 'watch-amazon',
+  'HBO': 'watch-hbo',
+  'Comedy Central': 'watch-cc',
+  'Peacock': 'watch-peacock',
+}
+
+function getWatchLinks(result: SearchResult): WatchLink[] {
+  const links: WatchLink[] = []
+  const query = encodeURIComponent(`${result.comedian} ${result.special_title || result.title}`)
+
+  if (result.watch_url && result.watch_platform) {
+    links.push({
+      label: result.watch_platform,
+      url: result.watch_url,
+      cls: PLATFORM_CLS[result.watch_platform] ?? 'watch-generic',
+    })
+  }
+
+  links.push({ label: 'YouTube', url: `https://www.youtube.com/results?search_query=${query}`, cls: 'watch-youtube' })
+
+  return links
+}
+
 function App(): JSX.Element {
   const [useLlm, setUseLlm] = useState<boolean | null>(null)
   const [searchTerm, setSearchTerm] = useState<string>('')
@@ -311,11 +344,16 @@ function App(): JSX.Element {
                   </div>
                 )}
 
-                <p className="episode-rating">
-                  <a href={result.url} target="_blank" rel="noreferrer">
+                <div className="episode-actions">
+                  <a href={result.url} target="_blank" rel="noreferrer" className="action-btn transcript-btn">
                     View transcript
                   </a>
-                </p>
+                  {getWatchLinks(result).map((link, i) => (
+                    <a key={i} href={link.url} target="_blank" rel="noreferrer" className={`action-btn watch-btn ${link.cls}`}>
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
               </div>
             ))}
           </div>

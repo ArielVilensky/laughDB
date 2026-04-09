@@ -165,21 +165,48 @@
   white-space: pre-wrap;
 }
 
-.episode-rating a {
-  display: inline-block;
-  text-decoration: none;
-  color: #ffffff;
-  background: #2b1e3f;
-  padding: 10px 14px;
-  border-radius: 999px;
-  font-weight: 600;
-  transition: background 0.18s ease, transform 0.18s ease;
+.episode-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 0.85rem;
 }
 
-.episode-rating a:hover {
-  background: #7a5cfa;
-  transform: translateY(-1px);
+.action-btn {
+  display: inline-block;
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  font-family: 'Open Sans', sans-serif;
+  transition: background 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
 }
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.88;
+}
+
+.transcript-btn {
+  color: #ffffff;
+  background: #2b1e3f;
+}
+
+.transcript-btn:hover {
+  background: #7a5cfa;
+  opacity: 1;
+}
+
+.watch-btn { color: #ffffff; }
+
+.watch-netflix  { background: #E50914; }
+.watch-hbo      { background: #002BE0; }
+.watch-amazon   { background: #232F3E; color: #FF9900; }
+.watch-cc       { background: #1A1A4C; }
+.watch-youtube  { background: #FF0000; }
+.watch-peacock  { background: #000000; }
+.watch-generic  { background: #555555; }
 
 .highlight-sentence {
   background: linear-gradient(transparent 30%,
