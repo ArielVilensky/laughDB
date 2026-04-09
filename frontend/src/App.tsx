@@ -79,6 +79,13 @@ function App(): JSX.Element {
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
           />
+          {searchTerm && (
+            <button
+              className="clear-btn"
+              onClick={(e) => { e.stopPropagation(); setSearchTerm(''); setResults([]); setSearchError(null); document.getElementById('search-input')?.focus(); }}
+              aria-label="Clear search"
+            >×</button>
+          )}
         </div>
       </div>
 
