@@ -6,7 +6,7 @@ import re
 import threading
 import gzip
 from collections import Counter, defaultdict
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List, Tuple, Any, Optional
 
 import nltk
 import numpy as np
@@ -34,12 +34,40 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 INDEX_PATH = os.path.join(DATA_DIR, "search_index.pkl.gz")
 TRANSCRIPTS_PATH = os.path.join(DATA_DIR, "4300_transcripts.json")
+STREAMING_LINKS_PATH = os.path.join(DATA_DIR, "streaming_links.json")
 
 # Bump this whenever the index format or preprocessing pipeline changes so that
 # stale pickles are automatically rebuilt instead of silently giving bad results.
 INDEX_VERSION = 3
 
 _stemmer = PorterStemmer()
+
+_streaming_links: Optional[Dict[str, Dict[str, str]]] = None
+
+
+def _normalize_streaming_key(s: str) -> str:
+    s = s.lower()
+    s = s.replace('\u2019', "'").replace('\u2018', "'")
+    s = s.replace('\u2013', '-').replace('\u2014', '-')
+    return ' '.join(s.split())
+
+
+def _load_streaming_links() -> Dict[str, Dict[str, str]]:
+    global _streaming_links
+    if _streaming_links is None:
+        if os.path.exists(STREAMING_LINKS_PATH):
+            with open(STREAMING_LINKS_PATH, "r", encoding="utf-8") as f:
+                _streaming_links = json.load(f)
+        else:
+            _streaming_links = {}
+    return _streaming_links
+
+
+def lookup_streaming(comedian: str, special_title: str) -> Dict[str, str]:
+    """Return {"platform": ..., "url": ...} or {} if not found."""
+    links = _load_streaming_links()
+    key = _normalize_streaming_key(comedian) + "|" + _normalize_streaming_key(special_title)
+    return links.get(key, {})
 
 
 # -------------------------------------------------------------------
@@ -663,6 +691,8 @@ def retrieve_top_transcripts_with_sentence_context(
             else ""
         )
 
+        streaming = lookup_streaming(transcript["comedian"], transcript["special_title"])
+
         results.append({
             "doc_id": int(doc_id),
             "transcript_score": float(transcript_score),
@@ -671,8 +701,10 @@ def retrieve_top_transcripts_with_sentence_context(
             "comedian": transcript["comedian"],
             "special_title": transcript["special_title"],
             "release_date": transcript["release_date"],
-            "platform": transcript.get("platform", ""),
+            "platform": streaming.get("platform") or transcript.get("platform", ""),
             "url": transcript.get("url", ""),
+            "watch_url": streaming.get("url", ""),
+            "watch_platform": streaming.get("platform", ""),
             "best_sentence_index": None if best_idx is None else int(best_idx),
             "best_sentence": best_sentence,
             "context_sentences": context_sentences,
