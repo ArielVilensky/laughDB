@@ -29,3 +29,6 @@ package-lock.json
 .env
 src/data/search_index.pkl
 src/data/search_index.pkl
+
+# Generated search/index artifacts
+src/data/*.pkl

@@ -5,9 +5,10 @@ import { RetrievalMode, ResultScope, SearchResponse, SearchResult } from './type
 import Chat from './Chat'
 
 const RESULTS_PER_PAGE = 5
-const MAX_TOTAL_RESULTS = 50
+const MAX_TOTAL_RESULTS = 25
 const YEAR_MIN = 1965
 const YEAR_MAX = 2025
+const SEARCH_DEBOUNCE_MS = 250
 
 const SPECIAL_TYPE_OPTIONS = [
   '',
@@ -21,39 +22,37 @@ const SPECIAL_TYPE_OPTIONS = [
   'Crowd Work Special',
 ]
 
-const MAX_CHUNKS_PER_TRANSCRIPT_OPTIONS = [1, 2, 3, 4, 5]
-
 interface WatchLink {
   label: string
   url: string
   cls: string
 }
 
-const PLATFORM_CLS: Record<string, string> = {
-  'Netflix': 'watch-netflix',
-  'Max': 'watch-hbo',
-  'Amazon Prime': 'watch-amazon',
-  'Amazon Prime Video': 'watch-amazon',
-  'HBO': 'watch-hbo',
-  'Comedy Central': 'watch-cc',
-  'Peacock': 'watch-peacock',
-}
-
 function getWatchLinks(result: SearchResult): WatchLink[] {
   const links: WatchLink[] = []
   const query = encodeURIComponent(`${result.comedian} ${result.special_title || result.title}`)
 
-  if (result.watch_url && result.watch_platform) {
+  if (result.url) {
     links.push({
-      label: result.watch_platform,
-      url: result.watch_url,
-      cls: PLATFORM_CLS[result.watch_platform] ?? 'watch-generic',
+      label: 'Transcript',
+      url: result.url,
+      cls: 'resource-link transcript-link',
     })
   }
 
-  links.push({ label: 'YouTube', url: `https://www.youtube.com/results?search_query=${query}`, cls: 'watch-youtube' })
+  links.push({
+    label: 'YouTube',
+    url: `https://www.youtube.com/results?search_query=${query}`,
+    cls: 'resource-link youtube-link',
+  })
 
   return links
+}
+
+function formatRetrievalMode(mode?: RetrievalMode): string {
+  if (mode === 'tfidf') return 'TF-IDF'
+  if (mode === 'svd') return 'SVD'
+  return '—'
 }
 
 function App(): JSX.Element {
@@ -63,7 +62,7 @@ function App(): JSX.Element {
   const [allResults, setAllResults] = useState<SearchResult[]>([])
   const [resolvedComedian, setResolvedComedian] = useState<string | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
-
+  const [hasSearched, setHasSearched] = useState<boolean>(false)
   const [page, setPage] = useState<number>(0)
 
   const [comedian, setComedian] = useState<string>('')
@@ -73,9 +72,9 @@ function App(): JSX.Element {
   const [retrievalMode, setRetrievalMode] = useState<RetrievalMode>('tfidf')
   const [resultScope, setResultScope] = useState<ResultScope>('full')
   const [excludeProfanity, setExcludeProfanity] = useState<boolean>(false)
-  const [maxChunksPerTranscript, setMaxChunksPerTranscript] = useState<number>(2)
 
   const debounceRef = useRef<number | null>(null)
+  const latestRequestRef = useRef<number>(0)
 
   useEffect(() => {
     fetch('/api/config')
@@ -83,22 +82,34 @@ function App(): JSX.Element {
       .then((data) => setUseLlm(data.use_llm))
   }, [])
 
-  const handleSearch = async (value?: string): Promise<void> => {
-    const query = value ?? searchTerm
-    setSearchTerm(query)
+  const clearPendingDebounce = (): void => {
+    if (debounceRef.current !== null) {
+      window.clearTimeout(debounceRef.current)
+      debounceRef.current = null
+    }
+  }
 
-    if (query.trim() === '') {
+  const runSearch = async (query: string): Promise<void> => {
+    const trimmed = query.trim()
+
+    if (!trimmed) {
       setAllResults([])
       setResolvedComedian(null)
       setPage(0)
+      setHasSearched(false)
+      setLoading(false)
       return
     }
 
+    const requestId = latestRequestRef.current + 1
+    latestRequestRef.current = requestId
+
     setLoading(true)
+    setHasSearched(true)
 
     try {
       const params = new URLSearchParams({
-        query,
+        query: trimmed,
         top_k: String(MAX_TOTAL_RESULTS),
         retrieval_mode: retrievalMode,
         result_scope: resultScope,
@@ -107,24 +118,34 @@ function App(): JSX.Element {
         year_min: String(yearMin),
         year_max: String(yearMax),
         exclude_profanity: String(excludeProfanity),
-        max_chunks_per_doc: String(maxChunksPerTranscript),
+        max_chunks_per_doc: '2',
       })
 
       const response = await fetch(`/api/search?${params.toString()}`)
       const data: SearchResponse = await response.json()
 
+      if (requestId !== latestRequestRef.current) {
+        return
+      }
+
       setAllResults(data.results ?? [])
       setResolvedComedian(data.resolved_comedian ?? null)
       setPage(0)
     } finally {
-      setLoading(false)
+      if (requestId === latestRequestRef.current) {
+        setLoading(false)
+      }
     }
   }
 
+  const handleImmediateSearch = async (value?: string): Promise<void> => {
+    const query = value ?? searchTerm
+    clearPendingDebounce()
+    await runSearch(query)
+  }
+
   useEffect(() => {
-    if (debounceRef.current !== null) {
-      window.clearTimeout(debounceRef.current)
-    }
+    clearPendingDebounce()
 
     const trimmed = searchTerm.trim()
 
@@ -132,17 +153,17 @@ function App(): JSX.Element {
       setAllResults([])
       setResolvedComedian(null)
       setPage(0)
+      setHasSearched(false)
+      setLoading(false)
       return
     }
 
     debounceRef.current = window.setTimeout(() => {
-      void handleSearch(searchTerm)
-    }, 250)
+      void runSearch(searchTerm)
+    }, SEARCH_DEBOUNCE_MS)
 
     return () => {
-      if (debounceRef.current !== null) {
-        window.clearTimeout(debounceRef.current)
-      }
+      clearPendingDebounce()
     }
   }, [
     searchTerm,
@@ -153,7 +174,6 @@ function App(): JSX.Element {
     retrievalMode,
     resultScope,
     excludeProfanity,
-    maxChunksPerTranscript,
   ])
 
   const visibleResults = useMemo(() => {
@@ -171,9 +191,8 @@ function App(): JSX.Element {
     setYearMin(YEAR_MIN)
     setYearMax(YEAR_MAX)
     setRetrievalMode('tfidf')
-    setResultScope('chunks')
+    setResultScope('full')
     setExcludeProfanity(false)
-    setMaxChunksPerTranscript(2)
   }
 
   const renderSnippet = (result: SearchResult): JSX.Element | string => {
@@ -222,13 +241,14 @@ function App(): JSX.Element {
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                void handleSearch((e.target as HTMLInputElement).value)
+                e.preventDefault()
+                void handleImmediateSearch((e.target as HTMLInputElement).value)
               }
             }}
           />
           <button
             className="search-button"
-            onClick={() => void handleSearch(searchTerm)}
+            onClick={() => void handleImmediateSearch(searchTerm)}
           >
             Search
           </button>
@@ -239,7 +259,7 @@ function App(): JSX.Element {
         <div className="results-column">
           {resolvedComedian && (
             <div className="info-banner">
-              Best matched for comedian: <strong>{resolvedComedian}</strong>
+              Best matched comedian: <strong>{resolvedComedian}</strong>
             </div>
           )}
 
@@ -251,7 +271,7 @@ function App(): JSX.Element {
 
           {loading && <div className="info-banner">Loading results...</div>}
 
-          {!loading && searchTerm.trim() !== '' && visibleResults.length === 0 && (
+          {!loading && hasSearched && searchTerm.trim() !== '' && visibleResults.length === 0 && (
             <div className="info-banner">No results found.</div>
           )}
 
@@ -276,11 +296,11 @@ function App(): JSX.Element {
                   </span>
 
                   <span className="meta-pill subtle-pill">
-                    Mode: {result.retrieval_mode}
+                    Mode: {formatRetrievalMode(result.retrieval_mode)}
                   </span>
 
                   <span className="meta-pill subtle-pill">
-                    Scope: {result.result_scope === 'full' ? 'Full transcript' : 'Chunk'}
+                    Scope: {result.result_scope === 'full' ? 'Full transcript' : 'Chunks'}
                   </span>
 
                   {result.has_profanity && (
@@ -305,12 +325,8 @@ function App(): JSX.Element {
                               Query weight: {dim.query_weight.toFixed(3)} • Result weight:{' '}
                               {dim.chunk_weight.toFixed(3)}
                             </p>
-                            <p className="svd-terms">
-                              + {dim.top_positive_terms?.join(', ')}
-                            </p>
-                            <p className="svd-terms">
-                              − {dim.top_negative_terms?.join(', ')}
-                            </p>
+                            <p className="svd-terms">+ {dim.top_positive_terms?.join(', ')}</p>
+                            <p className="svd-terms">− {dim.top_negative_terms?.join(', ')}</p>
                           </div>
                         ))}
                       </div>
@@ -331,12 +347,8 @@ function App(): JSX.Element {
                               Query weight: {dim.query_weight.toFixed(3)} • Result weight:{' '}
                               {dim.chunk_weight.toFixed(3)}
                             </p>
-                            <p className="svd-terms">
-                              + {dim.top_positive_terms?.join(', ')}
-                            </p>
-                            <p className="svd-terms">
-                              − {dim.top_negative_terms?.join(', ')}
-                            </p>
+                            <p className="svd-terms">+ {dim.top_positive_terms?.join(', ')}</p>
+                            <p className="svd-terms">− {dim.top_negative_terms?.join(', ')}</p>
                           </div>
                         ))}
                       </div>
@@ -344,12 +356,15 @@ function App(): JSX.Element {
                   </div>
                 )}
 
-                <div className="episode-actions">
-                  <a href={result.url} target="_blank" rel="noreferrer" className="action-btn transcript-btn">
-                    View transcript
-                  </a>
-                  {getWatchLinks(result).map((link, i) => (
-                    <a key={i} href={link.url} target="_blank" rel="noreferrer" className={`action-btn watch-btn ${link.cls}`}>
+                <div className="resource-links-row">
+                  {getWatchLinks(result).map((link) => (
+                    <a
+                      key={`${result.chunk_id}-${link.label}`}
+                      href={link.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={link.cls}
+                    >
                       {link.label}
                     </a>
                   ))}
@@ -358,12 +373,19 @@ function App(): JSX.Element {
             ))}
           </div>
 
-          {allResults.length > RESULTS_PER_PAGE && (
+          {!loading && allResults.length > 0 && (
+            <div className="results-summary">
+              Showing {page * RESULTS_PER_PAGE + 1}–
+              {Math.min((page + 1) * RESULTS_PER_PAGE, allResults.length)} of {allResults.length}
+            </div>
+          )}
+
+          {totalPages > 1 && (
             <div className="pagination-block">
               <button
                 className="page-arrow"
-                onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
                 disabled={!canGoPrev}
+                onClick={() => setPage((p) => p - 1)}
               >
                 ←
               </button>
@@ -374,186 +396,138 @@ function App(): JSX.Element {
                     key={i}
                     className={`page-dot ${page === i ? 'active' : ''}`}
                     onClick={() => setPage(i)}
-                    aria-label={`Go to page ${i + 1}`}
                   />
                 ))}
               </div>
 
               <button
                 className="page-arrow"
-                onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
                 disabled={!canGoNext}
+                onClick={() => setPage((p) => p + 1)}
               >
                 →
               </button>
             </div>
           )}
-
-          {allResults.length > RESULTS_PER_PAGE && (
-            <p className="more-results-note">
-              Showing {page * RESULTS_PER_PAGE + 1}–
-              {Math.min((page + 1) * RESULTS_PER_PAGE, allResults.length)} of {allResults.length} results
-            </p>
-          )}
-
-          {useLlm && <Chat />}
         </div>
 
         <aside className="filters-panel">
-          <h2 className="filters-title">Filters</h2>
-
-          <div className="filter-group">
-            <label>Retrieval mode</label>
-            <select
-              value={retrievalMode}
-              onChange={(e) => setRetrievalMode(e.target.value as RetrievalMode)}
-            >
-              <option value="tfidf">Basic TF-IDF</option>
-              <option value="svd">SVD</option>
-              <option value="embedding">Sentence Embeddings</option>
-            </select>
-          </div>
+          <h2 className="filters-title">Search controls</h2>
 
           <div className="filter-group">
             <label>Result scope</label>
-            <div className="toggle-row">
+            <div className="toggle-row compact-toggle-row">
               <button
-                type="button"
-                className={`toggle-pill ${resultScope === 'chunks' ? 'active' : ''}`}
-                onClick={() => setResultScope('chunks')}
-              >
-                Chunks
-              </button>
-              <button
-                type="button"
-                className={`toggle-pill ${resultScope === 'full' ? 'active' : ''}`}
+                className={`toggle-pill compact-pill ${resultScope === 'full' ? 'active' : ''}`}
                 onClick={() => setResultScope('full')}
               >
                 Full transcripts
               </button>
+              <button
+                className={`toggle-pill compact-pill ${resultScope === 'chunks' ? 'active' : ''}`}
+                onClick={() => setResultScope('chunks')}
+              >
+                Chunks
+              </button>
             </div>
           </div>
 
-          {resultScope === 'chunks' && (
-            <div className="filter-group">
-              <label>Max chunks per transcript</label>
-              <select
-                value={maxChunksPerTranscript}
-                onChange={(e) => setMaxChunksPerTranscript(Number(e.target.value))}
-              >
-                {MAX_CHUNKS_PER_TRANSCRIPT_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
+          <div className="filter-group">
+            <label>Retrieval mode</label>
+            <div className="toggle-row compact-toggle-row">
+              {(['tfidf', 'svd'] as RetrievalMode[]).map((mode) => (
+                <button
+                  key={mode}
+                  className={`toggle-pill compact-pill ${retrievalMode === mode ? 'active' : ''}`}
+                  onClick={() => setRetrievalMode(mode)}
+                >
+                  {mode === 'tfidf' ? 'TF-IDF' : 'SVD'}
+                </button>
+              ))}
             </div>
-          )}
+          </div>
+
+          <div className="filters-divider" />
+
+          <h3 className="filters-subtitle">Search filters</h3>
 
           <div className="filter-group">
-            <label>Comedian</label>
+            <label htmlFor="comedian-filter">Comedian</label>
             <input
+              id="comedian-filter"
               type="text"
               value={comedian}
               onChange={(e) => setComedian(e.target.value)}
-              placeholder="Optional comedian name"
+              placeholder="Filter by comedian"
             />
           </div>
 
           <div className="filter-group">
-            <label>Special type</label>
+            <label htmlFor="special-type-filter">Special type</label>
             <select
+              id="special-type-filter"
               value={specialType}
               onChange={(e) => setSpecialType(e.target.value)}
             >
               {SPECIAL_TYPE_OPTIONS.map((option) => (
                 <option key={option} value={option}>
-                  {option || 'Any'}
+                  {option || 'All special types'}
                 </option>
               ))}
             </select>
           </div>
 
           <div className="filter-group">
-            <label>Year range</label>
+            <label>Release year range</label>
             <div className="range-inputs">
               <div>
-                <span>From</span>
+                <span>From: {yearMin}</span>
                 <input
                   type="range"
                   min={YEAR_MIN}
                   max={YEAR_MAX}
                   value={yearMin}
-                  onChange={(e) => {
-                    const value = Number(e.target.value)
-                    setYearMin(Math.min(value, yearMax))
-                  }}
+                  onChange={(e) => setYearMin(Math.min(Number(e.target.value), yearMax))}
                 />
-                <div className="range-value">{yearMin}</div>
               </div>
-
               <div>
-                <span>To</span>
+                <span>To: {yearMax}</span>
                 <input
                   type="range"
                   min={YEAR_MIN}
                   max={YEAR_MAX}
                   value={yearMax}
-                  onChange={(e) => {
-                    const value = Number(e.target.value)
-                    setYearMax(Math.max(value, yearMin))
-                  }}
+                  onChange={(e) => setYearMax(Math.max(Number(e.target.value), yearMin))}
                 />
-                <div className="range-value">{yearMax}</div>
               </div>
             </div>
           </div>
 
           <div className="filter-group">
-            <label>Profanity</label>
-            <div className="profanity-toggle">
+            <label>Profanity filter</label>
+            <div className="toggle-row compact-toggle-row">
               <button
-                type="button"
-                className={`profanity-btn ${excludeProfanity ? 'active' : ''}`}
-                onClick={() => setExcludeProfanity(true)}
-              >
-                Hide profanity
-              </button>
-              <button
-                type="button"
-                className={`profanity-btn ${!excludeProfanity ? 'active' : ''}`}
+                className={`toggle-pill compact-pill ${!excludeProfanity ? 'active' : ''}`}
                 onClick={() => setExcludeProfanity(false)}
               >
-                Show profanity
+                Include
+              </button>
+              <button
+                className={`toggle-pill compact-pill ${excludeProfanity ? 'active' : ''}`}
+                onClick={() => setExcludeProfanity(true)}
+              >
+                Exclude
               </button>
             </div>
           </div>
 
-          <div className="filter-actions">
-            <button
-              type="button"
-              className="apply-filters-btn"
-              onClick={() => void handleSearch(searchTerm)}
-            >
-              Apply
-            </button>
-            <button
-              type="button"
-              className="clear-filters-btn"
-              onClick={() => {
-                handleClearFilters()
-                if (searchTerm.trim()) {
-                  window.setTimeout(() => {
-                    void handleSearch(searchTerm)
-                  }, 0)
-                }
-              }}
-            >
-              Clear
-            </button>
-          </div>
+          <button className="clear-filters-btn" onClick={handleClearFilters}>
+            Clear filters
+          </button>
         </aside>
       </div>
+
+      {useLlm && <Chat />}
     </div>
   )
 }

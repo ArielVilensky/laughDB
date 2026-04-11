@@ -55,8 +55,8 @@ def register_routes(app):
                 "known_special_types": [],
             })
 
-        top_k = request.args.get("top_k", default=50, type=int)
-        top_k = clamp_int(top_k, 1, 50)
+        top_k = request.args.get("top_k", default=25, type=int)
+        top_k = clamp_int(top_k, 1, 25)
 
         retrieval_mode = request.args.get("retrieval_mode", "tfidf").strip().lower()
         if retrieval_mode not in {"tfidf", "svd", "embedding"}:
