@@ -46,7 +46,7 @@ PROFANITY_WORDS = {
     "bitch", "bitches", "bitching",
     "asshole", "motherfucker", "dick",
     "pussy", "cunt", "cock", "cocksucker",
-    "bastard", "damn",
+    "bastard", "damn", "nigger", "nigga"
 }
 
 
@@ -128,25 +128,40 @@ def remove_bracketed_descriptions(text: str) -> str:
     return re.sub(r"\[[^\]]*\]", " ", text)
 
 
+def normalize_spaced_letters(text):
+    """
+    Example: "m i d g e t" --> "midget"
+    """
+    return re.sub(
+        r'\b(?:[A-Za-z]\s+){1,}[A-Za-z]\b',
+        lambda match: re.sub(r'\s+', '', match.group(0)),
+        text
+    )
+
 def normalize_decades(text: str) -> str:
     text = re.sub(r"\b(\d{2})['’]s\b", r"\1s", text)
     text = re.sub(r"\b(\d{4})['’]s\b", r"\1s", text)
     return text
 
+def normalize_text_basic(text: str) -> str:
+    if not text:
+        return ""
+    
+    text = re.sub(r"‘|’", "'", text)
+    text = re.sub(r"“|”", '"', text)
+    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"\–|\—", "-", text)
+    text = text.replace("\xa0", " ")
+    text = normalize_decades(text)
+    return text
 
 def normalize_text(text: str) -> str:
     if not text:
         return ""
 
     text = remove_bracketed_descriptions(text)
-    text = re.sub(r"♪[^♪]*♪", " ", text)
-    text = text.replace("’", "'")
-    text = text.replace("“", '"')
-    text = text.replace("”", '"')
-    text = text.replace("–", "-")
-    text = text.replace("—", "-")
-    text = text.replace("\xa0", " ")
-    text = normalize_decades(text)
+    text = normalize_text_basic(text)
+    text = normalize_spaced_letters(text)
     text = re.sub(r"\s+", " ", text)
     return text.strip()
 
@@ -155,13 +170,7 @@ def normalize_for_structure(text: str) -> str:
     if not text:
         return ""
 
-    text = text.replace("’", "'")
-    text = text.replace("“", '"')
-    text = text.replace("”", '"')
-    text = text.replace("–", "-")
-    text = text.replace("—", "-")
-    text = text.replace("\xa0", " ")
-    text = normalize_decades(text)
+    text = normalize_text_basic(text)
     text = re.sub(r"\r\n?", "\n", text)
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
@@ -327,16 +336,19 @@ def parse_title_metadata(title: str) -> Tuple[str, str, str]:
 
     t = normalize_text(title)
 
-    t = re.sub(r"\|\s*transcript\s*$", "", t, flags=re.IGNORECASE)
-    t = re.sub(r"[-|]\s*full transcript\s*$", "", t, flags=re.IGNORECASE)
-    t = re.sub(r"[-|]\s*transcripci[oó]n completa\s*$", "", t, flags=re.IGNORECASE)
-    t = re.sub(r"[-|]\s*traduzione italiana\s*$", "", t, flags=re.IGNORECASE)
+    t = re.sub(
+        r"\s*[|\-:]?\s*[(\[{]?(?:(?:(?:Full )?Transcript)|(?:transcripci[oó]n completa)|(?:traduzione italiana))[)\]}]?\s*[|\-:]?\s*",
+        " ",
+        t,
+        flags=re.IGNORECASE
+    )
 
     release_date = ""
-    year_match = re.search(r"\((\d{4})\)", t)
+    year_match = re.search(r"(?:20|19)\d\d|(?:\d{1,2}\/){1,2}\d{2,4}", t)
+
     if year_match:
-        release_date = year_match.group(1)
-        t = re.sub(r"\s*\(\d{4}\)", "", t).strip()
+        release_date = year_match.group()
+        t = re.sub(rf"\s*[|\-:]?\s*(?:[(\[{{].*)?{release_date}(?:.*[)\]}}])?\s*[|\-:]?\s*", " ", t).strip()
 
     comedian = ""
     special_title = t
@@ -352,7 +364,6 @@ def parse_title_metadata(title: str) -> Tuple[str, str, str]:
             special_title = m.group(2).strip()
 
     return comedian, special_title, release_date
-
 
 def infer_platform(url: str = "", title: str = "", content: str = "") -> str:
     text = normalize_text(f"{url} {title} {content[:2000]}").lower()

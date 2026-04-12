@@ -396,7 +396,7 @@ function App(): JSX.Element {
             </p>
           )}
 
-          {useLlm && <Chat />}
+          {useLlm && <Chat onSearchTerm={handleSearch} />}
         </div>
 
         <aside className="filters-panel">
