@@ -1,4 +1,4 @@
-export type RetrievalMode = 'tfidf' | 'svd' | 'embedding'
+export type RetrievalMode = 'tfidf' | 'svd'
 export type ResultScope = 'chunks' | 'full'
 
 export interface SvdDimensionMatch {
