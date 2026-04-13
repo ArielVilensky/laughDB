@@ -10,9 +10,11 @@ PROFANITY_WORDS = {
     "fuck", "fucking", "fucked", "fucker",
     "shit", "shitty",
     "bitch", "bitches", "bitching",
-    "asshole", "motherfucker", "dick",
+    "asshole", "arsehole", "motherfucker", "dick",
     "pussy", "cunt", "cock", "cocksucker",
-    "bastard", "damn",
+    "bastard", "damn", "nigger", "nigga", "coon",
+    "kike", "chink", "spic", "beaner",
+    "wanker", "twat", "blowjob", "anal"
 }
 
 CUSTOM_STOPWORDS = {
@@ -273,6 +275,25 @@ def remove_music_blocks(text: str) -> str:
 
     return text
 
+def normalize_spaced_letters(text):
+    """
+    Example: "m i d g e t" --> "midget"
+    """
+    return re.sub(
+        r'\b(?:[A-Za-z]\s+){1,}[A-Za-z]\b',
+        lambda match: re.sub(r'\s+', '', match.group(0)),
+        text
+    )
+
+def normalize_text_helper(text: str) -> str:
+    if not text:
+        return ""
+
+    text = re.sub(r"‘|’", "'", text)
+    text = re.sub(r"“|”", '"', text)
+    text = re.sub(r"\–|\—", "-", text)
+    text = text.replace("\xa0", " ")
+    return text
 
 def normalize_text(text: str) -> str:
     if not text:
@@ -294,13 +315,9 @@ def normalize_text(text: str) -> str:
         flags=re.IGNORECASE,
     )
 
-    text = text.replace("’", "'")
-    text = text.replace("“", '"')
-    text = text.replace("”", '"')
-    text = text.replace("–", "-")
-    text = text.replace("—", "-")
-    text = text.replace("\xa0", " ")
+    text = normalize_text_helper(text)
     text = normalize_decades(text)
+    text = normalize_spaced_letters(text)
     text = re.sub(r"\s+", " ", text)
     return text.strip()
 
@@ -309,10 +326,7 @@ def normalize_for_structure(text: str) -> str:
     if not text:
         return ""
     text = text.replace("\r\n", "\n").replace("\r", "\n")
-    text = text.replace("’", "'")
-    text = text.replace("“", '"').replace("”", '"')
-    text = text.replace("–", "-").replace("—", "-")
-    text = text.replace("\xa0", " ")
+    text = normalize_text_helper(text)
     return text
 
 
