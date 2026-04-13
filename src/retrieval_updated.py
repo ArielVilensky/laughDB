@@ -933,6 +933,22 @@ def initialize_search() -> None:
 
     #print(f"All search indexes ready in {_fmt_elapsed(total_start)}")
 
+def reinitialize_search() -> None:
+    global _SEARCH_INDEX
+
+    total_start = time.perf_counter()
+    print("Initializing search indexes at startup...")
+
+    transcript_start = time.perf_counter()
+    print("Initializing transcript search index at startup...")
+    _SEARCH_INDEX["transcript"] = build_transcript_search_index()
+    print(f"Transcript search index ready in {_fmt_elapsed(transcript_start)}")
+
+    chunk_start = time.perf_counter()
+    print("Initializing chunk search index at startup...")
+    _SEARCH_INDEX["chunk"] = build_chunk_search_index()
+    print(f"All search indexes ready in {_fmt_elapsed(total_start)}")
+
 def get_transcript_index() -> Dict[str, Any]:
     global _SEARCH_INDEX
     if _SEARCH_INDEX["transcript"] is None:
