@@ -1,3 +1,4 @@
+import gzip
 import math
 import os
 import pickle
@@ -14,9 +15,29 @@ from sklearn.preprocessing import normalize
 
 from index_builder import (
     build_transcript_index_payload,
+    build_streaming_lookup_keys,
+    choose_watch_link,
     clean_and_tokenize_text,
+    load_streaming_links,
+    STREAMING_LINKS_PATH,
 )
 from chunk_index_builder import build_semantic_chunks
+
+# Streaming links cached in memory — reloaded only when the file changes
+_streaming_links_cache: Dict[str, Dict[str, str]] = {}
+_streaming_links_mtime: float = 0.0
+
+
+def get_streaming_links() -> Dict[str, Dict[str, str]]:
+    global _streaming_links_cache, _streaming_links_mtime
+    try:
+        mtime = os.path.getmtime(STREAMING_LINKS_PATH)
+    except OSError:
+        return {}
+    if mtime != _streaming_links_mtime:
+        _streaming_links_cache = load_streaming_links()
+        _streaming_links_mtime = mtime
+    return _streaming_links_cache
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -73,13 +94,27 @@ def ensure_data_dir() -> None:
     os.makedirs(DATA_DIR, exist_ok=True)
 
 
+def pickle_exists(path: str) -> bool:
+    """Return True if a gzip-compressed or plain pickle exists for path."""
+    return os.path.exists(path + ".gz") or os.path.exists(path)
+
+
 def save_pickle(path: str, obj: Any) -> None:
     ensure_data_dir()
-    with open(path, "wb") as f:
-        pickle.dump(obj, f)
+    gz_path = path + ".gz"
+    with gzip.open(gz_path, "wb", compresslevel=3) as f:
+        pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
+    # Remove the uncompressed file if it exists from a previous run
+    if os.path.exists(path):
+        os.remove(path)
 
 
 def load_pickle(path: str) -> Any:
+    gz_path = path + ".gz"
+    if os.path.exists(gz_path):
+        with gzip.open(gz_path, "rb") as f:
+            return pickle.load(f)
+    # Fallback: load uncompressed (handles old files)
     with open(path, "rb") as f:
         return pickle.load(f)
 
@@ -663,7 +698,7 @@ def explain_svd_alignment(
 def load_or_build_transcript_docs() -> Dict[str, Any]:
     start = time.perf_counter()
 
-    if os.path.exists(TRANSCRIPT_DOCS_PATH):
+    if pickle_exists(TRANSCRIPT_DOCS_PATH):
         #print("Loading transcript docs...")
         docs_payload = load_pickle(TRANSCRIPT_DOCS_PATH)
         #print(f"Loaded transcript docs in {_fmt_elapsed(start)}")
@@ -788,7 +823,7 @@ def build_transcript_search_index() -> Dict[str, Any]:
 
 
 def load_or_build_transcript_search_index() -> Dict[str, Any]:
-    if os.path.exists(TRANSCRIPT_INDEX_PATH):
+    if pickle_exists(TRANSCRIPT_INDEX_PATH):
         #print("Loading transcript search index...")
         return load_pickle(TRANSCRIPT_INDEX_PATH)
     return build_transcript_search_index()
@@ -909,7 +944,7 @@ def build_chunk_search_index() -> Dict[str, Any]:
 
 
 def load_or_build_chunk_search_index() -> Dict[str, Any]:
-    if os.path.exists(CHUNK_INDEX_PATH):
+    if pickle_exists(CHUNK_INDEX_PATH):
         #print("Loading chunk search index...")
         return load_pickle(CHUNK_INDEX_PATH)
     return build_chunk_search_index()
@@ -965,6 +1000,22 @@ def get_chunk_index() -> Dict[str, Any]:
     if _SEARCH_INDEX["chunk"] is None:
         _SEARCH_INDEX["chunk"] = load_or_build_chunk_search_index()
     return _SEARCH_INDEX["chunk"]
+
+
+def _resolve_watch_url(item: Dict[str, Any]) -> str:
+    comedian = item.get("comedian", "")
+    special_title = item.get("special_title", "")
+    yt = item.get("yt", "")
+    url, _ = choose_watch_link(yt, comedian, special_title, get_streaming_links())
+    return url
+
+
+def _resolve_watch_platform(item: Dict[str, Any]) -> str:
+    comedian = item.get("comedian", "")
+    special_title = item.get("special_title", "")
+    yt = item.get("yt", "")
+    _, platform = choose_watch_link(yt, comedian, special_title, get_streaming_links())
+    return platform
 
 
 def build_result_object(
@@ -1086,8 +1137,8 @@ def build_result_object(
         "result_scope": "full" if is_full_transcript else "chunks",
         "svd_positive_dimensions": svd_positive_dimensions,
         "svd_negative_dimensions": svd_negative_dimensions,
-        "watch_url": item.get("watch_url", ""),
-        "watch_platform": item.get("watch_platform", ""),
+        "watch_url": _resolve_watch_url(item),
+        "watch_platform": _resolve_watch_platform(item),
     }
 
 def debug_print_top_result_contributions(
