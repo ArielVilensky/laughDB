@@ -71,16 +71,67 @@ def normalize_comedian_from_show_title(comedian: str, title: str) -> str:
     comedian_lc = str(comedian).lower().strip()
     title_lc = str(title).lower().strip()
 
+    # Show-format rules applied regardless of whether comedian is already set
     rules = [
         ("last week tonight with john oliver", "John Oliver"),
         ("late night with seth meyers", "Seth Meyers"),
         ("real time with bill maher", "Bill Maher"),
         ("the jim jefferies show", "Jim Jefferies"),
+        ("oh, hello on broadway", "John Mulaney and Nick Kroll"),
+        ("miranda sings", "Colleen Ballinger"),
     ]
-
     for pattern, normalized_name in rules:
         if pattern in comedian_lc or pattern in title_lc:
             return normalized_name
+
+    if comedian:
+        return comedian
+
+    # Title-only fallback rules (when comedian is empty)
+    fallback_rules = [
+        ("sincerely louis ck", "Louis C.K."),
+        ("carlin at carnegie", "George Carlin"),
+        ("saturday night news with george carlin", "George Carlin"),
+        ("your friend, nate bargatze", "Nate Bargatze"),
+        ("jimmy kimmel", "Jimmy Kimmel"),
+        ("bill hicks at rodney", "Bill Hicks"),
+    ]
+    for pattern, normalized_name in fallback_rules:
+        if pattern in title_lc:
+            return normalized_name
+
+    # Strip transcript suffixes and year for cleaner pattern matching
+    clean = re.sub(r"\s*\[(?:full\s+)?transcript\].*$", "", title, flags=re.IGNORECASE).strip()
+    clean = re.sub(r"\s*[|–—]\s*(full\s+)?transcript.*$", "", clean, flags=re.IGNORECASE).strip()
+    clean = re.sub(r"\s*\(\d{4}\).*$", "", clean).strip()
+    clean = re.sub(r"\s*\[\d{1,2}/\d{1,2}/\d{2,4}\].*$", "", clean).strip()
+
+    def _fix_case(name: str) -> str:
+        return name.title() if name == name.upper() else name
+
+    # Possessive: "Name's Title" → Name
+    m = re.match(r"^([A-Z][A-Za-z'.\-]+(?:\s+[A-Z][A-Za-z'.\-]+){0,3})['\u2019][sS]\b", clean)
+    if m:
+        return _fix_case(m.group(1).strip())
+
+    # "Name at/on Topic" — require 2+ words in name to avoid false positives
+    m = re.match(r"^([A-Z][A-Za-z'.\-]+(?:\s+[A-Z][A-Za-z'.\-]+){1,3})\s+(?:[Aa]t|[Oo]n)\b", clean)
+    if m:
+        name = _fix_case(m.group(1).strip())
+        if len(name.split()) >= 2:
+            return name
+
+    # "Name | Topic" — pipe separator
+    m = re.match(r"^([A-Z][A-Za-z'.\-]+(?:\s+[A-Z][A-Za-z'.\-]+){0,3})\s*\|", clean)
+    if m:
+        return _fix_case(m.group(1).strip())
+
+    # "Show with Name" — name at end, require 2+ words
+    m = re.search(r"\bwith\s+([A-Z][A-Za-z'.\-]+(?:\s+[A-Z][A-Za-z'.\-]+){1,3})\s*$", clean)
+    if m:
+        name = _fix_case(m.group(1).strip())
+        if len(name.split()) >= 2:
+            return name
 
     return comedian
 
