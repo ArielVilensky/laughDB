@@ -7,8 +7,8 @@ import Chat from './Chat'
 const RESULTS_PER_PAGE = 5
 const MAX_TOTAL_RESULTS = 25
 const YEAR_MIN = 1965
-const YEAR_MAX = 2025
-const SEARCH_DEBOUNCE_MS = 250
+const YEAR_MAX = 2026
+const SEARCH_DEBOUNCE_MS = 200
 
 const SPECIAL_TYPE_OPTIONS = [
   '',
@@ -40,11 +40,19 @@ function getWatchLinks(result: SearchResult): WatchLink[] {
     })
   }
 
-  links.push({
-    label: 'YouTube',
-    url: `https://www.youtube.com/results?search_query=${query}`,
-    cls: 'resource-link youtube-link',
-  })
+  if (result.watch_url) {
+    links.push({
+      label: result.watch_platform || 'Watch',
+      url: result.watch_url,
+      cls: 'resource-link watch-link',
+    })
+  } else {
+    links.push({
+      label: 'YouTube',
+      url: `https://www.youtube.com/results?search_query=${query}`,
+      cls: 'resource-link youtube-link',
+    })
+  }
 
   return links
 }
@@ -81,6 +89,13 @@ function App(): JSX.Element {
       .then((r) => r.json())
       .then((data) => setUseLlm(data.use_llm))
   }, [])
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
+  }, [page])
 
   const clearPendingDebounce = (): void => {
     if (debounceRef.current !== null) {
@@ -197,10 +212,15 @@ function App(): JSX.Element {
 
   const renderSnippet = (result: SearchResult): JSX.Element | string => {
     if (result.snippet_sentences && result.snippet_sentences.length > 0) {
+      const snippetGlobalStart =
+        result.global_snippet_start ??
+        result.snippet_sentence_start ??
+        0
+
       return (
         <>
           {result.snippet_sentences.map((sentence, i) => {
-            const absoluteIndex = (result.snippet_sentence_start ?? 0) + i
+            const absoluteIndex = snippetGlobalStart + i
             const isBest = absoluteIndex === result.best_sentence_index
 
             return (
@@ -265,7 +285,9 @@ function App(): JSX.Element {
 
           {excludeProfanity && allResults.length > 0 && (
             <div className="warning-banner">
-              Profanity filter is on. Results containing profanity are excluded.
+              {resultScope === 'chunks'
+                ? 'Profanity filter is on. The chunks shown do not contain profanity, but the broader transcript may still contain it.'
+                : 'Profanity filter is on. Results containing profanity are excluded.'}
             </div>
           )}
 
@@ -279,7 +301,7 @@ function App(): JSX.Element {
             {visibleResults.map((result, index) => (
               <div key={`${result.chunk_id}-${index}`} className="episode-item">
                 <h3 className="episode-title">
-                  {result.comedian || 'Unknown Comedian'}
+                  {result.comedian || 'Unknown'}
                 </h3>
 
                 <p className="episode-rating">

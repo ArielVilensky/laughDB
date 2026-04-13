@@ -69,8 +69,8 @@ if __name__ == '__main__':
     should_initialize_search = os.environ.get("WERKZEUG_RUN_MAIN") == "true" or not app.debug
 
     if should_initialize_search:
-        print("Initializing search index at startup...")
+        #print("Initializing search index at startup...")
         initialize_search()
-        print("Search index ready.")
+        #print("Search index ready.")
 
     app.run(debug=True, host="0.0.0.0", port=5001)

@@ -15,20 +15,19 @@ EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
 
 _EMBEDDING_MODEL: Optional[SentenceTransformer] = None
 
+MIN_CHUNK_SENTENCES = 3
+MIN_CHUNK_WORDS = 80
+SEMANTIC_BREAK_THRESHOLD = 0.14
+
 
 def get_embedding_model(model_name: str = EMBEDDING_MODEL_NAME) -> SentenceTransformer:
     global _EMBEDDING_MODEL
 
     if _EMBEDDING_MODEL is None:
-        print(f"Loading embedding model: {model_name}")
+        #print(f"Loading embedding model: {model_name}")
         _EMBEDDING_MODEL = SentenceTransformer(model_name)
 
     return _EMBEDDING_MODEL
-
-
-MIN_CHUNK_SENTENCES = 3
-MIN_CHUNK_WORDS = 80
-SEMANTIC_BREAK_THRESHOLD = 0.14
 
 
 def count_words(text: str) -> int:
@@ -119,21 +118,35 @@ def merge_tiny_chunks(
 def build_semantic_chunks(
     docs: List[Dict[str, Any]],
 ) -> Tuple[List[Dict[str, Any]], List[float], Dict[int, List[int]]]:
+    import time
+
     chunks: List[Dict[str, Any]] = []
     all_adjacent_similarities: List[float] = []
     transcript_chunk_ids: Dict[int, List[int]] = defaultdict(list)
 
+    model_load_start = time.perf_counter()
     model = get_embedding_model()
-    chunk_counter = 0
+    #print(f"Embedding model ready in {time.perf_counter() - model_load_start:.2f}s")
 
-    for doc in docs:
+    chunk_counter = 0
+    total_sentence_count = 0
+
+    for doc_idx, doc in enumerate(docs):
+        doc_timer = time.perf_counter()
+
         doc_id = doc["doc_id"]
+        title = doc.get("title", "")
+        comedian = doc.get("comedian", "")
         sentences = doc.get("sentences", [])
         sentence_tokens = doc.get("sentence_tokens", [])
 
-        if not sentences:
-            continue
+        # if not sentences:
+        #     print(f"[chunk doc {doc_idx}] skipped empty transcript | doc_id={doc_id} | title={title}")
+        #     continue
 
+        total_sentence_count += len(sentences)
+
+        encode_start = time.perf_counter()
         sentence_embeddings = model.encode(
             sentences,
             convert_to_numpy=True,
@@ -141,14 +154,20 @@ def build_semantic_chunks(
             show_progress_bar=False,
             batch_size=64,
         )
+        encode_time = time.perf_counter() - encode_start
 
+        chunk_logic_start = time.perf_counter()
         chunk_groups, adjacent_similarities = semantic_chunk_sentences(
             sentences=sentences,
             sentence_embeddings=sentence_embeddings,
         )
         chunk_groups = merge_tiny_chunks(chunk_groups)
+        chunk_logic_time = time.perf_counter() - chunk_logic_start
 
         all_adjacent_similarities.extend(adjacent_similarities)
+
+        build_records_start = time.perf_counter()
+        start_chunk_counter = chunk_counter
 
         for sent_chunk, _sent_chunk_embeddings, start_idx, end_idx in chunk_groups:
             chunk_text = " ".join(sent_chunk).strip()
@@ -159,11 +178,16 @@ def build_semantic_chunks(
                 "chunk_id": f"chunk_{chunk_counter}",
                 "doc_id": doc_id,
                 "url": doc.get("url", ""),
-                "title": doc.get("title", ""),
-                "comedian": doc.get("comedian", ""),
+                "title": title,
+                "yt": doc.get("yt", ""),
+                "raw_tags": doc.get("raw_tags", []),
+                "tag_texts": doc.get("tag_texts", []),
+                "comedian": comedian,
                 "special_title": doc.get("special_title", ""),
                 "release_date": doc.get("release_date", ""),
                 "platform": doc.get("platform", ""),
+                "watch_url": doc.get("watch_url", ""),
+                "watch_platform": doc.get("watch_platform", ""),
                 "special_type": doc.get("special_type", ""),
                 "content": chunk_text,
                 "tokens": tokens,
@@ -181,5 +205,21 @@ def build_semantic_chunks(
             chunks.append(chunk)
             transcript_chunk_ids[doc_id].append(chunk_counter)
             chunk_counter += 1
+
+        build_records_time = time.perf_counter() - build_records_start
+        produced_chunks = chunk_counter - start_chunk_counter
+
+        # print(
+        #     f"[chunk doc {doc_idx}] "
+        #     f"doc_id={doc_id} | comedian={comedian!r} | title={title!r} | "
+        #     f"sentences={len(sentences)} | chunks={produced_chunks} | "
+        #     f"encode={encode_time:.2f}s | chunk_logic={chunk_logic_time:.2f}s | "
+        #     f"record_build={build_records_time:.2f}s | total={time.perf_counter() - doc_timer:.2f}s"
+        # )
+
+    # print(
+    #     f"Finished semantic chunking for {len(docs)} docs | "
+    #     f"total_sentences={total_sentence_count} | total_chunks={len(chunks)}"
+    # )
 
     return chunks, all_adjacent_similarities, transcript_chunk_ids

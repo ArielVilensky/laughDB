@@ -158,10 +158,7 @@
 }
 
 .highlight-sentence {
-  background: linear-gradient(transparent 30%,
-      #f4c542 30%,
-      #f4c542 92%,
-      transparent 92%);
+  background: linear-gradient(transparent 30%, #f4c542 30%, #f4c542 92%, transparent 92%);
   padding: 0 2px;
   border-radius: 4px;
   font-weight: 500;
@@ -232,6 +229,15 @@
 .youtube-link::before {
   content: '▶';
   font-size: 0.85rem;
+}
+
+.watch-link {
+  color: #245a3d;
+}
+
+.watch-link::before {
+  content: '🎬';
+  font-size: 0.9rem;
 }
 
 .info-banner,
@@ -483,6 +489,29 @@
   border: 1px solid #ebe2ff;
 }
 
+.svd-positive,
+.svd-negative {
+  margin-top: 0.5rem;
+  padding-left: 0.9rem;
+  border-left: 4px solid transparent;
+}
+
+.svd-positive {
+  border-left-color: #7a5cfa;
+}
+
+.svd-negative {
+  border-left-color: #d35b6a;
+}
+
+.svd-positive .svd-heading {
+  color: #5b43c7;
+}
+
+.svd-negative .svd-heading {
+  color: #b24757;
+}
+
 .svd-heading {
   margin-bottom: 0.55rem;
   color: #2b1e3f;
@@ -511,4 +540,9 @@
   .filters-panel {
     position: static;
   }
+}
+
+.results-column {
+  min-width: 0;
+  scroll-margin-top: 24px;
 }

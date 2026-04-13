@@ -28,8 +28,15 @@ def clamp_int(value: int, minimum: int, maximum: int) -> int:
     return max(minimum, min(maximum, value))
 
 
+def optional_bool_arg(name: str, default: bool) -> bool:
+    raw = request.args.get(name)
+    if raw is None:
+        return default
+    return str_to_bool(raw)
+
+
 def register_routes(app):
-    initialize_search()
+    # initialize_search()
 
     @app.route('/', defaults={'path': ''})
     @app.route('/<path:path>')
@@ -77,6 +84,19 @@ def register_routes(app):
         max_chunks_per_doc = request.args.get("max_chunks_per_doc", default=2, type=int)
         max_chunks_per_doc = clamp_int(max_chunks_per_doc, 1, 5)
 
+        use_expensive_proximity_scoring = optional_bool_arg(
+            "use_expensive_proximity_scoring",
+            True,
+        )
+        show_svd_explanations = optional_bool_arg(
+            "show_svd_explanations",
+            True,
+        )
+        debug_score_breakdown = optional_bool_arg(
+            "debug_score_breakdown",
+            False,
+        )
+
         results = search_chunks(
             query=query,
             top_k=top_k,
@@ -88,6 +108,9 @@ def register_routes(app):
             exclude_profanity=exclude_profanity,
             max_chunks_per_doc=max_chunks_per_doc,
             result_scope=result_scope,
+            use_expensive_proximity_scoring=use_expensive_proximity_scoring,
+            show_svd_explanations=show_svd_explanations,
+            debug_score_breakdown=debug_score_breakdown,
         )
         return jsonify(results)
 

@@ -2,6 +2,7 @@ import math
 import os
 import pickle
 import re
+import time
 from collections import Counter, defaultdict
 from difflib import get_close_matches
 from typing import Dict, List, Tuple, Any, Optional
@@ -21,11 +22,14 @@ from chunk_index_builder import build_semantic_chunks
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 
-TRANSCRIPTS_PATH = os.path.join(DATA_DIR, "4300_transcripts.json")
+TRANSCRIPTS_PATH = os.path.join(DATA_DIR, "4300_transcripts_2.json")
 
 TRANSCRIPT_DOCS_PATH = os.path.join(DATA_DIR, "transcript_docs.pkl")
 TRANSCRIPT_INDEX_PATH = os.path.join(DATA_DIR, "transcript_search_index.pkl")
 CHUNK_INDEX_PATH = os.path.join(DATA_DIR, "chunk_search_index.pkl")
+
+RERANK_CANDIDATES_FULL = 100
+RERANK_CANDIDATES_CHUNKS = 200
 
 MIN_DF = 1
 TRANSCRIPT_MAX_DF_RATIO = 0.95
@@ -45,10 +49,24 @@ MIN_DISPLAY_SNIPPET_WORDS = 85
 SVD_EXPLAIN_TOP_DIMS = 3
 SVD_EXPLAIN_TOP_TERMS = 8
 
+BUILD_CHUNK_INDEX_AT_STARTUP = False
+DEFAULT_USE_PROXIMITY_SCORING = True
+DEFAULT_SHOW_SVD_EXPLANATIONS = True
+DEFAULT_DEBUG_SCORE_BREAKDOWN = False
+
+BASE_SCORE_WEIGHT = 0.70
+PROXIMITY_SCORE_WEIGHT = 0.30
+
 _SEARCH_INDEX: Dict[str, Optional[Dict[str, Any]]] = {
     "transcript": None,
     "chunk": None,
 }
+
+def get_rerank_candidate_limit(result_scope: str) -> int:
+    return RERANK_CANDIDATES_FULL if result_scope == "full" else RERANK_CANDIDATES_CHUNKS
+
+def _fmt_elapsed(start: float) -> str:
+    return f"{time.perf_counter() - start:.2f}s"
 
 
 def ensure_data_dir() -> None:
@@ -237,33 +255,24 @@ def find_best_matching_sentence_from_tokens(
         return None, "", 0.0
 
     query_vec = vectorize_query(query, word_to_index, idf)
-    query_norm = np.linalg.norm(query_vec)
-
-    if query_norm == 0:
+    if np.linalg.norm(query_vec) == 0:
         return None, "", 0.0
 
     best_idx = None
     best_score = -1.0
+    best_sentence = ""
 
-    for i, tokens in enumerate(sentence_tokens):
-        if not tokens:
-            continue
-
+    for i, (sentence, tokens) in enumerate(zip(sentences, sentence_tokens)):
         sent_vec = vectorize_tokens(tokens, word_to_index, idf, normalize_tf=True)
-        sent_norm = np.linalg.norm(sent_vec)
+        denom = np.linalg.norm(query_vec) * np.linalg.norm(sent_vec)
+        score = 0.0 if denom == 0 else float(np.dot(query_vec, sent_vec) / denom)
 
-        if sent_norm == 0:
-            continue
-
-        score = float(np.dot(query_vec, sent_vec) / (query_norm * sent_norm))
         if score > best_score:
             best_score = score
             best_idx = i
+            best_sentence = sentence
 
-    if best_idx is None:
-        return None, "", 0.0
-
-    return best_idx, sentences[best_idx], best_score
+    return best_idx, best_sentence, max(0.0, best_score)
 
 
 def build_display_snippet_from_best_sentence(
@@ -274,111 +283,284 @@ def build_display_snippet_from_best_sentence(
         return "", 0, 0, []
 
     if best_global_idx is None:
-        start = 0
-        end = min(len(source_sentences), TARGET_DISPLAY_SNIPPET_SENTENCES)
-        snippet_sentences = source_sentences[start:end]
-        return " ".join(snippet_sentences), start, end, snippet_sentences
+        snippet_sentences = source_sentences[:min(len(source_sentences), TARGET_DISPLAY_SNIPPET_SENTENCES)]
+        return " ".join(snippet_sentences), 0, len(snippet_sentences) - 1, snippet_sentences
 
+    n = len(source_sentences)
     start = max(0, best_global_idx - SNIPPET_WINDOW)
-    end = min(len(source_sentences), best_global_idx + SNIPPET_WINDOW + 1)
-    snippet_sentences = source_sentences[start:end]
+    end = min(n - 1, best_global_idx + SNIPPET_WINDOW)
+
+    snippet_sentences = source_sentences[start:end + 1]
 
     while (
-        (len(snippet_sentences) < MIN_DISPLAY_SNIPPET_SENTENCES or snippet_word_count(snippet_sentences) < MIN_DISPLAY_SNIPPET_WORDS)
-        and (start > 0 or end < len(source_sentences))
-    ):
-        expanded = False
+        len(snippet_sentences) < MIN_DISPLAY_SNIPPET_SENTENCES
+        or snippet_word_count(snippet_sentences) < MIN_DISPLAY_SNIPPET_WORDS
+    ) and (start > 0 or end < n - 1):
+        can_expand_left = start > 0
+        can_expand_right = end < n - 1
 
-        if start > 0:
+        if can_expand_left:
             start -= 1
-            expanded = True
-        if end < len(source_sentences):
+        if can_expand_right and (
+            len(snippet_sentences) < TARGET_DISPLAY_SNIPPET_SENTENCES
+            or snippet_word_count(snippet_sentences) < MIN_DISPLAY_SNIPPET_WORDS
+        ):
             end += 1
-            expanded = True
 
-        snippet_sentences = source_sentences[start:end]
-
-        if not expanded:
-            break
-
-    if len(snippet_sentences) > TARGET_DISPLAY_SNIPPET_SENTENCES and best_global_idx is not None:
-        half_window = TARGET_DISPLAY_SNIPPET_SENTENCES // 2
-        new_start = max(0, best_global_idx - half_window)
-        new_end = min(len(source_sentences), new_start + TARGET_DISPLAY_SNIPPET_SENTENCES)
-        if new_end - new_start < TARGET_DISPLAY_SNIPPET_SENTENCES:
-            new_start = max(0, new_end - TARGET_DISPLAY_SNIPPET_SENTENCES)
-
-        trimmed = source_sentences[new_start:new_end]
-        if best_global_idx >= new_start and best_global_idx < new_end and snippet_word_count(trimmed) >= MIN_DISPLAY_SNIPPET_WORDS:
-            start, end, snippet_sentences = new_start, new_end, trimmed
+        snippet_sentences = source_sentences[start:end + 1]
 
     return " ".join(snippet_sentences), start, end, snippet_sentences
+
+def normalize_scores_to_unit_interval(scores: List[float]) -> List[float]:
+    if not scores:
+        return []
+
+    min_score = min(scores)
+    max_score = max(scores)
+
+    if max_score - min_score <= 1e-12:
+        if max_score <= 0:
+            return [0.0 for _ in scores]
+        return [1.0 for _ in scores]
+
+    return [
+        float((score - min_score) / (max_score - min_score))
+        for score in scores
+    ]
+
+
+def compute_token_window_proximity_score(
+    query_tokens: List[str],
+    doc_tokens: List[str],
+) -> float:
+    """
+    Returns a proximity score in [0, 1].
+
+    Score is high when all distinct query terms occur in a small token window.
+    If fewer than 2 distinct query terms are present in the query, returns 0.0.
+    If not all distinct query terms appear in the document, returns 0.0.
+    """
+    if not query_tokens or not doc_tokens:
+        return 0.0
+
+    distinct_query_terms = list(dict.fromkeys(query_tokens))
+    if len(distinct_query_terms) < 2:
+        return 0.0
+
+    positions_by_term: Dict[str, List[int]] = {}
+    for term in distinct_query_terms:
+        positions_by_term[term] = []
+
+    for idx, token in enumerate(doc_tokens):
+        if token in positions_by_term:
+            positions_by_term[token].append(idx)
+
+    if any(not positions for positions in positions_by_term.values()):
+        return 0.0
+
+    merged_positions: List[Tuple[int, str]] = []
+    for term, positions in positions_by_term.items():
+        for pos in positions:
+            merged_positions.append((pos, term))
+
+    merged_positions.sort()
+
+    needed = len(distinct_query_terms)
+    have_counts: Dict[str, int] = defaultdict(int)
+    have_distinct = 0
+    left = 0
+    min_window_size: Optional[int] = None
+
+    for right, (right_pos, right_term) in enumerate(merged_positions):
+        if have_counts[right_term] == 0:
+            have_distinct += 1
+        have_counts[right_term] += 1
+
+        while have_distinct == needed and left <= right:
+            left_pos, left_term = merged_positions[left]
+            window_size = right_pos - left_pos + 1
+
+            if min_window_size is None or window_size < min_window_size:
+                min_window_size = window_size
+
+            have_counts[left_term] -= 1
+            if have_counts[left_term] == 0:
+                have_distinct -= 1
+            left += 1
+
+    if min_window_size is None:
+        return 0.0
+
+    ideal_window = needed
+    proximity = ideal_window / float(min_window_size)
+    return max(0.0, min(1.0, proximity))
+
+
+def find_best_matching_sentence_by_proximity(
+    query: str,
+    sentences: List[str],
+    sentence_tokens: List[List[str]],
+    word_to_index: Dict[str, int],
+    idf: Dict[str, float],
+) -> Tuple[Optional[int], str, float, float]:
+    """
+    Returns:
+        best_idx,
+        best_sentence,
+        sentence_score,      # sentence-level TF-IDF cosine
+        proximity_score      # token-window proximity in [0, 1]
+    """
+    if not sentences or not sentence_tokens:
+        return None, "", 0.0, 0.0
+
+    query_vec = vectorize_query(query, word_to_index, idf)
+    query_tokens = clean_and_tokenize_text(query)
+
+    best_idx = None
+    best_sentence = ""
+    best_sentence_score = 0.0
+    best_proximity_score = -1.0
+    best_combined_score = -1.0
+
+    for i, (sentence, tokens) in enumerate(zip(sentences, sentence_tokens)):
+        proximity_score = compute_token_window_proximity_score(query_tokens, tokens)
+
+        if np.linalg.norm(query_vec) == 0 or not tokens:
+            sentence_score = 0.0
+        else:
+            sent_vec = vectorize_tokens(tokens, word_to_index, idf, normalize_tf=True)
+            denom = np.linalg.norm(query_vec) * np.linalg.norm(sent_vec)
+            sentence_score = 0.0 if denom == 0 else float(np.dot(query_vec, sent_vec) / denom)
+
+        combined_score = 0.80 * proximity_score + 0.20 * sentence_score
+
+        if (
+            combined_score > best_combined_score
+            or (
+                abs(combined_score - best_combined_score) <= 1e-12
+                and proximity_score > best_proximity_score
+            )
+            or (
+                abs(combined_score - best_combined_score) <= 1e-12
+                and abs(proximity_score - best_proximity_score) <= 1e-12
+                and sentence_score > best_sentence_score
+            )
+        ):
+            best_idx = i
+            best_sentence = sentence
+            best_sentence_score = max(0.0, sentence_score)
+            best_proximity_score = max(0.0, proximity_score)
+            best_combined_score = combined_score
+
+    if best_idx is None:
+        return None, "", 0.0, 0.0
+
+    return best_idx, best_sentence, best_sentence_score, best_proximity_score
+
+def build_display_snippet_for_chunk(
+    query: str,
+    item: Dict[str, Any],
+    docs: List[Dict[str, Any]],
+    word_to_index: Dict[str, int],
+    idf: Dict[str, float],
+) -> Tuple[str, Optional[int], str, float, float, int, int, List[str], int, int]:
+    doc = docs[item["doc_id"]]
+    source_sentences = doc.get("sentences", [])
+
+    chunk_sentences = item.get("chunk_sentences", [])
+    sentence_start = item.get("sentence_start", 0)
+    sentence_end = item.get("sentence_end", max(0, len(chunk_sentences) - 1))
+
+    chunk_sentence_tokens = item.get("chunk_sentence_tokens", [])
+
+    best_local_idx, best_sentence, sentence_score, proximity_score = find_best_matching_sentence_by_proximity(
+        query=query,
+        sentences=chunk_sentences,
+        sentence_tokens=chunk_sentence_tokens,
+        word_to_index=word_to_index,
+        idf=idf,
+    )
+
+    if best_local_idx is None:
+        snippet_sentences = chunk_sentences[:]
+        return (
+            " ".join(snippet_sentences),
+            None,
+            "",
+            0.0,
+            0.0,
+            0,
+            max(0, len(snippet_sentences) - 1),
+            snippet_sentences,
+            sentence_start,
+            sentence_end,
+        )
+
+    best_global_idx = sentence_start + best_local_idx
+
+    if len(chunk_sentences) <= 5:
+        start = max(0, best_global_idx - 2)
+        end = min(len(source_sentences) - 1, best_global_idx + 2)
+        snippet_sentences = source_sentences[start:end + 1]
+    else:
+        target_len = max(MIN_DISPLAY_SNIPPET_SENTENCES, int(math.ceil(0.75 * len(chunk_sentences))))
+        target_len = min(target_len, len(chunk_sentences))
+        start = max(sentence_start, best_global_idx - target_len // 2)
+        end = min(sentence_end, start + target_len - 1)
+        start = max(sentence_start, end - target_len + 1)
+        snippet_sentences = source_sentences[start:end + 1]
+
+        while (
+            (len(snippet_sentences) < MIN_DISPLAY_SNIPPET_SENTENCES or snippet_word_count(snippet_sentences) < MIN_DISPLAY_SNIPPET_WORDS)
+            and (start > 0 or end < len(source_sentences) - 1)
+        ):
+            if start > 0:
+                start -= 1
+            if end < len(source_sentences) - 1:
+                end += 1
+            snippet_sentences = source_sentences[start:end + 1]
+
+    local_start = max(0, start - sentence_start)
+    local_end = max(0, end - sentence_start)
+
+    return (
+        " ".join(snippet_sentences),
+        best_global_idx,
+        best_sentence,
+        sentence_score,
+        proximity_score,
+        local_start,
+        local_end,
+        snippet_sentences,
+        start,
+        end,
+    )
 
 
 def snippets_overlap_enough(a: List[str], b: List[str], min_shared: int = MIN_SHARED_SNIPPET_SENTENCES) -> bool:
     if not a or not b:
         return False
-    set_a = set(s.strip() for s in a if s.strip())
-    set_b = set(s.strip() for s in b if s.strip())
-    return len(set_a.intersection(set_b)) >= min_shared
-
-
-def compute_proximity_feature(query: str, content: str) -> float:
-    query_tokens = clean_and_tokenize_text(query)
-    content_tokens = clean_and_tokenize_text(content)
-
-    if not query_tokens or not content_tokens:
-        return 0.0
-
-    positions = defaultdict(list)
-    for idx, tok in enumerate(content_tokens):
-        positions[tok].append(idx)
-
-    found_positions = []
-    for qt in query_tokens:
-        if qt in positions:
-            found_positions.extend(positions[qt][:3])
-
-    if len(found_positions) < 2:
-        return 0.0
-
-    found_positions = sorted(found_positions)
-    spread = found_positions[-1] - found_positions[0] + 1
-    if spread <= 0:
-        return 0.0
-
-    return min(1.0, len(found_positions) / spread)
-
-
-def compute_comedian_feature(item: Dict[str, Any], resolved_comedian: Optional[str]) -> float:
-    if not resolved_comedian:
-        return 0.0
-    return 1.0 if item.get("comedian", "").strip().lower() == resolved_comedian.strip().lower() else 0.0
-
-
-def combine_similarity_features(base_score: float, proximity_feature: float, comedian_feature: float) -> float:
-    score = 0.85 * base_score + 0.10 * proximity_feature + 0.05 * comedian_feature
-    return max(0.0, min(1.0, score))
+    return len(set(a) & set(b)) >= min_shared
 
 
 def get_known_comedians(items: List[Dict[str, Any]]) -> List[str]:
-    return sorted({item["comedian"] for item in items if item.get("comedian")})
+    return sorted({item.get("comedian", "") for item in items if item.get("comedian", "")})
 
 
-def resolve_comedian_name(name: Optional[str], known_comedians: List[str]) -> Optional[str]:
-    if not name:
+def resolve_comedian_name(comedian: Optional[str], known_comedians: List[str]) -> Optional[str]:
+    if not comedian:
         return None
 
-    stripped = name.strip()
-    if not stripped:
+    comedian = comedian.strip()
+    if not comedian:
         return None
 
-    exact = [c for c in known_comedians if c.lower() == stripped.lower()]
+    exact = [c for c in known_comedians if c.lower() == comedian.lower()]
     if exact:
         return exact[0]
 
-    matches = get_close_matches(stripped, known_comedians, n=1, cutoff=0.75)
-    return matches[0] if matches else stripped
+    matches = get_close_matches(comedian, known_comedians, n=1, cutoff=0.75)
+    return matches[0] if matches else comedian
 
 
 def item_passes_filters(
@@ -389,24 +571,22 @@ def item_passes_filters(
     special_type: Optional[str],
     exclude_profanity: bool,
 ) -> bool:
-    if resolved_comedian:
-        if item.get("comedian", "").strip().lower() != resolved_comedian.strip().lower():
-            return False
+    if resolved_comedian and item.get("comedian", "").lower() != resolved_comedian.lower():
+        return False
 
-    if special_type:
-        if item.get("special_type", "") != special_type:
-            return False
+    if special_type and item.get("special_type", "") != special_type:
+        return False
 
-    release_date = item.get("release_date", "")
-    if release_date and release_date.isdigit():
+    if exclude_profanity and item.get("has_profanity", False):
+        return False
+
+    release_date = str(item.get("release_date", "")).strip()
+    if release_date.isdigit():
         year = int(release_date)
         if year_min is not None and year < year_min:
             return False
         if year_max is not None and year > year_max:
             return False
-
-    if exclude_profanity and item.get("has_profanity", False):
-        return False
 
     return True
 
@@ -419,77 +599,78 @@ def build_svd_dimension_terms(
     dimension_terms: Dict[int, Dict[str, List[str]]] = {}
 
     for dim_idx, component in enumerate(svd_model.components_):
-        ranked = np.argsort(component)
-        top_negative = [index_to_word[i] for i in ranked[:top_terms]]
-        top_positive = [index_to_word[i] for i in ranked[::-1][:top_terms]]
+        sorted_indices = np.argsort(component)
+        top_negative = [index_to_word[i] for i in sorted_indices[:top_terms]]
+        top_positive = [index_to_word[i] for i in sorted_indices[-top_terms:][::-1]]
 
         dimension_terms[dim_idx] = {
-            "top_positive_terms": top_positive,
-            "top_negative_terms": top_negative,
+            "positive": top_positive,
+            "negative": top_negative,
         }
 
     return dimension_terms
 
 
-def explain_svd_match(
-    q_latent: np.ndarray,
-    item_latent: np.ndarray,
-    dimension_terms: Dict[int, Dict[str, List[str]]],
+def explain_svd_alignment(
+    q_latent: Optional[np.ndarray],
+    item_latent: Optional[np.ndarray],
+    dimension_terms: Optional[Dict[int, Dict[str, List[str]]]],
+    top_dims: int = SVD_EXPLAIN_TOP_DIMS,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    if q_latent is None or item_latent is None or dimension_terms is None:
+        return [], []
+
     contributions = q_latent * item_latent
+    ranked = np.argsort(np.abs(contributions))[::-1]
 
-    positive_dims_sorted = [
-        i for i in np.argsort(contributions)[::-1]
-        if contributions[i] > 0
-    ][:SVD_EXPLAIN_TOP_DIMS]
+    positive_dims = []
+    negative_dims = []
 
-    negative_dims_sorted = [
-        i for i in np.argsort(contributions)
-        if contributions[i] < 0
-    ][:SVD_EXPLAIN_TOP_DIMS]
+    for dim in ranked:
+        contribution = float(contributions[dim])
+        if contribution == 0:
+            continue
 
-    positive = []
-    for dim in positive_dims_sorted:
-        term_info = dimension_terms.get(dim, {})
-        positive.append({
-            "dimension": dim,
+        entry = {
+            "dimension": int(dim),
             "query_weight": float(q_latent[dim]),
             "chunk_weight": float(item_latent[dim]),
-            "contribution": float(contributions[dim]),
-            "direction": "positive",
-            "top_positive_terms": term_info.get("top_positive_terms", []),
-            "top_negative_terms": term_info.get("top_negative_terms", []),
-        })
+            "contribution": contribution,
+            "direction": "positive" if contribution > 0 else "negative",
+            "top_positive_terms": dimension_terms.get(int(dim), {}).get("positive", []),
+            "top_negative_terms": dimension_terms.get(int(dim), {}).get("negative", []),
+        }
 
-    negative = []
-    for dim in negative_dims_sorted:
-        term_info = dimension_terms.get(dim, {})
-        negative.append({
-            "dimension": dim,
-            "query_weight": float(q_latent[dim]),
-            "chunk_weight": float(item_latent[dim]),
-            "contribution": float(contributions[dim]),
-            "direction": "negative",
-            "top_positive_terms": term_info.get("top_positive_terms", []),
-            "top_negative_terms": term_info.get("top_negative_terms", []),
-        })
+        if contribution > 0 and len(positive_dims) < top_dims:
+            positive_dims.append(entry)
+        elif contribution < 0 and len(negative_dims) < top_dims:
+            negative_dims.append(entry)
 
-    return positive, negative
+        if len(positive_dims) >= top_dims and len(negative_dims) >= top_dims:
+            break
 
-
-def build_transcript_docs() -> Dict[str, Any]:
-    print("Building cleaned transcript docs...")
-    payload = build_transcript_index_payload(TRANSCRIPTS_PATH)
-    save_pickle(TRANSCRIPT_DOCS_PATH, payload)
-    print("Saved cleaned transcript docs.")
-    return payload
+    return positive_dims, negative_dims
 
 
 def load_or_build_transcript_docs() -> Dict[str, Any]:
+    start = time.perf_counter()
+
     if os.path.exists(TRANSCRIPT_DOCS_PATH):
-        print("Loading cleaned transcript docs...")
-        return load_pickle(TRANSCRIPT_DOCS_PATH)
-    return build_transcript_docs()
+        print("Loading transcript docs...")
+        docs_payload = load_pickle(TRANSCRIPT_DOCS_PATH)
+        print(f"Loaded transcript docs in {_fmt_elapsed(start)}")
+        return docs_payload
+
+    #print("Building transcript docs from raw JSON...")
+    docs_payload = build_transcript_index_payload(TRANSCRIPTS_PATH)
+    #print(f"Built transcript docs in {_fmt_elapsed(start)}")
+
+    save_start = time.perf_counter()
+    save_pickle(TRANSCRIPT_DOCS_PATH, docs_payload)
+    #print(f"Saved transcript docs in {_fmt_elapsed(save_start)}")
+
+    #print(f"Total transcript docs step time: {_fmt_elapsed(start)}")
+    return docs_payload
 
 
 def build_transcript_search_index_from_docs(docs_payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -505,7 +686,12 @@ def build_transcript_search_index_from_docs(docs_payload: Dict[str, Any]) -> Dic
             "release_date": doc.get("release_date", ""),
             "title": doc.get("title", ""),
             "url": doc.get("url", ""),
+            "yt": doc.get("yt", ""),
+            "raw_tags": doc.get("raw_tags", []),
+            "tag_texts": doc.get("tag_texts", []),
             "platform": doc.get("platform", ""),
+            "watch_url": doc.get("watch_url", ""),
+            "watch_platform": doc.get("watch_platform", ""),
             "special_type": doc.get("special_type", ""),
             "content": doc.get("content", ""),
             "tokens": list(doc.get("tokens", [])),
@@ -575,49 +761,102 @@ def build_transcript_search_index_from_docs(docs_payload: Dict[str, Any]) -> Dic
 
 
 def build_transcript_search_index() -> Dict[str, Any]:
+    start = time.perf_counter()
+    # print("Starting transcript search index build...")
+
     docs_payload = load_or_build_transcript_docs()
+    #print(f"Docs ready at {_fmt_elapsed(start)}")
+
+    build_start = time.perf_counter()
     index = build_transcript_search_index_from_docs(docs_payload)
+    #print(f"Transcript TF-IDF/SVD structures built in {_fmt_elapsed(build_start)}")
+
+    save_start = time.perf_counter()
     save_pickle(TRANSCRIPT_INDEX_PATH, index)
-    print("Saved transcript search index.")
+    #print(f"Saved transcript search index in {_fmt_elapsed(save_start)}")
+
+    #print(f"Total transcript search index build time: {_fmt_elapsed(start)}")
     return index
 
 
 def load_or_build_transcript_search_index() -> Dict[str, Any]:
     if os.path.exists(TRANSCRIPT_INDEX_PATH):
-        print("Loading transcript search index...")
+        #print("Loading transcript search index...")
         return load_pickle(TRANSCRIPT_INDEX_PATH)
     return build_transcript_search_index()
 
 
 def build_chunk_search_index() -> Dict[str, Any]:
+    start = time.perf_counter()
+    #print("Starting chunk search index build...")
+
+    #print(f"CHUNK_INDEX_PATH exists: {os.path.exists(CHUNK_INDEX_PATH)}")
+    #print(f"TRANSCRIPT_DOCS_PATH exists: {os.path.exists(TRANSCRIPT_DOCS_PATH)}")
+    #print(f"TRANSCRIPT_INDEX_PATH exists: {os.path.exists(TRANSCRIPT_INDEX_PATH)}")
+
+    docs_load_start = time.perf_counter()
     docs_payload = load_or_build_transcript_docs()
     docs = docs_payload["docs"]
+    #print(f"Transcript docs ready in {_fmt_elapsed(docs_load_start)} (docs={len(docs)})")
 
-    chunks, _adjacent_similarities, transcript_chunk_ids = build_semantic_chunks(docs)
+    sentence_count = sum(len(doc.get("sentences", [])) for doc in docs)
+    token_count = sum(len(doc.get("tokens", [])) for doc in docs)
+    #print(f"Total transcript sentences: {sentence_count}")
+    #print(f"Total transcript tokens: {token_count}")
+
+    chunk_start = time.perf_counter()
+    #print("Beginning semantic chunk construction...")
+    chunks, adjacent_similarities, transcript_chunk_ids = build_semantic_chunks(docs)
+    #print(f"Semantic chunks built in {_fmt_elapsed(chunk_start)} (chunks={len(chunks)})")
+
+    if adjacent_similarities:
+        avg_adj = sum(adjacent_similarities) / len(adjacent_similarities)
+        # print(
+        #     "Adjacent sentence similarity stats: "
+        #     f"count={len(adjacent_similarities)} "
+        #     f"avg={avg_adj:.4f} "
+        #     f"min={min(adjacent_similarities):.4f} "
+        #     f"max={max(adjacent_similarities):.4f}"
+        # )
+
+    tfidf_start = time.perf_counter()
+    #print("Building chunk vocabulary / TF-IDF...")
 
     chunk_good_words = build_good_words(
         chunks,
         min_df=MIN_DF,
         max_df_ratio=CHUNK_MAX_DF_RATIO,
     )
+    print(f"Chunk good words count: {len(chunk_good_words)}")
+
     chunks = filter_tokens_to_good_words(chunks, chunk_good_words)
 
     chunk_inv_idx = build_inverted_index(chunks)
+    print(f"Chunk inverted index terms: {len(chunk_inv_idx)}")
+
     chunk_idf = compute_idf(
         chunk_inv_idx,
         len(chunks),
         min_df=MIN_DF,
         max_df_ratio=CHUNK_MAX_DF_RATIO,
     )
+    print(f"Chunk IDF terms kept: {len(chunk_idf)}")
 
     chunk_vocab, chunk_word_to_index, chunk_index_to_word = create_vocab(chunk_idf)
+    print(f"Chunk vocab size: {len(chunk_vocab)}")
+
     chunk_tfidf_matrix = create_tfidf_matrix(
         chunks,
         chunk_word_to_index,
         chunk_idf,
         normalize_tf=True,
     )
+    # print(
+    #     f"Chunk TF-IDF built in {_fmt_elapsed(tfidf_start)} | "
+    #     f"shape={chunk_tfidf_matrix.shape}"
+    # )
 
+    svd_start = time.perf_counter()
     chunk_svd_model = None
     chunk_svd_matrix = None
     chunk_dimension_terms = {}
@@ -627,6 +866,8 @@ def build_chunk_search_index() -> Dict[str, Any]:
             DEFAULT_SVD_COMPONENTS,
             max(1, min(chunk_tfidf_matrix.shape[0] - 1, chunk_tfidf_matrix.shape[1] - 1))
         )
+        #print(f"Running chunk SVD with n_components={svd_components}...")
+
         chunk_svd_model = TruncatedSVD(n_components=svd_components, random_state=42)
         chunk_svd_matrix = normalize(chunk_svd_model.fit_transform(chunk_tfidf_matrix))
         chunk_dimension_terms = build_svd_dimension_terms(
@@ -634,6 +875,8 @@ def build_chunk_search_index() -> Dict[str, Any]:
             chunk_index_to_word,
             top_terms=SVD_EXPLAIN_TOP_TERMS,
         )
+
+    print(f"Chunk SVD built in {_fmt_elapsed(svd_start)}")
 
     index = {
         "docs": docs,
@@ -648,8 +891,12 @@ def build_chunk_search_index() -> Dict[str, Any]:
         "svd_matrix": chunk_svd_matrix,
         "dimension_terms": chunk_dimension_terms,
     }
+
+    save_start = time.perf_counter()
     save_pickle(CHUNK_INDEX_PATH, index)
-    print("Saved chunk search index.")
+    print(f"Saved chunk search index in {_fmt_elapsed(save_start)}")
+    print(f"Total chunk search index build time: {_fmt_elapsed(start)}")
+
     return index
 
 
@@ -662,11 +909,24 @@ def load_or_build_chunk_search_index() -> Dict[str, Any]:
 
 def initialize_search() -> None:
     global _SEARCH_INDEX
-    print("Initializing transcript search index at startup...")
-    _SEARCH_INDEX["transcript"] = load_or_build_transcript_search_index()
-    _SEARCH_INDEX["chunk"] = None
-    print("Transcript search index ready.")
 
+    total_start = time.perf_counter()
+    #print("Initializing search indexes at startup...")
+
+    transcript_start = time.perf_counter()
+    #print("Initializing transcript search index at startup...")
+    _SEARCH_INDEX["transcript"] = load_or_build_transcript_search_index()
+    #print(f"Transcript search index ready in {_fmt_elapsed(transcript_start)}")
+
+    if BUILD_CHUNK_INDEX_AT_STARTUP:
+        chunk_start = time.perf_counter()
+        #print("Initializing chunk search index at startup...")
+        _SEARCH_INDEX["chunk"] = load_or_build_chunk_search_index()
+        #print(f"Chunk search index ready in {_fmt_elapsed(chunk_start)}")
+    # else:
+    #     print("Skipping chunk search index at startup.")
+
+    #print(f"All search indexes ready in {_fmt_elapsed(total_start)}")
 
 def get_transcript_index() -> Dict[str, Any]:
     global _SEARCH_INDEX
@@ -688,11 +948,14 @@ def build_result_object(
     item: Dict[str, Any],
     docs: List[Dict[str, Any]],
     base_score: float,
+    final_score: float,
+    proximity_feature: float,
     retrieval_mode: str,
     resolved_comedian: Optional[str],
     word_to_index: Dict[str, int],
     idf: Dict[str, float],
     is_full_transcript: bool,
+    include_svd_explanations: bool = True,
     q_latent: Optional[np.ndarray] = None,
     item_latent: Optional[np.ndarray] = None,
     dimension_terms: Optional[Dict[int, Dict[str, List[str]]]] = None,
@@ -702,7 +965,7 @@ def build_result_object(
         source_sentences = doc.get("sentences", [])
         source_sentence_tokens = doc.get("sentence_tokens", [])
 
-        best_idx, best_sentence, sentence_score = find_best_matching_sentence_from_tokens(
+        best_idx, best_sentence, sentence_score, best_sentence_proximity = find_best_matching_sentence_by_proximity(
             query=query,
             sentences=source_sentences,
             sentence_tokens=source_sentence_tokens,
@@ -714,70 +977,72 @@ def build_result_object(
             source_sentences=source_sentences,
             best_global_idx=best_idx,
         )
-
         best_sentence_index = best_idx
         global_snippet_start = snippet_start
         global_snippet_end = snippet_end
     else:
-        doc = docs[item["doc_id"]]
-        full_transcript_sentences = doc.get("sentences", [])
-        chunk_sentences = item.get("chunk_sentences", [])
-        chunk_sentence_tokens = item.get("chunk_sentence_tokens", [])
-        chunk_sentence_start = item.get("sentence_start", item.get("global_snippet_start", 0))
-
-        local_best_idx, best_sentence, sentence_score = find_best_matching_sentence_from_tokens(
+        (
+            display_snippet,
+            best_sentence_index,
+            best_sentence,
+            sentence_score,
+            best_sentence_proximity,
+            snippet_start,
+            snippet_end,
+            snippet_sentences,
+            global_snippet_start,
+            global_snippet_end,
+        ) = build_display_snippet_for_chunk(
             query=query,
-            sentences=chunk_sentences,
-            sentence_tokens=chunk_sentence_tokens,
+            item=item,
+            docs=docs,
             word_to_index=word_to_index,
             idf=idf,
         )
 
-        if local_best_idx is None:
-            global_best_idx = chunk_sentence_start
-        else:
-            global_best_idx = chunk_sentence_start + local_best_idx
+    comedian_feature = 1.0 if (
+        resolved_comedian
+        and item.get("comedian", "").strip().lower() == resolved_comedian.strip().lower()
+    ) else 0.0
 
-        display_snippet, snippet_start, snippet_end, snippet_sentences = build_display_snippet_from_best_sentence(
-            source_sentences=full_transcript_sentences,
-            best_global_idx=global_best_idx,
-        )
+    similarity_score = float(max(0.0, min(1.0, final_score)))
+    similarity_percent = 100.0 * similarity_score
 
-        source_sentences = chunk_sentences
-        best_sentence_index = global_best_idx
-        global_snippet_start = snippet_start
-        global_snippet_end = snippet_end
+    svd_positive_dimensions = None
+    svd_negative_dimensions = None
 
-    proximity_feature = compute_proximity_feature(query, item["content"])
-    comedian_feature = compute_comedian_feature(item, resolved_comedian)
-    similarity_score = combine_similarity_features(base_score, proximity_feature, comedian_feature)
-    similarity_percent = similarity_score * 100.0
-
-    svd_positive_dimensions = []
-    svd_negative_dimensions = []
-    if retrieval_mode == "svd" and q_latent is not None and item_latent is not None and dimension_terms is not None:
-        svd_positive_dimensions, svd_negative_dimensions = explain_svd_match(
-            q_latent=q_latent,
-            item_latent=item_latent,
-            dimension_terms=dimension_terms,
-        )
+    if (
+        include_svd_explanations
+        and retrieval_mode == "svd"
+        and q_latent is not None
+        and item_latent is not None
+        and dimension_terms is not None
+    ):
+        
+        svd_positive_dimensions, svd_negative_dimensions = explain_svd_alignment(
+    q_latent=q_latent,
+    item_latent=item_latent,
+    dimension_terms=dimension_terms,
+    top_dims=SVD_EXPLAIN_TOP_DIMS,
+) if retrieval_mode == "svd" else ([], [])
+        
 
     return {
-        "chunk_id": item["chunk_id"],
+        "chunk_id": item.get("chunk_id", f"doc-{item['doc_id']}"),
         "doc_id": item["doc_id"],
-        "comedian": item["comedian"],
-        "special_title": item["special_title"],
-        "release_date": item["release_date"],
-        "title": item["title"],
-        "url": item["url"],
-        "platform": item["platform"],
-        "special_type": item["special_type"],
-        "content": item["content"],
+        "comedian": item.get("comedian", ""),
+        "special_title": item.get("special_title", ""),
+        "release_date": item.get("release_date", ""),
+        "title": item.get("title", ""),
+        "url": item.get("url", ""),
+        "platform": item.get("platform", ""),
+        "special_type": item.get("special_type", ""),
+        "content": item.get("content", ""),
         "display_snippet": display_snippet,
-        "chunk_sentences": source_sentences,
+        "chunk_sentences": item.get("chunk_sentences"),
         "best_sentence": best_sentence,
         "best_sentence_index": best_sentence_index,
-        "sentence_score": sentence_score,
+        "sentence_score": float(max(0.0, sentence_score)),
         "snippet_sentences": snippet_sentences,
         "snippet_sentence_start": snippet_start,
         "snippet_sentence_end": snippet_end,
@@ -785,8 +1050,8 @@ def build_result_object(
         "global_snippet_end": global_snippet_end,
         "has_profanity": item["has_profanity"],
         "profanity_terms": item.get("profanity_terms", []),
-        "base_score": base_score,
-        "proximity_feature": proximity_feature,
+        "base_score": float(max(0.0, min(1.0, base_score))),
+        "proximity_feature": float(max(0.0, min(1.0, proximity_feature))),
         "comedian_feature": comedian_feature,
         "similarity_score": similarity_score,
         "similarity_percent": similarity_percent,
@@ -794,11 +1059,142 @@ def build_result_object(
         "result_scope": "full" if is_full_transcript else "chunks",
         "svd_positive_dimensions": svd_positive_dimensions,
         "svd_negative_dimensions": svd_negative_dimensions,
-        "watch_url": "",
-        "watch_platform": "",
+        "watch_url": item.get("watch_url", ""),
+        "watch_platform": item.get("watch_platform", ""),
     }
 
+def debug_print_top_result_contributions(
+    *,
+    query: str,
+    ranked_indices: List[int],
+    items: List[Dict[str, Any]],
+    normalized_base_score_by_idx: Dict[int, float],
+    proximity_score_by_idx: Dict[int, float],
+    final_score_by_idx: Dict[int, float],
+    retrieval_mode: str,
+    result_scope: str,
+    limit: int = 25,
+) -> None:
+    print("\n" + "=" * 100)
+    print("TOP RESULT SCORE BREAKDOWN")
+    print("=" * 100)
+    print(
+        f"query={query!r} | mode={retrieval_mode} | scope={result_scope} | "
+        f"weights=(base={BASE_SCORE_WEIGHT:.2f}, proximity={PROXIMITY_SCORE_WEIGHT:.2f})"
+    )
 
+    shown = min(limit, len(ranked_indices))
+    for rank, idx in enumerate(ranked_indices[:shown], start=1):
+        item = items[idx]
+
+        base_score = float(normalized_base_score_by_idx.get(idx, 0.0))
+        proximity_score = float(proximity_score_by_idx.get(idx, 0.0))
+        final_score = float(final_score_by_idx.get(idx, base_score))
+
+        weighted_base = BASE_SCORE_WEIGHT * base_score
+        weighted_proximity = PROXIMITY_SCORE_WEIGHT * proximity_score
+
+        title = item.get("special_title") or item.get("title") or ""
+        comedian = item.get("comedian") or "Unknown"
+
+        print(
+            f"{rank:>2}. doc_id={item.get('doc_id')} | comedian={comedian!r} | "
+            f"title={title!r}"
+        )
+        print(
+            f"    final={final_score:.4f} | "
+            f"base={base_score:.4f} -> weighted={weighted_base:.4f} | "
+            f"proximity={proximity_score:.4f} -> weighted={weighted_proximity:.4f}"
+        )
+
+def compute_full_window_proximity_score(
+    query_tokens: List[str],
+    doc_tokens: List[str],
+) -> float:
+    if not query_tokens or not doc_tokens:
+        return 0.0
+
+    distinct_query_terms = list(dict.fromkeys(query_tokens))
+    if len(distinct_query_terms) < 2:
+        return 0.0
+
+    positions_by_term: Dict[str, List[int]] = {}
+    for term in distinct_query_terms:
+        positions_by_term[term] = []
+
+    for idx, token in enumerate(doc_tokens):
+        if token in positions_by_term:
+            positions_by_term[token].append(idx)
+
+    if any(not positions for positions in positions_by_term.values()):
+        return 0.0
+
+    merged_positions: List[Tuple[int, str]] = []
+    for term, positions in positions_by_term.items():
+        for pos in positions:
+            merged_positions.append((pos, term))
+
+    merged_positions.sort()
+
+    needed = len(distinct_query_terms)
+    have_counts: Dict[str, int] = defaultdict(int)
+    have_distinct = 0
+    left = 0
+    min_window_size: Optional[int] = None
+
+    for right, (right_pos, right_term) in enumerate(merged_positions):
+        if have_counts[right_term] == 0:
+            have_distinct += 1
+        have_counts[right_term] += 1
+
+        while have_distinct == needed and left <= right:
+            left_pos, left_term = merged_positions[left]
+            window_size = right_pos - left_pos + 1
+
+            if min_window_size is None or window_size < min_window_size:
+                min_window_size = window_size
+
+            have_counts[left_term] -= 1
+            if have_counts[left_term] == 0:
+                have_distinct -= 1
+            left += 1
+
+    if min_window_size is None:
+        return 0.0
+
+    ideal_window = needed
+    proximity = ideal_window / float(min_window_size)
+    return max(0.0, min(1.0, proximity))
+
+def compute_fast_proximity_score(
+    query_tokens: List[str],
+    doc_tokens: List[str],
+) -> float:
+    if not query_tokens or not doc_tokens:
+        return 0.0
+
+    distinct_query_terms = list(dict.fromkeys(query_tokens))
+    if len(distinct_query_terms) < 2:
+        return 0.0
+
+    first_positions = []
+    found_terms = set()
+
+    for idx, token in enumerate(doc_tokens):
+        if token in distinct_query_terms and token not in found_terms:
+            first_positions.append(idx)
+            found_terms.add(token)
+            if len(found_terms) == len(distinct_query_terms):
+                break
+
+    if len(found_terms) < len(distinct_query_terms):
+        return 0.0
+
+    span = max(first_positions) - min(first_positions) + 1
+    ideal_window = len(distinct_query_terms)
+    proximity = ideal_window / float(span)
+    return max(0.0, min(1.0, proximity))
+        
 def search_chunks(
     query: str,
     top_k: int = DEFAULT_TOP_K,
@@ -810,6 +1206,9 @@ def search_chunks(
     exclude_profanity: bool = False,
     max_chunks_per_doc: int = DEFAULT_MAX_CHUNKS_PER_DOC,
     result_scope: str = DEFAULT_RESULT_SCOPE,
+    use_expensive_proximity_scoring: bool = False,
+    show_svd_explanations: bool = DEFAULT_SHOW_SVD_EXPLANATIONS,
+    debug_score_breakdown: bool = DEFAULT_DEBUG_SCORE_BREAKDOWN,
 ) -> Dict[str, Any]:
     if result_scope not in {"chunks", "full"}:
         result_scope = "full"
@@ -849,78 +1248,174 @@ def search_chunks(
             "results": [],
             "resolved_comedian": resolved_comedian,
             "known_comedians": known_comedians,
-            "known_special_types": sorted({item.get("special_type", "") for item in items if item.get("special_type", "")}),
+            "known_special_types": sorted(
+                {item.get("special_type", "") for item in items if item.get("special_type", "")}
+            ),
         }
 
     query_vec = vectorize_query(query, word_to_index, idf)
+    query_tokens = clean_and_tokenize_text(query)
 
     if retrieval_mode == "svd" and svd_model is not None and svd_matrix is not None:
-        q_latent = svd_model.transform(query_vec.reshape(1, -1))[0]
-        q_latent = normalize(q_latent.reshape(1, -1))[0]
-        all_scores = cosine_scores_dense(q_latent, svd_matrix)
+        q_latent = normalize(svd_model.transform(query_vec.reshape(1, -1)))[0]
+        raw_base_scores = cosine_scores_dense(q_latent, svd_matrix)
     else:
         q_latent = None
-        all_scores = cosine_scores_sparse(query_vec, tfidf_matrix)
+        raw_base_scores = cosine_scores_sparse(query_vec, tfidf_matrix)
 
-    scored = [(idx, float(all_scores[idx])) for idx in filtered_indices if float(all_scores[idx]) > 0]
-    scored.sort(key=lambda x: x[1], reverse=True)
+    filtered_base_scores = [float(max(0.0, raw_base_scores[i])) for i in filtered_indices]
+    normalized_base_scores = normalize_scores_to_unit_interval(filtered_base_scores)
+    normalized_base_score_by_idx = {
+        idx: score for idx, score in zip(filtered_indices, normalized_base_scores)
+    }
 
-    if result_scope == "chunks":
-        limited_scored: List[Tuple[int, float]] = []
-        per_doc_counts: Dict[int, int] = defaultdict(int)
+    base_ranked_indices = sorted(
+        filtered_indices,
+        key=lambda i: normalized_base_score_by_idx[i],
+        reverse=True,
+    )
 
-        for idx, score in scored:
-            doc_id = items[idx]["doc_id"]
-            if per_doc_counts[doc_id] >= max_chunks_per_doc:
-                continue
-            limited_scored.append((idx, score))
-            per_doc_counts[doc_id] += 1
-            if len(limited_scored) >= top_k:
-                break
-        scored = limited_scored
-    else:
-        scored = scored[:top_k]
+    rerank_limit = get_rerank_candidate_limit(result_scope)
+    rerank_indices = base_ranked_indices[: min(len(base_ranked_indices), rerank_limit)]
 
-    results = []
-    seen_snippets: List[List[str]] = []
+    proximity_score_by_idx: Dict[int, float] = {}
+    distinct_query_terms = list(dict.fromkeys(query_tokens))
 
-    for idx, base_score in scored:
+    for idx in rerank_indices:
         item = items[idx]
+        item_tokens = item.get("tokens", [])
 
-        item_latent = None
-        if retrieval_mode == "svd" and svd_matrix is not None:
-            item_latent = svd_matrix[idx]
+        if len(distinct_query_terms) < 2:
+            proximity_score_by_idx[idx] = 0.0
+        elif use_expensive_proximity_scoring:
+            proximity_score_by_idx[idx] = compute_full_window_proximity_score(
+                query_tokens,
+                item_tokens,
+            )
+        else:
+            proximity_score_by_idx[idx] = compute_token_window_proximity_score(
+                query_tokens,
+                item_tokens,
+            )
+
+    final_score_by_idx = {
+        idx: (
+            BASE_SCORE_WEIGHT * normalized_base_score_by_idx[idx]
+            + PROXIMITY_SCORE_WEIGHT * proximity_score_by_idx[idx]
+        )
+        for idx in rerank_indices
+    }
+
+    ranked_indices = sorted(
+        rerank_indices,
+        key=lambda i: (
+            final_score_by_idx[i],
+            proximity_score_by_idx[i],
+            normalized_base_score_by_idx[i],
+        ),
+        reverse=True,
+    )
+
+    if debug_score_breakdown:
+        debug_print_top_result_contributions(
+            query=query,
+            ranked_indices=ranked_indices,
+            items=items,
+            normalized_base_score_by_idx=normalized_base_score_by_idx,
+            proximity_score_by_idx=proximity_score_by_idx,
+            final_score_by_idx=final_score_by_idx,
+            retrieval_mode=retrieval_mode,
+            result_scope=result_scope,
+            limit=top_k,
+        )
+
+    if result_scope == "full":
+        selected = ranked_indices[:top_k]
+        results = []
+
+        for idx in selected:
+            item = items[idx]
+            item_latent = svd_matrix[idx] if retrieval_mode == "svd" and svd_matrix is not None else None
+
+            result = build_result_object(
+                query=query,
+                item=item,
+                docs=docs,
+                base_score=float(normalized_base_score_by_idx[idx]),
+                final_score=float(final_score_by_idx[idx]),
+                proximity_feature=float(proximity_score_by_idx[idx]),
+                retrieval_mode=retrieval_mode,
+                resolved_comedian=resolved_comedian,
+                word_to_index=word_to_index,
+                idf=idf,
+                is_full_transcript=True,
+                include_svd_explanations=show_svd_explanations,
+                q_latent=q_latent,
+                item_latent=item_latent,
+                dimension_terms=dimension_terms,
+            )
+            results.append(result)
+
+        return {
+            "query": query,
+            "results": results,
+            "resolved_comedian": resolved_comedian,
+            "known_comedians": known_comedians,
+            "known_special_types": sorted(
+                {item.get("special_type", "") for item in items if item.get("special_type", "")}
+            ),
+        }
+
+    selected_results = []
+    per_doc_counts: Dict[int, int] = defaultdict(int)
+    accepted_snippets_by_doc: Dict[int, List[List[str]]] = defaultdict(list)
+
+    for idx in ranked_indices:
+        item = items[idx]
+        doc_id = item["doc_id"]
+
+        if per_doc_counts[doc_id] >= max_chunks_per_doc:
+            continue
+
+        item_latent = svd_matrix[idx] if retrieval_mode == "svd" and svd_matrix is not None else None
 
         result = build_result_object(
             query=query,
             item=item,
             docs=docs,
-            base_score=base_score,
+            base_score=float(normalized_base_score_by_idx[idx]),
+            final_score=float(final_score_by_idx[idx]),
+            proximity_feature=float(proximity_score_by_idx[idx]),
             retrieval_mode=retrieval_mode,
             resolved_comedian=resolved_comedian,
             word_to_index=word_to_index,
             idf=idf,
-            is_full_transcript=(result_scope == "full"),
+            is_full_transcript=False,
+            include_svd_explanations=show_svd_explanations,
             q_latent=q_latent,
             item_latent=item_latent,
             dimension_terms=dimension_terms,
         )
 
-        if result_scope == "chunks":
-            snippet_sentences = result.get("snippet_sentences", [])
-            if any(snippets_overlap_enough(snippet_sentences, prev) for prev in seen_snippets):
-                continue
-            seen_snippets.append(snippet_sentences)
+        existing_snippets = accepted_snippets_by_doc[doc_id]
+        current_snippet = result.get("snippet_sentences", []) or []
 
-        results.append(result)
+        if any(snippets_overlap_enough(current_snippet, prev) for prev in existing_snippets):
+            continue
 
-        if len(results) >= top_k:
+        selected_results.append(result)
+        accepted_snippets_by_doc[doc_id].append(current_snippet)
+        per_doc_counts[doc_id] += 1
+
+        if len(selected_results) >= top_k:
             break
 
     return {
         "query": query,
-        "results": results,
+        "results": selected_results,
         "resolved_comedian": resolved_comedian,
         "known_comedians": known_comedians,
-        "known_special_types": sorted({item.get("special_type", "") for item in items if item.get("special_type", "")}),
+        "known_special_types": sorted(
+            {item.get("special_type", "") for item in items if item.get("special_type", "")}
+        ),
     }
