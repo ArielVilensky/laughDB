@@ -556,7 +556,7 @@ function App(): JSX.Element {
         </aside>
       </div>
 
-      {useLlm && <Chat />}
+      {useLlm && <Chat onSearchTerm={setSearchTerm}/>}
     </div>
   )
 }
