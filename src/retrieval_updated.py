@@ -585,8 +585,11 @@ def item_passes_filters(
     if exclude_profanity and item.get("has_profanity", False):
         return False
 
-    release_date = str(item.get("release_date", "")).strip()
-    if release_date.isdigit():
+    if year_min is not None or year_max is not None:
+        release_date = str(item.get("release_date", "")).strip()
+        if not release_date.isdigit():
+            # Unknown year — exclude when a year filter is active
+            return False
         year = int(release_date)
         if year_min is not None and year < year_min:
             return False
