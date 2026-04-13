@@ -10,6 +10,11 @@ from retrieval_updated import search_chunks, initialize_search
 USE_LLM = False
 # USE_LLM = True
 
+DEFAULT_YEAR_MIN = 1965
+DEFAULT_YEAR_MAX = 2026
+DEFAULT_RETRIEVAL_MODE = "tfidf"
+DEFAULT_RESULT_SCOPE = "full"
+
 
 def str_to_bool(value: str | None) -> bool:
     if value is None:
@@ -59,16 +64,28 @@ def register_routes(app):
         year_max = request.args.get("year_max", default=None, type=int)
         exclude_profanity = str_to_bool(request.args.get("exclude_profanity"))
 
-        has_any_input = any([
-            bool(query),
+        top_k = request.args.get("top_k", default=25, type=int)
+        top_k = clamp_int(top_k, 1, 25)
+
+        retrieval_mode = request.args.get("retrieval_mode", DEFAULT_RETRIEVAL_MODE).strip().lower()
+        if retrieval_mode not in {"tfidf", "svd"}:
+            retrieval_mode = DEFAULT_RETRIEVAL_MODE
+
+        result_scope = request.args.get("result_scope", DEFAULT_RESULT_SCOPE).strip().lower()
+        if result_scope not in {"chunks", "full"}:
+            result_scope = DEFAULT_RESULT_SCOPE
+
+        has_active_filters = any([
             bool(comedian),
             bool(special_type),
-            year_min is not None,
-            year_max is not None,
             exclude_profanity,
+            year_min is not None and year_min != DEFAULT_YEAR_MIN,
+            year_max is not None and year_max != DEFAULT_YEAR_MAX,
+            retrieval_mode != DEFAULT_RETRIEVAL_MODE,
+            result_scope != DEFAULT_RESULT_SCOPE,
         ])
 
-        if not has_any_input:
+        if not query and not has_active_filters:
             return jsonify({
                 "query": "",
                 "results": [],
@@ -76,17 +93,6 @@ def register_routes(app):
                 "known_comedians": [],
                 "known_special_types": [],
             })
-
-        top_k = request.args.get("top_k", default=25, type=int)
-        top_k = clamp_int(top_k, 1, 25)
-
-        retrieval_mode = request.args.get("retrieval_mode", "tfidf").strip().lower()
-        if retrieval_mode not in {"tfidf", "svd"}:
-            retrieval_mode = "tfidf"
-
-        result_scope = request.args.get("result_scope", "full").strip().lower()
-        if result_scope not in {"chunks", "full"}:
-            result_scope = "full"
 
         max_chunks_per_doc = request.args.get("max_chunks_per_doc", default=2, type=int)
         max_chunks_per_doc = clamp_int(max_chunks_per_doc, 1, 5)

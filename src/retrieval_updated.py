@@ -49,7 +49,7 @@ MIN_DISPLAY_SNIPPET_WORDS = 85
 SVD_EXPLAIN_TOP_DIMS = 3
 SVD_EXPLAIN_TOP_TERMS = 8
 
-BUILD_CHUNK_INDEX_AT_STARTUP = False
+BUILD_CHUNK_INDEX_AT_STARTUP = True
 DEFAULT_USE_PROXIMITY_SCORING = True
 DEFAULT_SHOW_SVD_EXPLANATIONS = True
 DEFAULT_DEBUG_SCORE_BREAKDOWN = False
@@ -61,12 +61,6 @@ _SEARCH_INDEX: Dict[str, Optional[Dict[str, Any]]] = {
     "transcript": None,
     "chunk": None,
 }
-
-def trim_snippet_to_word_limit(text: str, max_words: int = 250) -> str:
-    words = text.split()
-    if len(words) <= max_words:
-        return text
-    return " ".join(words[:max_words]) + " ..."
 
 def get_rerank_candidate_limit(result_scope: str) -> int:
     return RERANK_CANDIDATES_FULL if result_scope == "full" else RERANK_CANDIDATES_CHUNKS
@@ -667,9 +661,9 @@ def load_or_build_transcript_docs() -> Dict[str, Any]:
     start = time.perf_counter()
 
     if os.path.exists(TRANSCRIPT_DOCS_PATH):
-        print("Loading transcript docs...")
+        #print("Loading transcript docs...")
         docs_payload = load_pickle(TRANSCRIPT_DOCS_PATH)
-        print(f"Loaded transcript docs in {_fmt_elapsed(start)}")
+        #print(f"Loaded transcript docs in {_fmt_elapsed(start)}")
         return docs_payload
 
     #print("Building transcript docs from raw JSON...")
@@ -838,12 +832,12 @@ def build_chunk_search_index() -> Dict[str, Any]:
         min_df=MIN_DF,
         max_df_ratio=CHUNK_MAX_DF_RATIO,
     )
-    print(f"Chunk good words count: {len(chunk_good_words)}")
+    #print(f"Chunk good words count: {len(chunk_good_words)}")
 
     chunks = filter_tokens_to_good_words(chunks, chunk_good_words)
 
     chunk_inv_idx = build_inverted_index(chunks)
-    print(f"Chunk inverted index terms: {len(chunk_inv_idx)}")
+    #print(f"Chunk inverted index terms: {len(chunk_inv_idx)}")
 
     chunk_idf = compute_idf(
         chunk_inv_idx,
@@ -851,10 +845,10 @@ def build_chunk_search_index() -> Dict[str, Any]:
         min_df=MIN_DF,
         max_df_ratio=CHUNK_MAX_DF_RATIO,
     )
-    print(f"Chunk IDF terms kept: {len(chunk_idf)}")
+    #print(f"Chunk IDF terms kept: {len(chunk_idf)}")
 
     chunk_vocab, chunk_word_to_index, chunk_index_to_word = create_vocab(chunk_idf)
-    print(f"Chunk vocab size: {len(chunk_vocab)}")
+    #print(f"Chunk vocab size: {len(chunk_vocab)}")
 
     chunk_tfidf_matrix = create_tfidf_matrix(
         chunks,
@@ -887,7 +881,7 @@ def build_chunk_search_index() -> Dict[str, Any]:
             top_terms=SVD_EXPLAIN_TOP_TERMS,
         )
 
-    print(f"Chunk SVD built in {_fmt_elapsed(svd_start)}")
+    #print(f"Chunk SVD built in {_fmt_elapsed(svd_start)}")
 
     index = {
         "docs": docs,
@@ -905,15 +899,15 @@ def build_chunk_search_index() -> Dict[str, Any]:
 
     save_start = time.perf_counter()
     save_pickle(CHUNK_INDEX_PATH, index)
-    print(f"Saved chunk search index in {_fmt_elapsed(save_start)}")
-    print(f"Total chunk search index build time: {_fmt_elapsed(start)}")
+    #print(f"Saved chunk search index in {_fmt_elapsed(save_start)}")
+    #print(f"Total chunk search index build time: {_fmt_elapsed(start)}")
 
     return index
 
 
 def load_or_build_chunk_search_index() -> Dict[str, Any]:
     if os.path.exists(CHUNK_INDEX_PATH):
-        print("Loading chunk search index...")
+        #print("Loading chunk search index...")
         return load_pickle(CHUNK_INDEX_PATH)
     return build_chunk_search_index()
 
