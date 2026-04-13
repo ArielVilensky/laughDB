@@ -46,13 +46,13 @@ function getWatchLinks(result: SearchResult): WatchLink[] {
       url: result.watch_url,
       cls: 'resource-link watch-link',
     })
-  } else {
-    links.push({
-      label: 'YouTube',
-      url: `https://www.youtube.com/results?search_query=${query}`,
-      cls: 'resource-link youtube-link',
-    })
   }
+
+  links.push({
+    label: 'YouTube',
+    url: `https://www.youtube.com/results?search_query=${query}`,
+    cls: 'resource-link youtube-link',
+  })
 
   return links
 }

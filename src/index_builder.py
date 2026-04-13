@@ -857,6 +857,7 @@ def normalize_metadata_value(value: Any) -> str:
 def clean_special_title_text(value: str) -> str:
     value = normalize_metadata_value(value)
     value = re.sub(r"\s*[|–-]\s*(full\s+)?transcript\s*$", "", value, flags=re.IGNORECASE)
+    value = re.sub(r"\s*\[(full\s+)?transcript\]\s*$", "", value, flags=re.IGNORECASE)
     value = re.sub(r"\s+", " ", value).strip(" -|")
     return value
 

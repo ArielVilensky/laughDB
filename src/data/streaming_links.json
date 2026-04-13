@@ -1,116 +1,618 @@
 {
-  "dave chappelle|the age of spin": {"platform": "Netflix", "url": "https://www.netflix.com/title/80171965"},
-  "dave chappelle|deep in the heart of texas": {"platform": "Netflix", "url": "https://www.netflix.com/title/80171965"},
-  "dave chappelle|equanimity": {"platform": "Netflix", "url": "https://www.netflix.com/title/80230402"},
-  "dave chappelle|the bird revelation": {"platform": "Netflix", "url": "https://www.netflix.com/title/80230402"},
-  "dave chappelle|sticks & stones": {"platform": "Netflix", "url": "https://www.netflix.com/title/81140577"},
-  "dave chappelle|the closer": {"platform": "Netflix", "url": "https://www.netflix.com/title/81228510"},
-  "dave chappelle|what's in a name": {"platform": "Netflix", "url": "https://www.netflix.com/title/81625055"},
-  "dave chappelle|what's in a name?": {"platform": "Netflix", "url": "https://www.netflix.com/title/81625055"},
-  "kevin hart|irresponsible": {"platform": "Netflix", "url": "https://www.netflix.com/title/80174687"},
-  "kevin hart|zero f**ks given": {"platform": "Netflix", "url": "https://www.netflix.com/title/80174688"},
-  "jerry seinfeld|23 hours to kill": {"platform": "Netflix", "url": "https://www.netflix.com/title/80170847"},
-  "bill burr|paper tiger": {"platform": "Netflix", "url": "https://www.netflix.com/title/81060174"},
-  "bill burr|live at red rocks": {"platform": "Netflix", "url": "https://www.netflix.com/title/81457341"},
-  "aziz ansari|right now": {"platform": "Netflix", "url": "https://www.netflix.com/title/81098589"},
-  "aziz ansari|nightclub comedian": {"platform": "Netflix", "url": "https://www.netflix.com/title/81572737"},
-  "wanda sykes|not normal": {"platform": "Netflix", "url": "https://www.netflix.com/title/81011598"},
-  "wanda sykes|i'm an entertainer": {"platform": "Netflix", "url": "https://www.netflix.com/title/81343300"},
-  "trevor noah|afraid of the dark": {"platform": "Netflix", "url": "https://www.netflix.com/title/80134969"},
-  "trevor noah|son of patricia": {"platform": "Netflix", "url": "https://www.netflix.com/title/80239932"},
-  "trevor noah|i wish you would": {"platform": "Netflix", "url": "https://www.netflix.com/title/81228515"},
-  "trevor noah|where was i": {"platform": "Netflix", "url": "https://www.netflix.com/title/81717103"},
-  "ellen degeneres|relatable": {"platform": "Netflix", "url": "https://www.netflix.com/title/80166467"},
-  "ellen degeneres|for your approval": {"platform": "Netflix", "url": "https://www.netflix.com/title/81037130"},
-  "ali wong|hard knock wife": {"platform": "Netflix", "url": "https://www.netflix.com/title/80186940"},
-  "ali wong|don wong": {"platform": "Netflix", "url": "https://www.netflix.com/title/81140667"},
-  "ali wong|single lady": {"platform": "Netflix", "url": "https://www.netflix.com/title/81140682"},
-  "chris rock|selective outrage": {"platform": "Netflix", "url": "https://www.netflix.com/title/80167499"},
-  "john mulaney|baby j": {"platform": "Netflix", "url": "https://www.netflix.com/title/81619082"},
-  "bo burnham|make happy": {"platform": "Netflix", "url": "https://www.netflix.com/title/80106124"},
-  "bo burnham|inside": {"platform": "Netflix", "url": "https://www.netflix.com/title/81289483"},
-  "jim gaffigan|comedy monster": {"platform": "Netflix", "url": "https://www.netflix.com/title/81251385"},
-  "jim gaffigan|quality time": {"platform": "Amazon Prime", "url": "https://www.amazon.com/dp/B086VYJ2KD"},
-  "jim gaffigan|obsessed": {"platform": "Amazon Prime", "url": "https://www.amazon.com/dp/B00IM71VBC"},
-  "taylor tomlinson|quarter-life crisis": {"platform": "Netflix", "url": "https://www.netflix.com/title/81157965"},
-  "taylor tomlinson|look at you": {"platform": "Netflix", "url": "https://www.netflix.com/title/81471774"},
-  "hasan minhaj|homecoming king": {"platform": "Netflix", "url": "https://www.netflix.com/title/80134781"},
-  "w. kamau bell|private school negro": {"platform": "Netflix", "url": "https://www.netflix.com/title/80200015"},
-  "nikki glaser|bangin'": {"platform": "Netflix", "url": "https://www.netflix.com/title/81002876"},
-  "nate bargatze|hello world": {"platform": "Amazon Prime", "url": "https://www.amazon.com/dp/B0B856WWSB"},
-  "michelle wolf|joke show": {"platform": "Netflix", "url": "https://www.netflix.com/title/81036542"},
-  "michelle wolf|it's great to be here": {"platform": "Netflix", "url": "https://www.netflix.com/title/81704420"},
-  "jerrod carmichael|rothaniel": {"platform": "Max", "url": "https://www.max.com/movies/jerrod-carmichael-rothaniel/6ad205c6-3c53-4c2b-8c9d-8d939cd30b60"},
-  "adam sandler|100% fresh": {"platform": "Netflix", "url": "https://www.netflix.com/title/80224536"},
-  "adam sandler|love you": {"platform": "Netflix", "url": "https://www.netflix.com/title/81757746"},
-  "vir das|outside in - the lockdown special": {"platform": "Netflix", "url": "https://www.netflix.com/title/81362817"},
-  "vir das|outside in \u2013 the lockdown special": {"platform": "Netflix", "url": "https://www.netflix.com/title/81362817"},
-  "vir das|abroad understanding": {"platform": "Netflix", "url": "https://www.netflix.com/title/80133552"},
-  "mo amer|mohammed in texas": {"platform": "Netflix", "url": "https://www.netflix.com/title/81435608"},
-  "mo amer|the vagabond": {"platform": "Netflix", "url": "https://www.netflix.com/title/80239503"},
-  "iliza shlesinger|elder millennial": {"platform": "Netflix", "url": "https://www.netflix.com/title/80213658"},
-  "iliza shlesinger|unveiled": {"platform": "Netflix", "url": "https://www.netflix.com/title/81073633"},
-  "iliza shlesinger|hot forever": {"platform": "Netflix", "url": "https://www.netflix.com/title/81485998"},
-  "tiffany haddish|black mitzvah": {"platform": "Netflix", "url": "https://www.netflix.com/title/81000299"},
-  "sebastian maniscalco|stay hungry": {"platform": "Netflix", "url": "https://www.netflix.com/title/80218104"},
-  "mike birbiglia|the new one": {"platform": "Netflix", "url": "https://www.netflix.com/title/81062293"},
-  "mike birbiglia|the old man and the pool": {"platform": "Netflix", "url": "https://www.netflix.com/title/81665900"},
-  "jim jefferies|intolerant": {"platform": "Netflix", "url": "https://www.netflix.com/title/81121954"},
-  "jim jefferies|high n' dry": {"platform": "Netflix", "url": "https://www.netflix.com/title/81414670"},
-  "sam jay|3 in the morning": {"platform": "Netflix", "url": "https://www.netflix.com/title/81078802"},
-  "jo koy|comin' in hot": {"platform": "Netflix", "url": "https://www.netflix.com/title/81002929"},
-  "jo koy|live from seattle": {"platform": "Netflix", "url": "https://www.netflix.com/title/80134826"},
-  "chris rock|never scared": {"platform": "Max", "url": "https://www.max.com/movies/chris-rock-never-scared/2d98c167-4cff-4820-86ea-23cd810730c6"},
-  "chris rock|bigger & blacker": {"platform": "Max", "url": "https://www.max.com/movies/chris-rock-bigger-blacker/5f05f052-685e-4440-8607-6580e4459507"},
-  "gary gulman|born on 3rd base": {"platform": "Max", "url": "https://www.max.com/movies/gary-gulman-born-on-3rd-base/3c80efb5-7891-463e-87b9-9e8ca7d8e6c7"},
-  "bert kreischer|secret time": {"platform": "Netflix", "url": "https://www.netflix.com/title/80238360"},
-  "bert kreischer|hey big boy": {"platform": "Netflix", "url": "https://www.netflix.com/title/81128796"},
-  "bert kreischer|razzle dazzle": {"platform": "Netflix", "url": "https://www.netflix.com/title/81471776"},
-  "chelsea handler|revolution": {"platform": "Netflix", "url": "https://www.netflix.com/title/81649416"},
-  "chelsea handler|evolution": {"platform": "Max", "url": "https://www.max.com/movies/chelsea-handler-evolution/285d76b3-616d-4376-88b6-4a21de0fb987"},
-  "demetri martin|the overthinker": {"platform": "Netflix", "url": "https://www.netflix.com/title/80158802"},
-  "deon cole|cole hearted": {"platform": "Netflix", "url": "https://www.netflix.com/title/80995737"},
-  "deon cole|charleen's boy": {"platform": "Netflix", "url": "https://www.netflix.com/title/81630234"},
-  "fortune feimster|good fortune": {"platform": "Netflix", "url": "https://www.netflix.com/title/81520120"},
-  "hannah einbinder|everything must go": {"platform": "Max", "url": "https://www.max.com/movies/hannah-einbinder-everything-must-go/0JIET0DW6968MHQEE9MQNVDZ3Y"},
-  "jack whitehall|at large": {"platform": "Netflix", "url": "https://www.netflix.com/title/80158919"},
-  "jack whitehall|i'm only joking": {"platform": "Netflix", "url": "https://www.netflix.com/title/81060252"},
-  "mae martin|sap": {"platform": "Netflix", "url": "https://www.netflix.com/title/81628816"},
-  "marlon wayans|woke-ish": {"platform": "Netflix", "url": "https://www.netflix.com/title/80134779"},
-  "matt rife|natural selection": {"platform": "Netflix", "url": "https://www.netflix.com/title/81708429"},
-  "michelle buteau|welcome to buteaupia": {"platform": "Netflix", "url": "https://www.netflix.com/title/81159106"},
-  "pete davidson|alive from new york": {"platform": "Netflix", "url": "https://www.netflix.com/title/81073637"},
-  "ronny chieng|asian comedian destroys america": {"platform": "Netflix", "url": "https://www.netflix.com/title/81070659"},
-  "ronny chieng|love to hate it": {"platform": "Netflix", "url": "https://www.netflix.com/title/81267396"},
-  "tom segura|mostly stories": {"platform": "Netflix", "url": "https://www.netflix.com/title/80077923"},
-  "tom segura|disgraceful": {"platform": "Netflix", "url": "https://www.netflix.com/title/80187307"},
-  "tom segura|ball hog": {"platform": "Netflix", "url": "https://www.netflix.com/title/81143584"},
-  "tom segura|sledgehammer": {"platform": "Netflix", "url": "https://www.netflix.com/title/81605926"},
-  "ricky gervais|humanity": {"platform": "Netflix", "url": "https://www.netflix.com/title/80189653"},
-  "ricky gervais|supernature": {"platform": "Netflix", "url": "https://www.netflix.com/title/80225917"},
-  "katherine ryan|glitter room": {"platform": "Netflix", "url": "https://www.netflix.com/title/80238020"},
-  "anthony jeselnik|thoughts and prayers": {"platform": "Netflix", "url": "https://www.netflix.com/title/80043049"},
-  "anthony jeselnik|thoughts & prayers": {"platform": "Netflix", "url": "https://www.netflix.com/title/80043049"},
-  "anthony jeselnik|fire in the maternity ward": {"platform": "Netflix", "url": "https://www.netflix.com/title/80227677"},
-  "anthony jeselnik|bones and all": {"platform": "Netflix", "url": "https://www.netflix.com/title/81738579"},
-  "andrew santino|cheeseburger": {"platform": "Netflix", "url": "https://www.netflix.com/title/81613448"},
-  "shane gillis|beautiful dogs": {"platform": "Netflix", "url": "https://www.netflix.com/title/81635847"},
-  "mark normand|soup to nuts": {"platform": "Netflix", "url": "https://www.netflix.com/title/81616392"},
-  "patton oswalt|we all scream": {"platform": "Netflix", "url": "https://www.netflix.com/title/81591406"},
-  "neal brennan|blocks": {"platform": "Netflix", "url": "https://www.netflix.com/title/81036234"},
-  "seth meyers|lobby baby": {"platform": "Netflix", "url": "https://www.netflix.com/title/81058497"},
-  "langston kerman|bad poetry": {"platform": "Netflix", "url": "https://www.netflix.com/title/81757940"},
-  "mike epps|only one mike": {"platform": "Netflix", "url": "https://www.netflix.com/title/80996192"},
-  "mike epps|indiana mike": {"platform": "Netflix", "url": "https://www.netflix.com/title/81257364"},
-  "ahir shah|ends": {"platform": "Netflix", "url": "https://www.netflix.com/title/81725688"},
-  "ahir shah|dots": {"platform": "Amazon Prime", "url": "https://www.amazon.com/dp/B0B787NS4X"},
-  "gabriel iglesias|one show fits all": {"platform": "Netflix", "url": "https://www.netflix.com/title/80237903"},
-  "gabriel \"fluffy\" iglesias|one show fits all": {"platform": "Netflix", "url": "https://www.netflix.com/title/80237903"},
-  "gabriel iglesias|stadium fluffy": {"platform": "Netflix", "url": "https://www.netflix.com/title/81045453"},
-  "chris gethard|career suicide": {"platform": "Max", "url": "https://www.max.com/movies/e2e34137-663b-47fa-a7f8-a4241c6a6d40"},
-  "drew michael|drew michael": {"platform": "Max", "url": "https://www.max.com/movies/drew-michael/5f499088-010b-4b2b-9626-a1d006e3d40b"},
-  "drew michael|red blue green": {"platform": "Max", "url": "https://www.max.com/movies/drew-michael-red-blue-green/d17fa0b0-8ce7-48e4-9553-bdbb3cfb6bd0"},
-  "kathleen madigan|hunting bigfoot": {"platform": "Amazon Prime", "url": "https://www.amazon.com/dp/B0B6VQ9R5H"},
-  "moses storm|trash white": {"platform": "Max", "url": "https://www.max.com/movies/moses-storm-trash-white/0OVXOXHMD8U4WXMZ12TZAFZH8Q"},
-  "russell howard live|dingledodies": {"platform": "Peacock", "url": "https://www.peacocktv.com/watch-online/movies/comedy/russell-howard-live-dingledodies/587fc383-91a1-3c0c-9e24-b1cb0cdfb2ef"}
+  "dave chappelle|the age of spin": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80171965"
+  },
+  "dave chappelle|deep in the heart of texas": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80171965"
+  },
+  "dave chappelle|equanimity": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80230402"
+  },
+  "dave chappelle|the bird revelation": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80230402"
+  },
+  "dave chappelle|sticks & stones": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81140577"
+  },
+  "dave chappelle|the closer": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81228510"
+  },
+  "dave chappelle|what's in a name": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81625055"
+  },
+  "dave chappelle|what's in a name?": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81625055"
+  },
+  "kevin hart|irresponsible": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80174687"
+  },
+  "kevin hart|zero f**ks given": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80174688"
+  },
+  "jerry seinfeld|23 hours to kill": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80170847"
+  },
+  "bill burr|paper tiger": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81060174"
+  },
+  "bill burr|live at red rocks": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81457341"
+  },
+  "aziz ansari|right now": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81098589"
+  },
+  "aziz ansari|nightclub comedian": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81572737"
+  },
+  "wanda sykes|not normal": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81011598"
+  },
+  "wanda sykes|i'm an entertainer": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81343300"
+  },
+  "trevor noah|afraid of the dark": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80134969"
+  },
+  "trevor noah|son of patricia": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80239932"
+  },
+  "trevor noah|i wish you would": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81228515"
+  },
+  "trevor noah|where was i": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81717103"
+  },
+  "ellen degeneres|relatable": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80166467"
+  },
+  "ellen degeneres|for your approval": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81037130"
+  },
+  "ali wong|hard knock wife": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80186940"
+  },
+  "ali wong|don wong": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81140667"
+  },
+  "ali wong|single lady": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81140682"
+  },
+  "chris rock|selective outrage": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80167499"
+  },
+  "john mulaney|baby j": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81619082"
+  },
+  "bo burnham|make happy": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80106124"
+  },
+  "bo burnham|inside": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81289483"
+  },
+  "jim gaffigan|comedy monster": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81251385"
+  },
+  "jim gaffigan|quality time": {
+    "platform": "Amazon Prime",
+    "url": "https://www.amazon.com/dp/B086VYJ2KD"
+  },
+  "jim gaffigan|obsessed": {
+    "platform": "Amazon Prime",
+    "url": "https://www.amazon.com/dp/B00IM71VBC"
+  },
+  "taylor tomlinson|quarter-life crisis": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81157965"
+  },
+  "taylor tomlinson|look at you": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81471774"
+  },
+  "hasan minhaj|homecoming king": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80134781"
+  },
+  "w. kamau bell|private school negro": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80200015"
+  },
+  "nikki glaser|bangin'": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81002876"
+  },
+  "nate bargatze|hello world": {
+    "platform": "Amazon Prime",
+    "url": "https://www.amazon.com/dp/B0B856WWSB"
+  },
+  "michelle wolf|joke show": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81036542"
+  },
+  "michelle wolf|it's great to be here": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81704420"
+  },
+  "jerrod carmichael|rothaniel": {
+    "platform": "Max",
+    "url": "https://www.hbomax.com/movies/jerrod-carmichael-rothaniel/6ad205c6-3c53-4c2b-8c9d-8d939cd30b60"
+  },
+  "adam sandler|100% fresh": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80224536"
+  },
+  "adam sandler|love you": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81757746"
+  },
+  "vir das|outside in - the lockdown special": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81362817"
+  },
+  "vir das|outside in – the lockdown special": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81362817"
+  },
+  "vir das|abroad understanding": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80133552"
+  },
+  "mo amer|mohammed in texas": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81435608"
+  },
+  "mo amer|the vagabond": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80239503"
+  },
+  "iliza shlesinger|elder millennial": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80213658"
+  },
+  "iliza shlesinger|unveiled": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81073633"
+  },
+  "iliza shlesinger|hot forever": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81485998"
+  },
+  "tiffany haddish|black mitzvah": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81000299"
+  },
+  "sebastian maniscalco|stay hungry": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80218104"
+  },
+  "mike birbiglia|the new one": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81062293"
+  },
+  "mike birbiglia|the old man and the pool": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81665900"
+  },
+  "jim jefferies|intolerant": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81121954"
+  },
+  "jim jefferies|high n' dry": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81414670"
+  },
+  "sam jay|3 in the morning": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81078802"
+  },
+  "jo koy|comin' in hot": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81002929"
+  },
+  "jo koy|live from seattle": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80134826"
+  },
+  "chris rock|never scared": {
+    "platform": "Max",
+    "url": "https://www.hbomax.com/movies/chris-rock-never-scared/2d98c167-4cff-4820-86ea-23cd810730c6"
+  },
+  "chris rock|bigger & blacker": {
+    "platform": "Max",
+    "url": "https://www.hbomax.com/movies/chris-rock-bigger-blacker/5f05f052-685e-4440-8607-6580e4459507"
+  },
+  "gary gulman|born on 3rd base": {
+    "platform": "Max",
+    "url": "https://www.hbomax.com/movies/gary-gulman-born-on-3rd-base/3c80efb5-7891-463e-87b9-9e8ca7d8e6c7"
+  },
+  "bert kreischer|secret time": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80238360"
+  },
+  "bert kreischer|hey big boy": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81128796"
+  },
+  "bert kreischer|razzle dazzle": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81471776"
+  },
+  "chelsea handler|revolution": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81649416"
+  },
+  "chelsea handler|evolution": {
+    "platform": "Max",
+    "url": "https://www.hbomax.com/movies/chelsea-handler-evolution/285d76b3-616d-4376-88b6-4a21de0fb987"
+  },
+  "demetri martin|the overthinker": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80158802"
+  },
+  "deon cole|cole hearted": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80995737"
+  },
+  "deon cole|charleen's boy": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81630234"
+  },
+  "fortune feimster|good fortune": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81520120"
+  },
+  "hannah einbinder|everything must go": {
+    "platform": "Max",
+    "url": "https://www.hbomax.com/movies/hannah-einbinder-everything-must-go/0JIET0DW6968MHQEE9MQNVDZ3Y"
+  },
+  "jack whitehall|at large": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80158919"
+  },
+  "jack whitehall|i'm only joking": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81060252"
+  },
+  "mae martin|sap": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81628816"
+  },
+  "marlon wayans|woke-ish": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80134779"
+  },
+  "matt rife|natural selection": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81708429"
+  },
+  "michelle buteau|welcome to buteaupia": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81159106"
+  },
+  "pete davidson|alive from new york": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81073637"
+  },
+  "ronny chieng|asian comedian destroys america": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81070659"
+  },
+  "ronny chieng|love to hate it": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81267396"
+  },
+  "tom segura|mostly stories": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80077923"
+  },
+  "tom segura|disgraceful": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80187307"
+  },
+  "tom segura|ball hog": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81143584"
+  },
+  "tom segura|sledgehammer": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81605926"
+  },
+  "ricky gervais|humanity": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80189653"
+  },
+  "ricky gervais|supernature": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80225917"
+  },
+  "katherine ryan|glitter room": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80238020"
+  },
+  "anthony jeselnik|thoughts and prayers": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80043049"
+  },
+  "anthony jeselnik|thoughts & prayers": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80043049"
+  },
+  "anthony jeselnik|fire in the maternity ward": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80227677"
+  },
+  "anthony jeselnik|bones and all": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81738579"
+  },
+  "andrew santino|cheeseburger": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81613448"
+  },
+  "shane gillis|beautiful dogs": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81635847"
+  },
+  "mark normand|soup to nuts": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81616392"
+  },
+  "patton oswalt|we all scream": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81591406"
+  },
+  "neal brennan|blocks": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81036234"
+  },
+  "seth meyers|lobby baby": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81058497"
+  },
+  "langston kerman|bad poetry": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81757940"
+  },
+  "mike epps|only one mike": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80996192"
+  },
+  "mike epps|indiana mike": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81257364"
+  },
+  "ahir shah|ends": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81725688"
+  },
+  "ahir shah|dots": {
+    "platform": "Amazon Prime",
+    "url": "https://www.amazon.com/dp/B0B787NS4X"
+  },
+  "gabriel iglesias|one show fits all": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80237903"
+  },
+  "gabriel \"fluffy\" iglesias|one show fits all": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80237903"
+  },
+  "gabriel iglesias|stadium fluffy": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81045453"
+  },
+  "chris gethard|career suicide": {
+    "platform": "Max",
+    "url": "https://www.hbomax.com/movies/e2e34137-663b-47fa-a7f8-a4241c6a6d40"
+  },
+  "drew michael|drew michael": {
+    "platform": "Max",
+    "url": "https://www.hbomax.com/movies/drew-michael/5f499088-010b-4b2b-9626-a1d006e3d40b"
+  },
+  "drew michael|red blue green": {
+    "platform": "Max",
+    "url": "https://www.hbomax.com/movies/drew-michael-red-blue-green/d17fa0b0-8ce7-48e4-9553-bdbb3cfb6bd0"
+  },
+  "kathleen madigan|hunting bigfoot": {
+    "platform": "Amazon Prime",
+    "url": "https://www.amazon.com/dp/B0B6VQ9R5H"
+  },
+  "moses storm|trash white": {
+    "platform": "Max",
+    "url": "https://www.hbomax.com/movies/moses-storm-trash-white/0OVXOXHMD8U4WXMZ12TZAFZH8Q"
+  },
+  "russell howard|dingledodies": {
+    "platform": "Peacock",
+    "url": "https://www.peacocktv.com/watch-online/movies/comedy/russell-howard-live-dingledodies/587fc383-91a1-3c0c-9e24-b1cb0cdfb2ef"
+  },
+  "alex edelman|just for us": {
+    "platform": "Max",
+    "url": "https://www.hbomax.com/movies/alex-edelman-just-for-us/7032329c-4bff-4456-92d3-4847ec61cfc1"
+  },
+  "ali wong|baby cobra": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80101493"
+  },
+  "amy schumer|emergency contact": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81625051"
+  },
+  "amy schumer|growing": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81037077"
+  },
+  "amy schumer|parental advisory": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81256504"
+  },
+  "amy schumer|the leather special": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80150002"
+  },
+  "andrew santino|home field advantage": {
+    "platform": "Amazon Prime",
+    "url": "https://www.amazon.com/dp/B0FV88K1D5"
+  },
+  "anthony jeselnik|caligula": {
+    "platform": "Paramount+",
+    "url": "https://www.paramountplus.com/movies/anthony-jeselnik-caligula/1STdf7SPt9F45OOlZmMWynmhgjX_KBs_/"
+  },
+  "aziz ansari|buried alive": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/70290568"
+  },
+  "aziz ansari|intimate moments for a sensual evening": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/70128049"
+  },
+  "aziz ansari|live in madison square garden": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80038296"
+  },
+  "beth stelling|girl daddy": {
+    "platform": "Max",
+    "url": "https://www.hbomax.com/movies/beth-stelling-girl-daddy/547a2c72-0ead-4e17-97af-3c004f06f5d2"
+  },
+  "beth stelling|if you didn't want me then": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81713592"
+  },
+  "bill burr|i'm sorry you feel that way": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80004478"
+  },
+  "bill burr|walk your way out": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80133549"
+  },
+  "bo burnham|what": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/70295560"
+  },
+  "bo burnham|words, words, words": {
+    "platform": "Amazon Prime",
+    "url": "https://www.amazon.com/dp/B004A5KVQY"
+  },
+  "brian regan|nunchucks and flamethrowers": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80134827"
+  },
+  "brian regan|on the rocks": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81175613"
+  },
+  "chelsea handler|the feeling": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81759443"
+  },
+  "chris d'elia|man on fire": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80133553"
+  },
+  "chris rock|tamborine": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80167498"
+  },
+  "dave chappelle|killin' them softly": {
+    "platform": "Max",
+    "url": "https://www.hbomax.com/movies/dave-chappelle-killin-them-softly/b302305e-5e05-4ed9-9b3e-daad57bf9d21"
+  },
+  "demetri martin|demetri deconstructed": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81630186"
+  },
+  "demetri martin|live (at the time)": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80044804"
+  },
+  "deon cole|ok, mister": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81742818"
+  },
+  "donald glover|weirdo": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/70230138"
+  },
+  "fortune feimster|sweet & salty": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81146199"
+  },
+  "jim gaffigan|cinco": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80117811"
+  },
+  "jim gaffigan|noble ape": {
+    "platform": "Amazon Prime",
+    "url": "https://www.amazon.com/dp/B07LC14Z8N"
+  },
+  "john mulaney|kid gorgeous at radio city": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80238110"
+  },
+  "john mulaney|new in town": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/70298251"
+  },
+  "john mulaney|the comeback kid": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80058424"
+  },
+  "nikki glaser|good clean filth": {
+    "platform": "Max",
+    "url": "https://www.hbomax.com/movies/nikki-glaser-good-clean-filth/0beb9567-bc7d-4874-9838-7e2c027ed59e"
+  },
+  "nikki glaser|someday you'll die": {
+    "platform": "Max",
+    "url": "https://www.hbomax.com/movies/nikki-glaser-someday-youll-die/35e3d3bc-dd7f-4f6f-84f2-1d097aa808c5"
+  },
+  "patton oswalt|annihilation": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80177406"
+  },
+  "patton oswalt|talking for clapping": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/80082862"
+  },
+  "ronny chieng|speakeasy": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81267202"
+  },
+  "sam morril|same time tomorrow": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81613412"
+  },
+  "taylor tomlinson|have it all": {
+    "platform": "Netflix",
+    "url": "https://www.netflix.com/title/81685073"
+  }
 }
