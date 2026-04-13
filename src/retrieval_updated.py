@@ -947,6 +947,7 @@ def reinitialize_search() -> None:
     chunk_start = time.perf_counter()
     print("Initializing chunk search index at startup...")
     _SEARCH_INDEX["chunk"] = build_chunk_search_index()
+    print(f"Chunk search index ready in {_fmt_elapsed(chunk_start)}")
     print(f"All search indexes ready in {_fmt_elapsed(total_start)}")
 
 def get_transcript_index() -> Dict[str, Any]:

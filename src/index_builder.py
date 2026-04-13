@@ -278,9 +278,10 @@ def remove_music_blocks(text: str) -> str:
 def normalize_spaced_letters(text):
     """
     Example: "m i d g e t" --> "midget"
+    Requires at least 3 single letters to avoid collapsing common 2-letter pairs like "I a" or "A B".
     """
     return re.sub(
-        r'\b(?:[A-Za-z]\s+){1,}[A-Za-z]\b',
+        r'\b(?:[A-Za-z]\s+){3,}[A-Za-z]\b',
         lambda match: re.sub(r'\s+', '', match.group(0)),
         text
     )
