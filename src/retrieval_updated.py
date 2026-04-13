@@ -62,6 +62,12 @@ _SEARCH_INDEX: Dict[str, Optional[Dict[str, Any]]] = {
     "chunk": None,
 }
 
+def trim_snippet_to_word_limit(text: str, max_words: int = 250) -> str:
+    words = text.split()
+    if len(words) <= max_words:
+        return text
+    return " ".join(words[:max_words]) + " ..."
+
 def get_rerank_candidate_limit(result_scope: str) -> int:
     return RERANK_CANDIDATES_FULL if result_scope == "full" else RERANK_CANDIDATES_CHUNKS
 
@@ -243,6 +249,11 @@ def cosine_scores_sparse(query_vec: np.ndarray, matrix) -> np.ndarray:
 def snippet_word_count(sentences: List[str]) -> int:
     return len(re.findall(r"[A-Za-z0-9']+", " ".join(sentences)))
 
+def trim_snippet_to_word_limit(text: str, max_words: int = 250) -> str:
+    words = text.split()
+    if len(words) <= max_words:
+        return text
+    return " ".join(words[:max_words]) + " ..."
 
 def find_best_matching_sentence_from_tokens(
     query: str,
@@ -977,6 +988,8 @@ def build_result_object(
             source_sentences=source_sentences,
             best_global_idx=best_idx,
         )
+        display_snippet = trim_snippet_to_word_limit(display_snippet, 250)
+
         best_sentence_index = best_idx
         global_snippet_start = snippet_start
         global_snippet_end = snippet_end
@@ -1000,6 +1013,8 @@ def build_result_object(
             idf=idf,
         )
 
+        display_snippet = trim_snippet_to_word_limit(display_snippet, 250)
+
     comedian_feature = 1.0 if (
         resolved_comedian
         and item.get("comedian", "").strip().lower() == resolved_comedian.strip().lower()
@@ -1018,14 +1033,12 @@ def build_result_object(
         and item_latent is not None
         and dimension_terms is not None
     ):
-        
         svd_positive_dimensions, svd_negative_dimensions = explain_svd_alignment(
-    q_latent=q_latent,
-    item_latent=item_latent,
-    dimension_terms=dimension_terms,
-    top_dims=SVD_EXPLAIN_TOP_DIMS,
-) if retrieval_mode == "svd" else ([], [])
-        
+            q_latent=q_latent,
+            item_latent=item_latent,
+            dimension_terms=dimension_terms,
+            top_dims=SVD_EXPLAIN_TOP_DIMS,
+        ) if retrieval_mode == "svd" else ([], [])
 
     return {
         "chunk_id": item.get("chunk_id", f"doc-{item['doc_id']}"),
@@ -1042,16 +1055,16 @@ def build_result_object(
         "chunk_sentences": item.get("chunk_sentences"),
         "best_sentence": best_sentence,
         "best_sentence_index": best_sentence_index,
-        "sentence_score": float(max(0.0, sentence_score)),
+        "sentence_score": sentence_score,
         "snippet_sentences": snippet_sentences,
         "snippet_sentence_start": snippet_start,
         "snippet_sentence_end": snippet_end,
         "global_snippet_start": global_snippet_start,
         "global_snippet_end": global_snippet_end,
-        "has_profanity": item["has_profanity"],
+        "has_profanity": item.get("has_profanity", False),
         "profanity_terms": item.get("profanity_terms", []),
-        "base_score": float(max(0.0, min(1.0, base_score))),
-        "proximity_feature": float(max(0.0, min(1.0, proximity_feature))),
+        "base_score": base_score,
+        "proximity_feature": proximity_feature,
         "comedian_feature": comedian_feature,
         "similarity_score": similarity_score,
         "similarity_percent": similarity_percent,
@@ -1194,7 +1207,32 @@ def compute_fast_proximity_score(
     ideal_window = len(distinct_query_terms)
     proximity = ideal_window / float(span)
     return max(0.0, min(1.0, proximity))
-        
+
+def sort_indices_for_filter_only_browse(
+    indices: List[int],
+    items: List[Dict[str, Any]],
+) -> List[int]:
+    def sort_key(i: int):
+        item = items[i]
+
+        release_date_raw = str(item.get("release_date", "")).strip()
+        try:
+            release_year = int(release_date_raw)
+        except Exception:
+            release_year = -1
+
+        comedian = str(item.get("comedian", "")).lower()
+        special_title = str(item.get("special_title", "")).lower()
+        title = str(item.get("title", "")).lower()
+
+        return (
+            release_year,
+            comedian,
+            special_title or title,
+        )
+
+    return sorted(indices, key=sort_key, reverse=True)
+  
 def search_chunks(
     query: str,
     top_k: int = DEFAULT_TOP_K,
@@ -1246,6 +1284,104 @@ def search_chunks(
         return {
             "query": query,
             "results": [],
+            "resolved_comedian": resolved_comedian,
+            "known_comedians": known_comedians,
+            "known_special_types": sorted(
+                {item.get("special_type", "") for item in items if item.get("special_type", "")}
+            ),
+        }
+
+    query = query.strip()
+
+    if not query:
+        ranked_indices = sort_indices_for_filter_only_browse(filtered_indices, items)
+
+        if result_scope == "full":
+            selected = ranked_indices[:top_k]
+            results = []
+
+            for idx in selected:
+                item = items[idx]
+                result = build_result_object(
+                    query="",
+                    item=item,
+                    docs=docs,
+                    base_score=1.0,
+                    final_score=1.0,
+                    proximity_feature=0.0,
+                    retrieval_mode=retrieval_mode,
+                    resolved_comedian=resolved_comedian,
+                    word_to_index=word_to_index,
+                    idf=idf,
+                    is_full_transcript=True,
+                    include_svd_explanations=False,
+                    q_latent=None,
+                    item_latent=None,
+                    dimension_terms=dimension_terms,
+                )
+                result["similarity_score"] = None
+                result["similarity_percent"] = None
+                result["retrieval_mode"] = retrieval_mode
+                results.append(result)
+
+            return {
+                "query": query,
+                "results": results,
+                "resolved_comedian": resolved_comedian,
+                "known_comedians": known_comedians,
+                "known_special_types": sorted(
+                    {item.get("special_type", "") for item in items if item.get("special_type", "")}
+                ),
+            }
+
+        selected_results = []
+        per_doc_counts: Dict[int, int] = defaultdict(int)
+        accepted_snippets_by_doc: Dict[int, List[List[str]]] = defaultdict(list)
+
+        for idx in ranked_indices:
+            item = items[idx]
+            doc_id = item["doc_id"]
+
+            if per_doc_counts[doc_id] >= max_chunks_per_doc:
+                continue
+
+            result = build_result_object(
+                query="",
+                item=item,
+                docs=docs,
+                base_score=1.0,
+                final_score=1.0,
+                proximity_feature=0.0,
+                retrieval_mode=retrieval_mode,
+                resolved_comedian=resolved_comedian,
+                word_to_index=word_to_index,
+                idf=idf,
+                is_full_transcript=False,
+                include_svd_explanations=False,
+                q_latent=None,
+                item_latent=None,
+                dimension_terms=dimension_terms,
+            )
+            result["similarity_score"] = None
+            result["similarity_percent"] = None
+            result["retrieval_mode"] = retrieval_mode
+
+            current_snippet = result.get("snippet_sentences", []) or []
+            existing_snippets = accepted_snippets_by_doc[doc_id]
+
+            if any(snippets_overlap_enough(current_snippet, prev) for prev in existing_snippets):
+                continue
+
+            accepted_snippets_by_doc[doc_id].append(current_snippet)
+            per_doc_counts[doc_id] += 1
+            selected_results.append(result)
+
+            if len(selected_results) >= top_k:
+                break
+
+        return {
+            "query": query,
+            "results": selected_results,
             "resolved_comedian": resolved_comedian,
             "known_comedians": known_comedians,
             "known_special_types": sorted(

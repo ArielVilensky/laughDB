@@ -53,7 +53,22 @@ def register_routes(app):
     def transcript_search():
         query = request.args.get("query", "").strip()
 
-        if not query:
+        comedian = empty_to_none(request.args.get("comedian"))
+        special_type = empty_to_none(request.args.get("special_type"))
+        year_min = request.args.get("year_min", default=None, type=int)
+        year_max = request.args.get("year_max", default=None, type=int)
+        exclude_profanity = str_to_bool(request.args.get("exclude_profanity"))
+
+        has_any_input = any([
+            bool(query),
+            bool(comedian),
+            bool(special_type),
+            year_min is not None,
+            year_max is not None,
+            exclude_profanity,
+        ])
+
+        if not has_any_input:
             return jsonify({
                 "query": "",
                 "results": [],
@@ -66,20 +81,12 @@ def register_routes(app):
         top_k = clamp_int(top_k, 1, 25)
 
         retrieval_mode = request.args.get("retrieval_mode", "tfidf").strip().lower()
-        if retrieval_mode not in {"tfidf", "svd", "embedding"}:
+        if retrieval_mode not in {"tfidf", "svd"}:
             retrieval_mode = "tfidf"
 
         result_scope = request.args.get("result_scope", "full").strip().lower()
         if result_scope not in {"chunks", "full"}:
             result_scope = "full"
-
-        comedian = empty_to_none(request.args.get("comedian"))
-        special_type = empty_to_none(request.args.get("special_type"))
-
-        year_min = request.args.get("year_min", default=None, type=int)
-        year_max = request.args.get("year_max", default=None, type=int)
-
-        exclude_profanity = str_to_bool(request.args.get("exclude_profanity"))
 
         max_chunks_per_doc = request.args.get("max_chunks_per_doc", default=2, type=int)
         max_chunks_per_doc = clamp_int(max_chunks_per_doc, 1, 5)

@@ -90,13 +90,6 @@ function App(): JSX.Element {
       .then((data) => setUseLlm(data.use_llm))
   }, [])
 
-  useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
-  }, [page])
-
   const clearPendingDebounce = (): void => {
     if (debounceRef.current !== null) {
       window.clearTimeout(debounceRef.current)
@@ -104,10 +97,23 @@ function App(): JSX.Element {
     }
   }
 
+  const hasActiveFilters = (): boolean => {
+    return (
+      comedian.trim() !== '' ||
+      specialType.trim() !== '' ||
+      yearMin !== YEAR_MIN ||
+      yearMax !== YEAR_MAX ||
+      excludeProfanity ||
+      resultScope !== 'full' ||
+      retrievalMode !== 'tfidf'
+    )
+  }
+
   const runSearch = async (query: string): Promise<void> => {
     const trimmed = query.trim()
+    const filtersActive = hasActiveFilters()
 
-    if (!trimmed) {
+    if (!trimmed && !filtersActive) {
       setAllResults([])
       setResolvedComedian(null)
       setPage(0)
@@ -163,8 +169,9 @@ function App(): JSX.Element {
     clearPendingDebounce()
 
     const trimmed = searchTerm.trim()
+    const filtersActive = hasActiveFilters()
 
-    if (!trimmed) {
+    if (!trimmed && !filtersActive) {
       setAllResults([])
       setResolvedComedian(null)
       setPage(0)
@@ -293,7 +300,7 @@ function App(): JSX.Element {
 
           {loading && <div className="info-banner">Loading results...</div>}
 
-          {!loading && hasSearched && searchTerm.trim() !== '' && visibleResults.length === 0 && (
+          {!loading && hasSearched && visibleResults.length === 0 && (
             <div className="info-banner">No results found.</div>
           )}
 

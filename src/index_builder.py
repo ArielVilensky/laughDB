@@ -82,6 +82,55 @@ def normalize_comedian_from_show_title(comedian: str, title: str) -> str:
 
     return comedian
 
+KNOWN_COMEDIAN_GROUPS = {
+    frozenset(["john mulaney", "nick kroll"]): "John Mulaney and Nick Kroll",
+}
+
+def normalize_multi_comedian_name(comedian: str) -> str:
+    if not comedian:
+        return ""
+
+    name = str(comedian).strip()
+
+    # unify common separators
+    name = re.sub(r"\s*(?:,|&|\+|/)\s*", " and ", name)
+
+    parts = [part.strip() for part in name.split(" and ") if part.strip()]
+
+    # remove duplicates while preserving order
+    seen = set()
+    unique_parts = []
+    for part in parts:
+        key = part.lower()
+        if key not in seen:
+            seen.add(key)
+            unique_parts.append(part)
+
+    if not unique_parts:
+        return ""
+
+    if len(unique_parts) == 1:
+        return unique_parts[0]
+
+    return " and ".join(unique_parts)
+
+def canonicalize_comedian_group(comedian: str) -> str:
+    if not comedian:
+        return ""
+
+    parts = [part.strip().lower() for part in comedian.split(" and ") if part.strip()]
+    if not parts:
+        return comedian
+
+    key = frozenset(parts)
+    return KNOWN_COMEDIAN_GROUPS.get(key, comedian)
+
+def normalize_comedian_name(comedian: str, title: str) -> str:
+    comedian = normalize_comedian_from_show_title(comedian, title)
+    comedian = normalize_multi_comedian_name(comedian)
+    comedian = canonicalize_comedian_group(comedian)
+    return comedian.strip()
+
 def load_raw_transcripts(path: str) -> List[Dict[str, Any]]:
     with open(path, "r", encoding="utf-8") as f:
         raw_text = f.read().strip()
@@ -194,13 +243,57 @@ def normalize_decades(text: str) -> str:
     text = re.sub(r"\b(\d{4})['’]s\b", r"\1s", text)
     return text
 
+def remove_music_blocks(text: str) -> str:
+    if not text:
+        return ""
+
+    # Remove bracketed music/song cues on their own line.
+    text = re.sub(
+        r"(?mi)^\s*\[[^\]\n]*(?:song|music|playing|starts?)\b[^\]\n]*\]\s*$",
+        " ",
+        text,
+    )
+
+    # Remove any remaining full lines that begin with musical notes.
+    text = re.sub(
+        r"(?mi)^\s*[♪♫].*$",
+        " ",
+        text,
+    )
+
+    # Remove inline note-wrapped lyric fragments.
+    text = re.sub(
+        r"[♪♫][^♪♫]{0,500}[♪♫]",
+        " ",
+        text,
+    )
+
+    # Remove stray note symbols.
+    text = re.sub(r"[♪♫]+", " ", text)
+
+    return text
+
 
 def normalize_text(text: str) -> str:
     if not text:
         return ""
 
+    text = remove_music_blocks(text)
     text = remove_bracketed_descriptions(text)
-    text = re.sub(r"♪[^♪]*♪", " ", text)
+
+    # Remove dangling bracket fragments left behind by partial earlier stripping,
+    # e.g. "hing]" or "[camera".
+    text = re.sub(r"\b[\w'\"-]{1,20}\]", " ", text)
+    text = re.sub(r"\[[\w'\"-]{1,20}\b", " ", text)
+
+    # Remove leftover sound/stage cue words that may survive bracket stripping.
+    text = re.sub(
+        r"\b(?:whooping|cheering|applause|music|band playing|camera shutter clicking|shutter clicking)\b",
+        " ",
+        text,
+        flags=re.IGNORECASE,
+    )
+
     text = text.replace("’", "'")
     text = text.replace("“", '"')
     text = text.replace("”", '"')
@@ -935,9 +1028,9 @@ def build_transcript_index_payload(transcripts_path: str) -> Dict[str, Any]:
         parsed_comedian, parsed_special_title, parsed_release_date = parse_title_metadata(title)
 
         comedian = choose_comedian(item.get("comedian", ""), parsed_comedian, tag_texts)
-        comedian = normalize_comedian_from_show_title(comedian, title)
+        comedian = normalize_comedian_name(comedian, title)
 
-        if not comedian.strip():
+        if not comedian:
             comedian = "Unknown"
 
         if doc_id in DOC_COMEDIAN_OVERRIDES:
