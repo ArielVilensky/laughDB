@@ -1,84 +1,99 @@
 """
-LLM chat route — only loaded when USE_LLM = True in routes.py.
-Adds a POST /api/chat endpoint that performs LLM-driven RAG.
-
-Setup:
-  1. Add API_KEY=your_key to .env
-  2. Set USE_LLM = True in routes.py
+LLM summarization route — only loaded when USE_LLM = True in routes.py.
+Adds POST /api/summarize that streams a brief AI summary of search results.
+Supports an optional `followup` field for follow-up questions.
 """
 import json
 import os
-import re
 import logging
 from flask import request, jsonify, Response, stream_with_context
 from infosci_spark_client import LLMClient
 
 logger = logging.getLogger(__name__)
 
+# Initial summary: asks for a VIBES prefix line then 1-2 paragraphs.
+SYSTEM_PROMPT_SUMMARY = (
+    "You are an enthusiastic comedy recommendation assistant for laughDB, a comedy transcript "
+    "search engine. Respond in exactly this format — no deviation:\n\n"
+    "Line 1: VIBES: [vibe1], [vibe2], [vibe3]\n"
+    "Lines 2+: 1 to 2 short paragraphs summarizing the results.\n\n"
+    "For the VIBES line: choose exactly 3 comma-separated style descriptors that best capture "
+    "the tone of these results. Pick from: dark, observational, absurdist, self-deprecating, "
+    "political, crowd-work, storytelling, surreal, clean, edgy, dry, musical, topical, blue, "
+    "cerebral, physical, deadpan, satirical, confessional.\n\n"
+    "For the summary: highlight recurring themes, mention comedian names, note what kind of "
+    "viewer would enjoy these. Be conversational, enthusiastic, and specific. Take into account "
+    "result rank — higher rank means stronger match. Max 2 short paragraphs. No bullets or headers."
+)
 
-def llm_search_decision(client, user_message):
-    """Ask the LLM whether to search the DB and which word to use."""
-    messages = [
-        {
-            "role": "system",
-            "content": (
-                "You have access to a database of Keeping Up with the Kardashians episode titles, "
-                "descriptions, and IMDB ratings. Search is by a single word in the episode title. "
-                "Reply with exactly: YES followed by one space and ONE word to search (e.g. YES wedding), "
-                "or NO if the question does not need episode data."
-            ),
-        },
-        {"role": "user", "content": user_message},
-    ]
-    response = client.chat(messages)
-    content = (response.get("content") or "").strip().upper()
-    logger.info(f"LLM search decision: {content}")
-    if re.search(r"\bNO\b", content) and not re.search(r"\bYES\b", content):
-        return False, None
-    yes_match = re.search(r"\bYES\s+(\w+)", content)
-    if yes_match:
-        return True, yes_match.group(1).lower()
-    if re.search(r"\bYES\b", content):
-        return True, "Kardashian"
-    return False, None
+# Follow-up: answer a specific question about the results in 1 short paragraph.
+SYSTEM_PROMPT_FOLLOWUP = (
+    "You are a comedy recommendation assistant for laughDB. Given the user's search context "
+    "and a follow-up question, write a focused answer in exactly 1 short paragraph. "
+    "Be specific — reference comedian names and details from the results. "
+    "Do not start with phrases like 'Great question' or 'Certainly'. Just answer directly."
+)
 
 
-def register_chat_route(app, json_search):
-    """Register the /api/chat SSE endpoint. Called from routes.py."""
+def _build_context(query: str, results: list) -> str:
+    lines = []
+    if query:
+        lines.append(f'Search query: "{query}"\n')
+    else:
+        lines.append("User browsed without a specific query.\n")
 
-    @app.route("/api/chat", methods=["POST"])
-    def chat():
+    lines.append("Top matching comedy transcripts (ranked by relevance):\n")
+
+    for r in results[:5]:
+        rank = r.get("rank", "?")
+        comedian = r.get("comedian") or "Unknown"
+        title = r.get("special_title") or r.get("title") or ""
+        date = r.get("release_date") or ""
+        pct = r.get("similarity_percent")
+        snippet = (r.get("display_snippet") or r.get("content") or "")[:280].strip()
+
+        score_str = f" — {pct:.1f}% match" if pct is not None else ""
+        date_str = f" ({date})" if date else ""
+        lines.append(f"#{rank}: {comedian} — \"{title}\"{date_str}{score_str}")
+        if snippet:
+            lines.append(f'   Excerpt: "{snippet}"')
+        lines.append("")
+
+    return "\n".join(lines)
+
+
+def register_chat_route(app, search_chunks):
+    """Register the /api/summarize SSE endpoint. Called from routes.py."""
+
+    @app.route("/api/summarize", methods=["POST"])
+    def summarize():
         data = request.get_json() or {}
-        user_message = (data.get("message") or "").strip()
-        if not user_message:
-            return jsonify({"error": "Message is required"}), 400
+        query = (data.get("query") or "").strip()
+        results = data.get("results") or []
+        followup = (data.get("followup") or "").strip()
 
-        api_key = os.getenv("API_KEY")
+        if not results:
+            return jsonify({"error": "No results to summarize"}), 400
+
+        api_key = os.getenv("SPARK_API_KEY")
         if not api_key:
-            return jsonify({"error": "API_KEY not set — add it to your .env file"}), 500
+            return jsonify({"error": "SPARK_API_KEY not set — add it to your .env file"}), 500
 
         client = LLMClient(api_key=api_key)
-        use_search, search_term = llm_search_decision(client, user_message)
+        context = _build_context(query, results)
 
-        if use_search:
-            episodes = json_search(search_term or "Kardashian")
-            context_text = "\n\n---\n\n".join(
-                f"Title: {ep['title']}\nDescription: {ep['descr']}\nIMDB Rating: {ep['imdb_rating']}"
-                for ep in episodes
-            ) or "No matching episodes found."
+        if followup:
             messages = [
-                {"role": "system", "content": "Answer questions about Keeping Up with the Kardashians using only the episode information provided."},
-                {"role": "user", "content": f"Episode information:\n\n{context_text}\n\nUser question: {user_message}"},
+                {"role": "system", "content": SYSTEM_PROMPT_FOLLOWUP},
+                {"role": "user", "content": f"{context}\nFollow-up question: {followup}"},
             ]
         else:
             messages = [
-                {"role": "system", "content": "You are a helpful assistant for Keeping Up with the Kardashians questions."},
-                {"role": "user", "content": user_message},
+                {"role": "system", "content": SYSTEM_PROMPT_SUMMARY},
+                {"role": "user", "content": context},
             ]
 
         def generate():
-            if use_search and search_term:
-                yield f"data: {json.dumps({'search_term': search_term})}\n\n"
             try:
                 for chunk in client.chat(messages, stream=True):
                     if chunk.get("content"):

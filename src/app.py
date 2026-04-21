@@ -64,13 +64,12 @@ def init_db():
 
 init_db()
 
+# Initialize search at module load time so indices are ready before the first request.
+# Works for both direct `python src/app.py` and production WSGI (gunicorn).
+# In Flask debug mode the reloader spawns a child process with WERKZEUG_RUN_MAIN=true;
+# we skip the parent to avoid loading the indices twice.
+if os.environ.get("WERKZEUG_RUN_MAIN") != "false":
+    initialize_search()
+
 if __name__ == '__main__':
-    # Avoid initializing twice when Flask debug reloader is active
-    should_initialize_search = os.environ.get("WERKZEUG_RUN_MAIN") == "true" or not app.debug
-
-    if should_initialize_search:
-        #print("Initializing search index at startup...")
-        initialize_search()
-        #print("Search index ready.")
-
     app.run(debug=True, host="0.0.0.0", port=5001)

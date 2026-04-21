@@ -10,23 +10,43 @@ PROFANITY_WORDS = {
     "fuck", "fucking", "fucked", "fucker",
     "shit", "shitty",
     "bitch", "bitches", "bitching",
-    "asshole", "arsehole", "motherfucker", "dick",
+    "asshole", "arsehole", "motherfucker", "dick", "ass"
     "pussy", "cunt", "cock", "cocksucker",
     "bastard", "damn", "nigger", "nigga", "coon",
     "kike", "chink", "spic", "beaner",
     "wanker", "twat", "blowjob", "anal"
 }
 
+_RE_REPEATED_LETTER = re.compile(r'([a-zA-Z])\1{2,}')
+_RE_VOWEL = re.compile(r'[aeiouy]')
+_RE_USERNAME = re.compile(r'[a-z]{3,}(\d{4,})')
+_RE_YEAR = re.compile(r'(?:19|20)\d{2}')
+_RE_MID_DIGIT = re.compile(r'[a-z]\d{3,}[a-z]')
+
+def is_garbage_token(word: str) -> bool:
+    if _RE_REPEATED_LETTER.search(word):
+        return True
+    if len(word) >= 5 and not word[0].isdigit() and not _RE_VOWEL.search(word.lower()):
+        return True
+    m = _RE_USERNAME.search(word.lower())
+    if m and not _RE_YEAR.match(m.group(1)):
+        return True
+    if _RE_MID_DIGIT.search(word.lower()):
+        return True
+    return False
+
+
 CUSTOM_STOPWORDS = {
     "im", "ive", "ill", "id",
     "youre", "youve", "youll", "youd",
     "were", "weve", "well", "wed",
+    "shes","hes","yall"
     "theyre", "theyve", "theyll", "theyd",
     "thats", "theres", "whats", "wheres", "whos", "hows",
     "dont", "didnt", "doesnt", "isnt", "arent", "wasnt", "werent",
     "wouldnt", "couldnt", "shouldnt", "cant", "wont", "aint",
     "gonna", "wanna", "gotta",
-    "uh", "um", "oh", "yeah", "hey", "ok", "okay", "joke", "jokes"
+    "uh", "um", "oh", "yeah", "hey", "ok", "okay", "joke", "jokes", "n"
 }
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

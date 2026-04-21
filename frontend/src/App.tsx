@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import SearchIcon from './assets/mag.png'
 import { RetrievalMode, ResultScope, SearchResponse, SearchResult } from './types'
-import Chat from './Chat'
+import RagPanel from './RagPanel'
 
 const RESULTS_PER_PAGE = 5
 const MAX_TOTAL_RESULTS = 25
@@ -42,19 +42,18 @@ function getWatchLinks(result: SearchResult): WatchLink[] {
 
   if (result.watch_url) {
     const platform = result.watch_platform || 'Watch'
-    const label = `Watch on ${platform}`
     links.push({
-      label,
+      label: `Watch on ${platform}`,
       url: result.watch_url,
       cls: 'resource-link watch-link',
     })
+  } else {
+    links.push({
+      label: 'Search on YouTube',
+      url: `https://www.youtube.com/results?search_query=${query}`,
+      cls: 'resource-link youtube-link',
+    })
   }
-
-  links.push({
-    label: 'YouTube',
-    url: `https://www.youtube.com/results?search_query=${query}`,
-    cls: 'resource-link youtube-link',
-  })
 
   return links
 }
@@ -109,6 +108,16 @@ function App(): JSX.Element {
       resultScope !== 'full' ||
       retrievalMode !== 'tfidf'
     )
+  }
+
+  const buildSearchContext = (): string => {
+    const q = searchTerm.trim()
+    if (q) return q
+    const parts: string[] = []
+    if (comedian.trim()) parts.push(comedian.trim())
+    if (specialType.trim()) parts.push(specialType.trim())
+    if (yearMin !== YEAR_MIN || yearMax !== YEAR_MAX) parts.push(`${yearMin}–${yearMax}`)
+    return parts.join(', ')
   }
 
   const runSearch = async (query: string): Promise<void> => {
@@ -558,7 +567,13 @@ function App(): JSX.Element {
         </aside>
       </div>
 
-      {useLlm && <Chat onSearchTerm={setSearchTerm} />}
+      {useLlm && (
+        <RagPanel
+          query={buildSearchContext()}
+          visibleResults={visibleResults}
+          hasResults={allResults.length > 0 && hasSearched}
+        />
+      )}
     </div>
   )
 }

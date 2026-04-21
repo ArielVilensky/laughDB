@@ -7,8 +7,8 @@ import os
 from flask import send_from_directory, request, jsonify
 from retrieval_updated import search_chunks, initialize_search
 
-USE_LLM = False
-# USE_LLM = True
+# USE_LLM = False
+USE_LLM = True
 
 DEFAULT_YEAR_MIN = 1965
 DEFAULT_YEAR_MAX = 2026

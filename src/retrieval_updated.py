@@ -18,7 +18,9 @@ from index_builder import (
     build_streaming_lookup_keys,
     choose_watch_link,
     clean_and_tokenize_text,
+    is_garbage_token,
     load_streaming_links,
+    PROFANITY_WORDS,
     STREAMING_LINKS_PATH,
 )
 from chunk_index_builder import build_semantic_chunks
@@ -104,7 +106,7 @@ def load_pickle(path: str) -> Any:
     return joblib.load(path)
 
 
-# --- Teammate's gzip/pickle approach (kept for reference) ---
+# ---  gzip/pickle approach  ---
 # def pickle_exists(path: str) -> bool:
 #     return os.path.exists(path + ".gz") or os.path.exists(path)
 #
@@ -189,6 +191,8 @@ def compute_idf(
         if df < min_df:
             continue
         if df / max(1, n_docs) > max_df_ratio:
+            continue
+        if is_garbage_token(term):
             continue
 
         idf[term] = math.log((1 + n_docs) / (1 + df)) + 1
@@ -658,11 +662,12 @@ def build_svd_dimension_terms(
     top_terms: int = SVD_EXPLAIN_TOP_TERMS,
 ) -> Dict[int, Dict[str, List[str]]]:
     dimension_terms: Dict[int, Dict[str, List[str]]] = {}
+    candidates = top_terms * 4
 
     for dim_idx, component in enumerate(svd_model.components_):
         sorted_indices = np.argsort(component)
-        top_negative = [index_to_word[i] for i in sorted_indices[:top_terms]]
-        top_positive = [index_to_word[i] for i in sorted_indices[-top_terms:][::-1]]
+        top_negative = [index_to_word[i] for i in sorted_indices[:candidates]]
+        top_positive = [index_to_word[i] for i in sorted_indices[-candidates:][::-1]]
 
         dimension_terms[dim_idx] = {
             "positive": top_positive,
@@ -677,9 +682,15 @@ def explain_svd_alignment(
     item_latent: Optional[np.ndarray],
     dimension_terms: Optional[Dict[int, Dict[str, List[str]]]],
     top_dims: int = SVD_EXPLAIN_TOP_DIMS,
+    exclude_profanity: bool = False,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     if q_latent is None or item_latent is None or dimension_terms is None:
         return [], []
+
+    def _filter_terms(terms: List[str]) -> List[str]:
+        if not exclude_profanity:
+            return terms[:SVD_EXPLAIN_TOP_TERMS]
+        return [t for t in terms if t.lower() not in PROFANITY_WORDS][:SVD_EXPLAIN_TOP_TERMS]
 
     contributions = q_latent * item_latent
     ranked = np.argsort(np.abs(contributions))[::-1]
@@ -692,14 +703,15 @@ def explain_svd_alignment(
         if contribution == 0:
             continue
 
+        dim_data = dimension_terms.get(int(dim), {})
         entry = {
             "dimension": int(dim),
             "query_weight": float(q_latent[dim]),
             "chunk_weight": float(item_latent[dim]),
             "contribution": contribution,
             "direction": "positive" if contribution > 0 else "negative",
-            "top_positive_terms": dimension_terms.get(int(dim), {}).get("positive", []),
-            "top_negative_terms": dimension_terms.get(int(dim), {}).get("negative", []),
+            "top_positive_terms": _filter_terms(dim_data.get("positive", [])),
+            "top_negative_terms": _filter_terms(dim_data.get("negative", [])),
         }
 
         if contribution > 0 and len(positive_dims) < top_dims:
@@ -961,20 +973,14 @@ def get_chunk_index() -> Dict[str, Any]:
     return _SEARCH_INDEX["chunk"]
 
 
-def _resolve_watch_url(item: Dict[str, Any]) -> str:
-    comedian = item.get("comedian", "")
-    special_title = item.get("special_title", "")
-    yt = item.get("yt", "")
-    url, _ = choose_watch_link(yt, comedian, special_title, get_streaming_links())
-    return url
-
-
-def _resolve_watch_platform(item: Dict[str, Any]) -> str:
-    comedian = item.get("comedian", "")
-    special_title = item.get("special_title", "")
-    yt = item.get("yt", "")
-    _, platform = choose_watch_link(yt, comedian, special_title, get_streaming_links())
-    return platform
+def _resolve_watch(item: Dict[str, Any]) -> Tuple[str, str]:
+    url, platform = choose_watch_link(
+        item.get("yt", ""),
+        item.get("comedian", ""),
+        item.get("special_title", ""),
+        get_streaming_links(),
+    )
+    return url, platform
 
 
 def build_result_object(
@@ -991,11 +997,34 @@ def build_result_object(
     idf: Dict[str, float],
     is_full_transcript: bool,
     include_svd_explanations: bool = True,
+    exclude_profanity: bool = False,
     q_latent: Optional[np.ndarray] = None,
     item_latent: Optional[np.ndarray] = None,
     dimension_terms: Optional[Dict[int, Dict[str, List[str]]]] = None,
 ) -> Dict[str, Any]:
-    if is_full_transcript:
+    if not query:
+        if is_full_transcript:
+            source_sentences = docs[item["doc_id"]].get("sentences", [])
+            display_snippet, snippet_start, snippet_end, snippet_sentences = build_display_snippet_from_best_sentence(
+                source_sentences=source_sentences,
+                best_global_idx=None,
+            )
+            global_snippet_start = snippet_start
+            global_snippet_end = snippet_end
+        else:
+            chunk_sentences = item.get("chunk_sentences", [])
+            snippet_sentences = chunk_sentences[:]
+            snippet_start = item.get("sentence_start", 0)
+            snippet_end = item.get("sentence_end", max(0, len(chunk_sentences) - 1))
+            global_snippet_start = snippet_start
+            global_snippet_end = snippet_end
+            display_snippet = " ".join(chunk_sentences)
+        display_snippet = trim_snippet_to_word_limit(display_snippet, 250)
+        best_sentence_index = None
+        best_sentence = ""
+        sentence_score = 0.0
+        best_sentence_proximity = 0.0
+    elif is_full_transcript:
         doc = docs[item["doc_id"]]
         source_sentences = doc.get("sentences", [])
         source_sentence_tokens = doc.get("sentence_tokens", [])
@@ -1023,7 +1052,7 @@ def build_result_object(
             best_sentence_index,
             best_sentence,
             sentence_score,
-            best_sentence_proximity,
+            _,
             snippet_start,
             snippet_end,
             snippet_sentences,
@@ -1047,6 +1076,8 @@ def build_result_object(
     similarity_score = float(max(0.0, min(1.0, final_score)))
     similarity_percent = 100.0 * similarity_score
 
+    _watch_url, _watch_platform = _resolve_watch(item)
+
     svd_positive_dimensions = None
     svd_negative_dimensions = None
 
@@ -1062,6 +1093,7 @@ def build_result_object(
             item_latent=item_latent,
             dimension_terms=dimension_terms,
             top_dims=SVD_EXPLAIN_TOP_DIMS,
+            exclude_profanity=exclude_profanity,
         ) if retrieval_mode == "svd" else ([], [])
 
     return {
@@ -1096,8 +1128,8 @@ def build_result_object(
         "result_scope": "full" if is_full_transcript else "chunks",
         "svd_positive_dimensions": svd_positive_dimensions,
         "svd_negative_dimensions": svd_negative_dimensions,
-        "watch_url": _resolve_watch_url(item),
-        "watch_platform": _resolve_watch_platform(item),
+        "watch_url": _watch_url,
+        "watch_platform": _watch_platform,
     }
 
 def compute_full_window_proximity_score(
@@ -1296,6 +1328,7 @@ def search_chunks(
                     idf=idf,
                     is_full_transcript=True,
                     include_svd_explanations=False,
+                    exclude_profanity=exclude_profanity,
                     q_latent=None,
                     item_latent=None,
                     dimension_terms=dimension_terms,
@@ -1339,6 +1372,7 @@ def search_chunks(
                 idf=idf,
                 is_full_transcript=False,
                 include_svd_explanations=False,
+                exclude_profanity=exclude_profanity,
                 q_latent=None,
                 item_latent=None,
                 dimension_terms=dimension_terms,
@@ -1455,6 +1489,7 @@ def search_chunks(
                 idf=idf,
                 is_full_transcript=True,
                 include_svd_explanations=show_svd_explanations,
+                exclude_profanity=exclude_profanity,
                 q_latent=q_latent,
                 item_latent=item_latent,
                 dimension_terms=dimension_terms,
@@ -1497,6 +1532,7 @@ def search_chunks(
             idf=idf,
             is_full_transcript=False,
             include_svd_explanations=show_svd_explanations,
+            exclude_profanity=exclude_profanity,
             q_latent=q_latent,
             item_latent=item_latent,
             dimension_terms=dimension_terms,
