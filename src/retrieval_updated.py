@@ -1,13 +1,13 @@
-import gzip
 import math
 import os
-import pickle
 import re
 import time
+# import gzip  # teammate's compression approach (see commented save/load below)
 from collections import Counter, defaultdict
 from difflib import get_close_matches
 from typing import Dict, List, Tuple, Any, Optional
 
+import joblib
 import numpy as np
 from scipy.sparse import csr_matrix
 from sklearn.decomposition import TruncatedSVD
@@ -70,10 +70,9 @@ MIN_DISPLAY_SNIPPET_WORDS = 85
 SVD_EXPLAIN_TOP_DIMS = 3
 SVD_EXPLAIN_TOP_TERMS = 8
 
-BUILD_CHUNK_INDEX_AT_STARTUP = False
+BUILD_CHUNK_INDEX_AT_STARTUP = True
 DEFAULT_USE_PROXIMITY_SCORING = True
 DEFAULT_SHOW_SVD_EXPLANATIONS = True
-DEFAULT_DEBUG_SCORE_BREAKDOWN = False
 
 BASE_SCORE_WEIGHT = 0.70
 PROXIMITY_SCORE_WEIGHT = 0.30
@@ -86,8 +85,6 @@ _SEARCH_INDEX: Dict[str, Optional[Dict[str, Any]]] = {
 def get_rerank_candidate_limit(result_scope: str) -> int:
     return RERANK_CANDIDATES_FULL if result_scope == "full" else RERANK_CANDIDATES_CHUNKS
 
-def _fmt_elapsed(start: float) -> str:
-    return f"{time.perf_counter() - start:.2f}s"
 
 
 def ensure_data_dir() -> None:
@@ -95,28 +92,40 @@ def ensure_data_dir() -> None:
 
 
 def pickle_exists(path: str) -> bool:
-    """Return True if a gzip-compressed or plain pickle exists for path."""
-    return os.path.exists(path + ".gz") or os.path.exists(path)
+    return os.path.exists(path)
 
 
 def save_pickle(path: str, obj: Any) -> None:
     ensure_data_dir()
-    gz_path = path + ".gz"
-    with gzip.open(gz_path, "wb", compresslevel=3) as f:
-        pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
-    # Remove the uncompressed file if it exists from a previous run
-    if os.path.exists(path):
-        os.remove(path)
+    joblib.dump(obj, path, compress=3)
 
 
 def load_pickle(path: str) -> Any:
-    gz_path = path + ".gz"
-    if os.path.exists(gz_path):
-        with gzip.open(gz_path, "rb") as f:
-            return pickle.load(f)
-    # Fallback: load uncompressed (handles old files)
-    with open(path, "rb") as f:
-        return pickle.load(f)
+    return joblib.load(path)
+
+
+# --- Teammate's gzip/pickle approach (kept for reference) ---
+# def pickle_exists(path: str) -> bool:
+#     return os.path.exists(path + ".gz") or os.path.exists(path)
+#
+# def save_pickle(path: str, obj: Any) -> None:
+#     ensure_data_dir()
+#     import gzip, pickle
+#     gz_path = path + ".gz"
+#     with gzip.open(gz_path, "wb", compresslevel=3) as f:
+#         pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
+#     if os.path.exists(path):
+#         os.remove(path)
+#
+# def load_pickle(path: str) -> Any:
+#     import gzip, pickle
+#     gz_path = path + ".gz"
+#     if os.path.exists(gz_path):
+#         with gzip.open(gz_path, "rb") as f:
+#             return pickle.load(f)
+#     with open(path, "rb") as f:
+#         return pickle.load(f)
+# ------------------------------------------------------------
 
 
 def build_word_document_count(items: List[Dict[str, Any]]) -> Dict[str, int]:
@@ -603,6 +612,15 @@ def resolve_comedian_name(comedian: Optional[str], known_comedians: List[str]) -
     return matches[0] if matches else comedian
 
 
+def extract_comedian_from_query(query: str, known_comedians: List[str]) -> Tuple[Optional[str], str]:
+    for comedian in sorted(known_comedians, key=len, reverse=True):
+        pattern = re.compile(r'\b' + re.escape(comedian) + r'\b', re.IGNORECASE)
+        if pattern.search(query):
+            stripped = pattern.sub('', query).strip()
+            return comedian, stripped
+    return None, query
+
+
 def item_passes_filters(
     item: Dict[str, Any],
     resolved_comedian: Optional[str],
@@ -701,18 +719,13 @@ def load_or_build_transcript_docs() -> Dict[str, Any]:
     if pickle_exists(TRANSCRIPT_DOCS_PATH):
         #print("Loading transcript docs...")
         docs_payload = load_pickle(TRANSCRIPT_DOCS_PATH)
-        #print(f"Loaded transcript docs in {_fmt_elapsed(start)}")
         return docs_payload
 
-    #print("Building transcript docs from raw JSON...")
     docs_payload = build_transcript_index_payload(TRANSCRIPTS_PATH)
-    #print(f"Built transcript docs in {_fmt_elapsed(start)}")
 
     save_start = time.perf_counter()
     save_pickle(TRANSCRIPT_DOCS_PATH, docs_payload)
-    #print(f"Saved transcript docs in {_fmt_elapsed(save_start)}")
 
-    #print(f"Total transcript docs step time: {_fmt_elapsed(start)}")
     return docs_payload
 
 
@@ -805,20 +818,15 @@ def build_transcript_search_index_from_docs(docs_payload: Dict[str, Any]) -> Dic
 
 def build_transcript_search_index() -> Dict[str, Any]:
     start = time.perf_counter()
-    # print("Starting transcript search index build...")
 
     docs_payload = load_or_build_transcript_docs()
-    #print(f"Docs ready at {_fmt_elapsed(start)}")
 
     build_start = time.perf_counter()
     index = build_transcript_search_index_from_docs(docs_payload)
-    #print(f"Transcript TF-IDF/SVD structures built in {_fmt_elapsed(build_start)}")
 
     save_start = time.perf_counter()
     save_pickle(TRANSCRIPT_INDEX_PATH, index)
-    #print(f"Saved transcript search index in {_fmt_elapsed(save_start)}")
 
-    #print(f"Total transcript search index build time: {_fmt_elapsed(start)}")
     return index
 
 
@@ -831,51 +839,32 @@ def load_or_build_transcript_search_index() -> Dict[str, Any]:
 
 def build_chunk_search_index() -> Dict[str, Any]:
     start = time.perf_counter()
-    #print("Starting chunk search index build...")
 
-    #print(f"CHUNK_INDEX_PATH exists: {os.path.exists(CHUNK_INDEX_PATH)}")
-    #print(f"TRANSCRIPT_DOCS_PATH exists: {os.path.exists(TRANSCRIPT_DOCS_PATH)}")
-    #print(f"TRANSCRIPT_INDEX_PATH exists: {os.path.exists(TRANSCRIPT_INDEX_PATH)}")
 
     docs_load_start = time.perf_counter()
     docs_payload = load_or_build_transcript_docs()
     docs = docs_payload["docs"]
-    #print(f"Transcript docs ready in {_fmt_elapsed(docs_load_start)} (docs={len(docs)})")
 
     sentence_count = sum(len(doc.get("sentences", [])) for doc in docs)
     token_count = sum(len(doc.get("tokens", [])) for doc in docs)
-    #print(f"Total transcript sentences: {sentence_count}")
-    #print(f"Total transcript tokens: {token_count}")
 
     chunk_start = time.perf_counter()
-    #print("Beginning semantic chunk construction...")
     chunks, adjacent_similarities, transcript_chunk_ids = build_semantic_chunks(docs)
-    #print(f"Semantic chunks built in {_fmt_elapsed(chunk_start)} (chunks={len(chunks)})")
 
     if adjacent_similarities:
         avg_adj = sum(adjacent_similarities) / len(adjacent_similarities)
-        # print(
-        #     "Adjacent sentence similarity stats: "
-        #     f"count={len(adjacent_similarities)} "
-        #     f"avg={avg_adj:.4f} "
-        #     f"min={min(adjacent_similarities):.4f} "
-        #     f"max={max(adjacent_similarities):.4f}"
-        # )
 
     tfidf_start = time.perf_counter()
-    #print("Building chunk vocabulary / TF-IDF...")
 
     chunk_good_words = build_good_words(
         chunks,
         min_df=MIN_DF,
         max_df_ratio=CHUNK_MAX_DF_RATIO,
     )
-    #print(f"Chunk good words count: {len(chunk_good_words)}")
 
     chunks = filter_tokens_to_good_words(chunks, chunk_good_words)
 
     chunk_inv_idx = build_inverted_index(chunks)
-    #print(f"Chunk inverted index terms: {len(chunk_inv_idx)}")
 
     chunk_idf = compute_idf(
         chunk_inv_idx,
@@ -883,10 +872,8 @@ def build_chunk_search_index() -> Dict[str, Any]:
         min_df=MIN_DF,
         max_df_ratio=CHUNK_MAX_DF_RATIO,
     )
-    #print(f"Chunk IDF terms kept: {len(chunk_idf)}")
 
     chunk_vocab, chunk_word_to_index, chunk_index_to_word = create_vocab(chunk_idf)
-    #print(f"Chunk vocab size: {len(chunk_vocab)}")
 
     chunk_tfidf_matrix = create_tfidf_matrix(
         chunks,
@@ -894,10 +881,6 @@ def build_chunk_search_index() -> Dict[str, Any]:
         chunk_idf,
         normalize_tf=True,
     )
-    # print(
-    #     f"Chunk TF-IDF built in {_fmt_elapsed(tfidf_start)} | "
-    #     f"shape={chunk_tfidf_matrix.shape}"
-    # )
 
     svd_start = time.perf_counter()
     chunk_svd_model = None
@@ -909,7 +892,6 @@ def build_chunk_search_index() -> Dict[str, Any]:
             DEFAULT_SVD_COMPONENTS,
             max(1, min(chunk_tfidf_matrix.shape[0] - 1, chunk_tfidf_matrix.shape[1] - 1))
         )
-        #print(f"Running chunk SVD with n_components={svd_components}...")
 
         chunk_svd_model = TruncatedSVD(n_components=svd_components, random_state=42)
         chunk_svd_matrix = normalize(chunk_svd_model.fit_transform(chunk_tfidf_matrix))
@@ -919,7 +901,6 @@ def build_chunk_search_index() -> Dict[str, Any]:
             top_terms=SVD_EXPLAIN_TOP_TERMS,
         )
 
-    #print(f"Chunk SVD built in {_fmt_elapsed(svd_start)}")
 
     index = {
         "docs": docs,
@@ -937,8 +918,6 @@ def build_chunk_search_index() -> Dict[str, Any]:
 
     save_start = time.perf_counter()
     save_pickle(CHUNK_INDEX_PATH, index)
-    #print(f"Saved chunk search index in {_fmt_elapsed(save_start)}")
-    #print(f"Total chunk search index build time: {_fmt_elapsed(start)}")
 
     return index
 
@@ -954,39 +933,19 @@ def initialize_search() -> None:
     global _SEARCH_INDEX
 
     total_start = time.perf_counter()
-    #print("Initializing search indexes at startup...")
 
     transcript_start = time.perf_counter()
-    #print("Initializing transcript search index at startup...")
     _SEARCH_INDEX["transcript"] = load_or_build_transcript_search_index()
-    #print(f"Transcript search index ready in {_fmt_elapsed(transcript_start)}")
 
     if BUILD_CHUNK_INDEX_AT_STARTUP:
         chunk_start = time.perf_counter()
-        #print("Initializing chunk search index at startup...")
         _SEARCH_INDEX["chunk"] = load_or_build_chunk_search_index()
-        #print(f"Chunk search index ready in {_fmt_elapsed(chunk_start)}")
-    # else:
-    #     print("Skipping chunk search index at startup.")
 
-    #print(f"All search indexes ready in {_fmt_elapsed(total_start)}")
 
 def reinitialize_search() -> None:
     global _SEARCH_INDEX
-
-    total_start = time.perf_counter()
-    print("Initializing search indexes at startup...")
-
-    transcript_start = time.perf_counter()
-    print("Initializing transcript search index at startup...")
     _SEARCH_INDEX["transcript"] = build_transcript_search_index()
-    print(f"Transcript search index ready in {_fmt_elapsed(transcript_start)}")
-
-    chunk_start = time.perf_counter()
-    print("Initializing chunk search index at startup...")
     _SEARCH_INDEX["chunk"] = build_chunk_search_index()
-    print(f"Chunk search index ready in {_fmt_elapsed(chunk_start)}")
-    print(f"All search indexes ready in {_fmt_elapsed(total_start)}")
 
 def get_transcript_index() -> Dict[str, Any]:
     global _SEARCH_INDEX
@@ -1141,50 +1100,6 @@ def build_result_object(
         "watch_platform": _resolve_watch_platform(item),
     }
 
-def debug_print_top_result_contributions(
-    *,
-    query: str,
-    ranked_indices: List[int],
-    items: List[Dict[str, Any]],
-    normalized_base_score_by_idx: Dict[int, float],
-    proximity_score_by_idx: Dict[int, float],
-    final_score_by_idx: Dict[int, float],
-    retrieval_mode: str,
-    result_scope: str,
-    limit: int = 25,
-) -> None:
-    print("\n" + "=" * 100)
-    print("TOP RESULT SCORE BREAKDOWN")
-    print("=" * 100)
-    print(
-        f"query={query!r} | mode={retrieval_mode} | scope={result_scope} | "
-        f"weights=(base={BASE_SCORE_WEIGHT:.2f}, proximity={PROXIMITY_SCORE_WEIGHT:.2f})"
-    )
-
-    shown = min(limit, len(ranked_indices))
-    for rank, idx in enumerate(ranked_indices[:shown], start=1):
-        item = items[idx]
-
-        base_score = float(normalized_base_score_by_idx.get(idx, 0.0))
-        proximity_score = float(proximity_score_by_idx.get(idx, 0.0))
-        final_score = float(final_score_by_idx.get(idx, base_score))
-
-        weighted_base = BASE_SCORE_WEIGHT * base_score
-        weighted_proximity = PROXIMITY_SCORE_WEIGHT * proximity_score
-
-        title = item.get("special_title") or item.get("title") or ""
-        comedian = item.get("comedian") or "Unknown"
-
-        print(
-            f"{rank:>2}. doc_id={item.get('doc_id')} | comedian={comedian!r} | "
-            f"title={title!r}"
-        )
-        print(
-            f"    final={final_score:.4f} | "
-            f"base={base_score:.4f} -> weighted={weighted_base:.4f} | "
-            f"proximity={proximity_score:.4f} -> weighted={weighted_proximity:.4f}"
-        )
-
 def compute_full_window_proximity_score(
     query_tokens: List[str],
     doc_tokens: List[str],
@@ -1311,7 +1226,6 @@ def search_chunks(
     result_scope: str = DEFAULT_RESULT_SCOPE,
     use_expensive_proximity_scoring: bool = False,
     show_svd_explanations: bool = DEFAULT_SHOW_SVD_EXPLANATIONS,
-    debug_score_breakdown: bool = DEFAULT_DEBUG_SCORE_BREAKDOWN,
 ) -> Dict[str, Any]:
     if result_scope not in {"chunks", "full"}:
         result_scope = "full"
@@ -1331,6 +1245,8 @@ def search_chunks(
     idf = index["idf"]
 
     known_comedians = get_known_comedians(items)
+    if not comedian:
+        comedian, query = extract_comedian_from_query(query, known_comedians)
     resolved_comedian = resolve_comedian_name(comedian, known_comedians)
 
     filtered_indices = [
@@ -1517,18 +1433,6 @@ def search_chunks(
         reverse=True,
     )
 
-    if debug_score_breakdown:
-        debug_print_top_result_contributions(
-            query=query,
-            ranked_indices=ranked_indices,
-            items=items,
-            normalized_base_score_by_idx=normalized_base_score_by_idx,
-            proximity_score_by_idx=proximity_score_by_idx,
-            final_score_by_idx=final_score_by_idx,
-            retrieval_mode=retrieval_mode,
-            result_scope=result_scope,
-            limit=top_k,
-        )
 
     if result_scope == "full":
         selected = ranked_indices[:top_k]

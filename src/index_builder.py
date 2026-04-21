@@ -26,20 +26,12 @@ CUSTOM_STOPWORDS = {
     "dont", "didnt", "doesnt", "isnt", "arent", "wasnt", "werent",
     "wouldnt", "couldnt", "shouldnt", "cant", "wont", "aint",
     "gonna", "wanna", "gotta",
-    "uh", "um", "oh", "yeah", "hey", "ok", "okay",
+    "uh", "um", "oh", "yeah", "hey", "ok", "okay", "joke", "jokes"
 }
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 STREAMING_LINKS_PATH = os.path.join(DATA_DIR, "streaming_links.json")
-
-METADATA_AUDIT_OPTIONS = {
-    "print_title_comedian_year": False,
-    "print_missing_yt_links": False,
-    "print_first_10_sentences": False,
-    "print_suspicious_metadata": False,
-    "max_sentences_to_print": 10,
-}
 
 DOC_COMEDIAN_OVERRIDES = {
     26: "Unknown",
@@ -525,11 +517,6 @@ def strip_leading_presenter_intro(text: str) -> str:
             dt = time.perf_counter() - t0
 
             if updated != current:
-                # print(
-                #     f"      [presenter_intro iter {iteration:02d}] "
-                #     f"matched {pattern!r} in {dt:.3f}s | "
-                #     f"len {len(current)} -> {len(updated)}"
-                # )
                 current = updated
                 changed = True
 
@@ -543,27 +530,13 @@ def strip_leading_presenter_intro(text: str) -> str:
         dt = time.perf_counter() - t0
 
         if updated != current:
-            # print(
-            #     f"      [presenter_intro iter {iteration:02d}] "
-            #     f"name-strip matched in {dt:.3f}s | "
-            #     f"len {len(current)} -> {len(updated)}"
-            # )
             current = updated
             changed = True
 
         if not changed:
-            # print(
-            #     f"      [presenter_intro] finished after {iteration} iterations "
-            #     f"in {time.perf_counter() - total_start:.3f}s | "
-            #     f"len {len(text)} -> {len(current)}"
-            # )
             return current.strip()
 
         if current == before_iter:
-            # print(
-            #     f"      [presenter_intro] no effective change after iteration {iteration} "
-            #     f"in {time.perf_counter() - total_start:.3f}s"
-            # )
             return current.strip()
 
 def strip_transcript_promos(text: str) -> str:
@@ -665,11 +638,6 @@ def clean_transcript_content(text: str, title: str = "") -> str:
         return ""
 
     def _log(step_name: str, start_time: float, before_text: str, after_text: str) -> None:
-        # print(
-        #     f"    [{step_name:32s}] "
-        #     f"{time.perf_counter() - start_time:7.3f}s | "
-        #     f"len {len(before_text):6d} -> {len(after_text):6d}"
-        # )
         pass
 
     current = text
@@ -1016,81 +984,20 @@ def choose_watch_link(
     return "", ""
 
 
-def debug_print_metadata_audit(docs: List[Dict[str, Any]], options: Dict[str, bool]) -> None:
-    if not options:
-        return
-
-    if options.get("print_title_comedian_year", False):
-        print("\n" + "=" * 80)
-        print("TITLE | COMEDIAN | YEAR")
-        print("=" * 80)
-        for doc in sorted(docs, key=lambda d: (d.get("comedian", "").lower(), d.get("title", "").lower())):
-            print(
-                f"{doc.get('title', '')} | "
-                f"{doc.get('comedian', '')} | "
-                f"{doc.get('release_date', '')}"
-            )
-
-    if options.get("print_missing_yt_links", False):
-        print("\n" + "=" * 80)
-        print("TRANSCRIPTS WITHOUT USABLE YT LINKS")
-        print("=" * 80)
-        missing_yt = [doc for doc in docs if not is_valid_http_url(doc.get("yt", ""))]
-        for doc in missing_yt:
-            print(
-                f"{doc.get('title', '')} | "
-                f"comedian={doc.get('comedian', '')} | "
-                f"yt={doc.get('yt', '')}"
-            )
-
-
 def build_transcript_index_payload(transcripts_path: str) -> Dict[str, Any]:
-    import time
-
-    #print("=" * 80)
-    #print("Building transcript docs from raw JSON...")
-    #print(f"Source file: {transcripts_path}")
-
-    total_start = time.perf_counter()
-
     raw_transcripts = load_raw_transcripts(transcripts_path)
-    # print(
-    #     f"Loaded {len(raw_transcripts)} raw transcript records in "
-    #     f"{time.perf_counter() - total_start:.2f}s"
-    # )
-
     streaming_links = load_streaming_links()
-    #print(f"Loaded {len(streaming_links)} streaming link entries")
 
     docs: List[Dict[str, Any]] = []
     skipped_empty = 0
 
-    suspicious_missing_title = []
-    suspicious_unknown_comedian = []
-    suspicious_long_comedian = []
-
-    print_title_comedian_year = METADATA_AUDIT_OPTIONS.get("print_title_comedian_year", False)
-    print_first_10_sentences = METADATA_AUDIT_OPTIONS.get("print_first_10_sentences", False)
-    print_suspicious_metadata = METADATA_AUDIT_OPTIONS.get("print_suspicious_metadata", False)
-    max_sentences_to_print = int(METADATA_AUDIT_OPTIONS.get("max_sentences_to_print", 10))
-
     for doc_id, item in enumerate(raw_transcripts):
-        doc_start = time.perf_counter()
-
-        # if doc_id % 25 == 0:
-        #     print(f"\n--- Processing doc {doc_id}/{len(raw_transcripts)} ---")
-
         url = item.get("url", "")
         title = item.get("title", "")
         raw_content = item.get("content", "")
         yt = normalize_metadata_value(item.get("yt", ""))
         raw_tags = item.get("tags", [])
         tag_texts = extract_tag_texts(raw_tags)
-
-        # -------------------------
-        # METADATA
-        # -------------------------
-        t0 = time.perf_counter()
 
         parsed_comedian, parsed_special_title, parsed_release_date = parse_title_metadata(title)
 
@@ -1113,107 +1020,24 @@ def build_transcript_index_payload(transcripts_path: str) -> Dict[str, Any]:
             streaming_links=streaming_links,
         )
 
-        #print(f"[doc {doc_id}] metadata took {time.perf_counter() - t0:.3f}s")
-
-        # -------------------------
-        # CLEANING
-        # -------------------------
-        t0 = time.perf_counter()
         cleaned_content = clean_transcript_content(raw_content, title=title)
-        #print(f"[doc {doc_id}] cleaning took {time.perf_counter() - t0:.3f}s")
-
-        # -------------------------
-        # SENTENCE SPLIT
-        # -------------------------
-        t0 = time.perf_counter()
         sentences = split_text_into_sentences(cleaned_content)
-        #print(f"[doc {doc_id}] sentence split took {time.perf_counter() - t0:.3f}s (n={len(sentences)})")
 
         if not cleaned_content or not sentences:
             skipped_empty += 1
-            #print(f"[doc {doc_id}] skipped (empty after cleaning/splitting)")
             continue
 
-        # -------------------------
-        # OPTIONAL STARTUP AUDIT PRINTS
-        # -------------------------
-        if print_title_comedian_year:
-            print("\n" + "-" * 80)
-            print(f"[doc {doc_id}] TITLE: {title}")
-            print(f"[doc {doc_id}] COMEDIAN: {comedian}")
-            print(f"[doc {doc_id}] YEAR: {release_date}")
-
-        if print_first_10_sentences:
-            print(f"[doc {doc_id}] FIRST {max_sentences_to_print} SENTENCES:")
-            for i, sentence in enumerate(sentences[:max_sentences_to_print], start=1):
-                print(f"  {i}. {sentence}")
-
-        title_clean = str(title).strip()
-        comedian_clean = str(comedian).strip()
-        comedian_word_count = len([w for w in comedian_clean.split() if w.strip()])
-
-        if print_suspicious_metadata:
-            if not title_clean:
-                suspicious_missing_title.append({
-                    "doc_id": doc_id,
-                    "title": title,
-                    "comedian": comedian,
-                    "release_date": release_date,
-                })
-                print(f"[doc {doc_id}] WARNING: missing title")
-
-            if comedian_clean.lower() == "unknown":
-                suspicious_unknown_comedian.append({
-                    "doc_id": doc_id,
-                    "title": title,
-                    "comedian": comedian,
-                    "release_date": release_date,
-                })
-                print(f"[doc {doc_id}] WARNING: comedian is Unknown")
-
-            if comedian_word_count > 3:
-                suspicious_long_comedian.append({
-                    "doc_id": doc_id,
-                    "title": title,
-                    "comedian": comedian,
-                    "release_date": release_date,
-                })
-                print(
-                    f"[doc {doc_id}] WARNING: comedian name has more than 3 words "
-                    f"({comedian_word_count} words)"
-                )
-
-        if print_title_comedian_year or print_first_10_sentences or print_suspicious_metadata:
-            print("-" * 80)
-
-        # -------------------------
-        # DOC TOKENIZATION
-        # -------------------------
-        t0 = time.perf_counter()
         tokens = clean_and_tokenize_text(cleaned_content)
-        #print(f"[doc {doc_id}] doc tokenize took {time.perf_counter() - t0:.3f}s (n={len(tokens)})")
-
-        # -------------------------
-        # SENTENCE TOKENIZATION
-        # -------------------------
-        t0 = time.perf_counter()
         sentence_tokens = [
             clean_and_tokenize_text(sentence)
             for sentence in sentences
         ]
-        #print(f"[doc {doc_id}] sentence tokenize took {time.perf_counter() - t0:.3f}s")
-
-        # -------------------------
-        # FLAGS / INFERENCE
-        # -------------------------
-        t0 = time.perf_counter()
 
         has_profanity, profanity_terms = detect_profanity(tokenize_for_flags(cleaned_content))
         inferred_platform = infer_platform(url, title, cleaned_content)
         platform = watch_platform or inferred_platform
         special_type = infer_special_type(title, url, cleaned_content)
 
-        #print(f"[doc {doc_id}] flags/inference took {time.perf_counter() - t0:.3f}s")
 
         # -------------------------
         # BUILD DOC
@@ -1242,56 +1066,6 @@ def build_transcript_index_payload(transcripts_path: str) -> Dict[str, Any]:
         }
 
         docs.append(doc)
-
-        #print(f"[doc {doc_id}] TOTAL doc time: {time.perf_counter() - doc_start:.3f}s")
-
-    total_time = time.perf_counter() - total_start
-
-    # print("\n" + "=" * 80)
-    # print("TRANSCRIPT DOC BUILD COMPLETE")
-    # print("=" * 80)
-    # print(f"Docs kept: {len(docs)}")
-    # print(f"Docs skipped: {skipped_empty}")
-    # print(f"Total time: {total_time:.2f}s")
-
-    if print_suspicious_metadata:
-        print("\n" + "=" * 80)
-        print("SUSPICIOUS METADATA SUMMARY")
-        print("=" * 80)
-
-        print("\nMISSING TITLES:")
-        if suspicious_missing_title:
-            for row in suspicious_missing_title:
-                print(
-                    f"[doc {row['doc_id']}] "
-                    f"title={row['title']!r} | comedian={row['comedian']!r} | year={row['release_date']!r}"
-                )
-        else:
-            print("None")
-
-        print("\nUNKNOWN COMEDIAN:")
-        if suspicious_unknown_comedian:
-            for row in suspicious_unknown_comedian:
-                print(
-                    f"[doc {row['doc_id']}] "
-                    f"title={row['title']!r} | comedian={row['comedian']!r} | year={row['release_date']!r}"
-                )
-        else:
-            print("None")
-
-        print("\nCOMEDIAN NAMES WITH MORE THAN 3 WORDS:")
-        if suspicious_long_comedian:
-            for row in suspicious_long_comedian:
-                print(
-                    f"[doc {row['doc_id']}] "
-                    f"title={row['title']!r} | comedian={row['comedian']!r} | year={row['release_date']!r}"
-                )
-        else:
-            print("None")
-
-        print("=" * 80)
-
-    debug_print_metadata_audit(docs, METADATA_AUDIT_OPTIONS)
 
     return {
         "docs": docs,

@@ -105,10 +105,6 @@ def register_routes(app):
             "show_svd_explanations",
             True,
         )
-        debug_score_breakdown = optional_bool_arg(
-            "debug_score_breakdown",
-            False,
-        )
 
         results = search_chunks(
             query=query,
@@ -123,7 +119,6 @@ def register_routes(app):
             result_scope=result_scope,
             use_expensive_proximity_scoring=use_expensive_proximity_scoring,
             show_svd_explanations=show_svd_explanations,
-            debug_score_breakdown=debug_score_breakdown,
         )
         return jsonify(results)
 

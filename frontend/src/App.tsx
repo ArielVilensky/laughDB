@@ -41,8 +41,10 @@ function getWatchLinks(result: SearchResult): WatchLink[] {
   }
 
   if (result.watch_url) {
+    const platform = result.watch_platform || 'Watch'
+    const label = `Watch on ${platform}`
     links.push({
-      label: result.watch_platform || 'Watch',
+      label,
       url: result.watch_url,
       cls: 'resource-link watch-link',
     })
@@ -556,7 +558,7 @@ function App(): JSX.Element {
         </aside>
       </div>
 
-      {useLlm && <Chat onSearchTerm={setSearchTerm}/>}
+      {useLlm && <Chat onSearchTerm={setSearchTerm} />}
     </div>
   )
 }

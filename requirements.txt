@@ -8,6 +8,7 @@ python-dotenv
 git+https://github.com/MrPeterss/infosci-spark-client.git
 numpy
 scikit-learn
+joblib
 scipy
 nltk
 sentence-transformers
