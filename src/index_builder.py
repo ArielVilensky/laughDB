@@ -40,13 +40,14 @@ CUSTOM_STOPWORDS = {
     "im", "ive", "ill", "id",
     "youre", "youve", "youll", "youd",
     "were", "weve", "well", "wed",
-    "shes","hes","yall"
+    "shes","hes","yall",
     "theyre", "theyve", "theyll", "theyd",
     "thats", "theres", "whats", "wheres", "whos", "hows",
     "dont", "didnt", "doesnt", "isnt", "arent", "wasnt", "werent",
     "wouldnt", "couldnt", "shouldnt", "cant", "wont", "aint",
     "gonna", "wanna", "gotta",
-    "uh", "um", "oh", "yeah", "hey", "ok", "okay", "joke", "jokes", "n"
+    "uh", "um", "oh", "yeah", "hey", "ok", "okay", "joke", "jokes", "n",
+    "ck","ckin","gil","legat","afrin","ni","ga","cos", "tch"
 }
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

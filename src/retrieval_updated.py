@@ -51,15 +51,15 @@ TRANSCRIPT_DOCS_PATH = os.path.join(DATA_DIR, "transcript_docs.pkl")
 TRANSCRIPT_INDEX_PATH = os.path.join(DATA_DIR, "transcript_search_index.pkl")
 CHUNK_INDEX_PATH = os.path.join(DATA_DIR, "chunk_search_index.pkl")
 
-RERANK_CANDIDATES_FULL = 100
-RERANK_CANDIDATES_CHUNKS = 200
+RERANK_CANDIDATES_FULL = 300
+RERANK_CANDIDATES_CHUNKS = 400
 
 MIN_DF = 1
 TRANSCRIPT_MAX_DF_RATIO = 0.95
-CHUNK_MAX_DF_RATIO = 0.20
+CHUNK_MAX_DF_RATIO = 0.35
 
 DEFAULT_TOP_K = 25
-DEFAULT_SVD_COMPONENTS = 100
+DEFAULT_SVD_COMPONENTS = 130
 DEFAULT_MAX_CHUNKS_PER_DOC = 2
 DEFAULT_RESULT_SCOPE = "full"
 
@@ -70,7 +70,7 @@ TARGET_DISPLAY_SNIPPET_SENTENCES = 7
 MIN_DISPLAY_SNIPPET_WORDS = 85
 
 SVD_EXPLAIN_TOP_DIMS = 3
-SVD_EXPLAIN_TOP_TERMS = 8
+SVD_EXPLAIN_TOP_TERMS = 6
 
 BUILD_CHUNK_INDEX_AT_STARTUP = True
 DEFAULT_USE_PROXIMITY_SCORING = True
@@ -297,6 +297,17 @@ def trim_snippet_to_word_limit(text: str, max_words: int = 250) -> str:
         return text
     return " ".join(words[:max_words]) + " ..."
 
+def trim_snippet_sentences_to_word_limit(sentences: List[str], max_words: int = 250) -> List[str]:
+    count = 0
+    result = []
+    for s in sentences:
+        w = len(s.split())
+        if count + w > max_words and result:
+            break
+        result.append(s)
+        count += w
+    return result or sentences[:1]
+
 def find_best_matching_sentence_from_tokens(
     query: str,
     sentences: List[str],
@@ -387,38 +398,40 @@ def compute_token_window_proximity_score(
     doc_tokens: List[str],
 ) -> float:
     """
-    Returns a proximity score in [0, 1].
+    Partial proximity score in [0, 1].
 
-    Score is high when all distinct query terms occur in a small token window.
-    If fewer than 2 distinct query terms are present in the query, returns 0.0.
-    If not all distinct query terms appear in the document, returns 0.0.
+    Score = (n_found / total_terms) * (n_found / min_window_size)
+    Full credit when all terms appear adjacent; partial credit when only some
+    terms appear or they are spread apart. Never zeroed out solely because a
+    term is missing from the document.
     """
     if not query_tokens or not doc_tokens:
         return 0.0
 
     distinct_query_terms = list(dict.fromkeys(query_tokens))
-    if len(distinct_query_terms) < 2:
+    total_terms = len(distinct_query_terms)
+    if total_terms < 2:
         return 0.0
 
-    positions_by_term: Dict[str, List[int]] = {}
-    for term in distinct_query_terms:
-        positions_by_term[term] = []
-
+    positions_by_term: Dict[str, List[int]] = {t: [] for t in distinct_query_terms}
     for idx, token in enumerate(doc_tokens):
         if token in positions_by_term:
             positions_by_term[token].append(idx)
 
-    if any(not positions for positions in positions_by_term.values()):
+    found_by_term = {t: p for t, p in positions_by_term.items() if p}
+    n_found = len(found_by_term)
+    if n_found == 0:
         return 0.0
 
-    merged_positions: List[Tuple[int, str]] = []
-    for term, positions in positions_by_term.items():
-        for pos in positions:
-            merged_positions.append((pos, term))
+    coverage = n_found / total_terms
+    if n_found == 1:
+        return coverage
 
-    merged_positions.sort()
+    merged_positions: List[Tuple[int, str]] = sorted(
+        (pos, term) for term, positions in found_by_term.items() for pos in positions
+    )
 
-    needed = len(distinct_query_terms)
+    needed = n_found
     have_counts: Dict[str, int] = defaultdict(int)
     have_distinct = 0
     left = 0
@@ -432,21 +445,17 @@ def compute_token_window_proximity_score(
         while have_distinct == needed and left <= right:
             left_pos, left_term = merged_positions[left]
             window_size = right_pos - left_pos + 1
-
             if min_window_size is None or window_size < min_window_size:
                 min_window_size = window_size
-
             have_counts[left_term] -= 1
             if have_counts[left_term] == 0:
                 have_distinct -= 1
             left += 1
 
     if min_window_size is None:
-        return 0.0
+        return coverage
 
-    ideal_window = needed
-    proximity = ideal_window / float(min_window_size)
-    return max(0.0, min(1.0, proximity))
+    return max(0.0, min(1.0, coverage * (n_found / float(min_window_size))))
 
 
 def find_best_matching_sentence_by_proximity(
@@ -456,59 +465,28 @@ def find_best_matching_sentence_by_proximity(
     word_to_index: Dict[str, int],
     idf: Dict[str, float],
 ) -> Tuple[Optional[int], str, float, float]:
-    """
-    Returns:
-        best_idx,
-        best_sentence,
-        sentence_score,      # sentence-level TF-IDF cosine
-        proximity_score      # token-window proximity in [0, 1]
-    """
     if not sentences or not sentence_tokens:
         return None, "", 0.0, 0.0
 
-    query_vec = vectorize_query(query, word_to_index, idf)
     query_tokens = clean_and_tokenize_text(query)
+    if not query_tokens:
+        return None, "", 0.0, 0.0
 
     best_idx = None
     best_sentence = ""
-    best_sentence_score = 0.0
-    best_proximity_score = -1.0
-    best_combined_score = -1.0
+    best_score = 0.0
 
     for i, (sentence, tokens) in enumerate(zip(sentences, sentence_tokens)):
-        proximity_score = compute_token_window_proximity_score(query_tokens, tokens)
-
-        if np.linalg.norm(query_vec) == 0 or not tokens:
-            sentence_score = 0.0
-        else:
-            sent_vec = vectorize_tokens(tokens, word_to_index, idf, normalize_tf=True)
-            denom = np.linalg.norm(query_vec) * np.linalg.norm(sent_vec)
-            sentence_score = 0.0 if denom == 0 else float(np.dot(query_vec, sent_vec) / denom)
-
-        combined_score = 0.80 * proximity_score + 0.20 * sentence_score
-
-        if (
-            combined_score > best_combined_score
-            or (
-                abs(combined_score - best_combined_score) <= 1e-12
-                and proximity_score > best_proximity_score
-            )
-            or (
-                abs(combined_score - best_combined_score) <= 1e-12
-                and abs(proximity_score - best_proximity_score) <= 1e-12
-                and sentence_score > best_sentence_score
-            )
-        ):
+        score = compute_token_window_proximity_score(query_tokens, tokens)
+        if score > best_score:
+            best_score = score
             best_idx = i
             best_sentence = sentence
-            best_sentence_score = max(0.0, sentence_score)
-            best_proximity_score = max(0.0, proximity_score)
-            best_combined_score = combined_score
 
     if best_idx is None:
         return None, "", 0.0, 0.0
 
-    return best_idx, best_sentence, best_sentence_score, best_proximity_score
+    return best_idx, best_sentence, 0.0, best_score
 
 def build_display_snippet_for_chunk(
     query: str,
@@ -1112,7 +1090,7 @@ def build_result_object(
         "best_sentence": best_sentence,
         "best_sentence_index": best_sentence_index,
         "sentence_score": sentence_score,
-        "snippet_sentences": snippet_sentences,
+        "snippet_sentences": trim_snippet_sentences_to_word_limit(snippet_sentences, 250),
         "snippet_sentence_start": snippet_start,
         "snippet_sentence_end": snippet_end,
         "global_snippet_start": global_snippet_start,
@@ -1140,28 +1118,29 @@ def compute_full_window_proximity_score(
         return 0.0
 
     distinct_query_terms = list(dict.fromkeys(query_tokens))
-    if len(distinct_query_terms) < 2:
+    total_terms = len(distinct_query_terms)
+    if total_terms < 2:
         return 0.0
 
-    positions_by_term: Dict[str, List[int]] = {}
-    for term in distinct_query_terms:
-        positions_by_term[term] = []
-
+    positions_by_term: Dict[str, List[int]] = {t: [] for t in distinct_query_terms}
     for idx, token in enumerate(doc_tokens):
         if token in positions_by_term:
             positions_by_term[token].append(idx)
 
-    if any(not positions for positions in positions_by_term.values()):
+    found_by_term = {t: p for t, p in positions_by_term.items() if p}
+    n_found = len(found_by_term)
+    if n_found == 0:
         return 0.0
 
-    merged_positions: List[Tuple[int, str]] = []
-    for term, positions in positions_by_term.items():
-        for pos in positions:
-            merged_positions.append((pos, term))
+    coverage = n_found / total_terms
+    if n_found == 1:
+        return coverage
 
-    merged_positions.sort()
+    merged_positions: List[Tuple[int, str]] = sorted(
+        (pos, term) for term, positions in found_by_term.items() for pos in positions
+    )
 
-    needed = len(distinct_query_terms)
+    needed = n_found
     have_counts: Dict[str, int] = defaultdict(int)
     have_distinct = 0
     left = 0
@@ -1175,21 +1154,17 @@ def compute_full_window_proximity_score(
         while have_distinct == needed and left <= right:
             left_pos, left_term = merged_positions[left]
             window_size = right_pos - left_pos + 1
-
             if min_window_size is None or window_size < min_window_size:
                 min_window_size = window_size
-
             have_counts[left_term] -= 1
             if have_counts[left_term] == 0:
                 have_distinct -= 1
             left += 1
 
     if min_window_size is None:
-        return 0.0
+        return coverage
 
-    ideal_window = needed
-    proximity = ideal_window / float(min_window_size)
-    return max(0.0, min(1.0, proximity))
+    return max(0.0, min(1.0, coverage * (n_found / float(min_window_size))))
 
 def compute_fast_proximity_score(
     query_tokens: List[str],
@@ -1199,7 +1174,8 @@ def compute_fast_proximity_score(
         return 0.0
 
     distinct_query_terms = list(dict.fromkeys(query_tokens))
-    if len(distinct_query_terms) < 2:
+    total_terms = len(distinct_query_terms)
+    if total_terms < 2:
         return 0.0
 
     first_positions = []
@@ -1209,16 +1185,17 @@ def compute_fast_proximity_score(
         if token in distinct_query_terms and token not in found_terms:
             first_positions.append(idx)
             found_terms.add(token)
-            if len(found_terms) == len(distinct_query_terms):
-                break
 
-    if len(found_terms) < len(distinct_query_terms):
+    n_found = len(found_terms)
+    if n_found == 0:
         return 0.0
 
+    coverage = n_found / total_terms
+    if n_found == 1:
+        return coverage
+
     span = max(first_positions) - min(first_positions) + 1
-    ideal_window = len(distinct_query_terms)
-    proximity = ideal_window / float(span)
-    return max(0.0, min(1.0, proximity))
+    return max(0.0, min(1.0, coverage * (n_found / float(span))))
 
 def sort_indices_for_filter_only_browse(
     indices: List[int],

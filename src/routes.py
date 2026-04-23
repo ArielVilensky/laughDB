@@ -54,6 +54,13 @@ def register_routes(app):
     def config():
         return jsonify({"use_llm": USE_LLM})
 
+    @app.route("/api/comedians")
+    def comedians():
+        from retrieval_updated import get_transcript_index, get_known_comedians
+        idx = get_transcript_index()
+        names = get_known_comedians(idx.get("items", []))
+        return jsonify(names)
+
     @app.route("/api/search")
     def transcript_search():
         query = request.args.get("query", "").strip()
@@ -123,5 +130,7 @@ def register_routes(app):
         return jsonify(results)
 
     if USE_LLM:
-        from llm_routes import register_chat_route
+        from llm_routes import register_chat_route, register_bit_summary_route, register_query_reformulate_route
         register_chat_route(app, search_chunks)
+        register_bit_summary_route(app)
+        register_query_reformulate_route(app)

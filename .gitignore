@@ -30,8 +30,6 @@ package-lock.json
 src/data/search_index.pkl
 src/data/search_index.pkl
 
-# Generated search/index artifacts — chunk index is too large/slow to track
+# Generated search/index artifacts — uploaded to GitHub Releases, not tracked in git
 src/data/*.pkl
 src/data/*.pkl.gz
-!src/data/transcript_docs.pkl.gz
-!src/data/transcript_search_index.pkl.gz

@@ -1,0 +1,796 @@
+======================================================================
+SVD DIMENSION TERMS  (top 20 per side, + and -)
+======================================================================
+
+──────────────────────────────────────────────────────────────────────
+TRANSCRIPT-LEVEL INDEX
+──────────────────────────────────────────────────────────────────────
+  130 dimensions
+
+  Dimension 0
+    (+) 2019, july, 9, fucking, shit, fuck, cause, goes, wife, epstein, man, guy, guys, thank, mean, love, lot, foreigners, maher, trump
+    (-) isabeaus, gurgles, aforesaid, poitiers, convening, percivals, wickedly, lordships, naught, plunder, protestations, livres, dagger, irascible, favorable, flanders, melancholic, obduracy, expels, plainly
+  Dimension 1
+    (+) review, damiao, upadhyaya, unapologetically, kumari, kayla, anjelah, exclaim, anthony, johnson, v, fancy, netflix, club, son, special, new, shit, fucking, fuck
+    (-) 2019, july, 105, slimline, isie, downus, puii, geopoiiticai, siave, finai, messengare, seul, goiden, iager, pugnacco, mainiy, expiain, thatii, biokes, jaii
+  Dimension 2
+    (+) shit, fucking, fuck, man, cause, love, guy, goes, guys, mean, thank, doing, god, lot, went, old, white, life, black, f
+    (-) upadhyaya, kayla, kumari, damiao, anjelah, unapologetically, review, exclaim, v, johnson, 2019, july, fancy, anthony, refunded, discoveries, analysts, campsites, youngers, tradesmens
+  Dimension 3
+    (+) bankruptcy, chapter, hyperactivity, reorganization, restructure, narcolepsy, partnerships, 1990s, adhd, deficit, 2009, filed, 2004, corporations, seeking, adderall, businesses, individuals, 11, usual
+    (-) shit, fucking, fuck, man, cause, goes, love, gga, guys, f, guy, god, nigga, motherfucker, eddie, old, mean, ass, black, dick
+  Dimension 4
+    (+) maher, griffin, wacky, doj, alt, interpol, mean, speech, interrogated, distasteful, selfie, opted, detained, attorneys, kidding, aftermath, kathy, interrogation, list, trendy
+    (-) fucking, shit, fuck, f, man, guy, goes, cking, god, gga, fuckin, old, life, feel, let, women, black, ass, dad, woman
+  Dimension 5
+    (+) mooney, paul, legendary, enlightening, barack, legend, mooneys, satirist, android, obama, clowning, crows, incredible, keeps, governments, robot, writer, laughter, backstage, chain
+    (-) fucking, shit, fuck, griffin, maher, cause, goes, fuckin, doc, guy, guys, moth, went, kids, dick, f, old, feel, god, doing
+  Dimension 6
+    (+) doc, moth, podiatrists, illinivich, gregory, alexandria, stephan, mikhailovitch, smokovnikov, podiatrist, feel, emptiness, troubled, says, coward, psychiatrist, flame, thread, failure, office
+    (-) shit, f, cking, fucking, fuck, gga, man, nigga, motherfucker, ima, ass, white, black, motherf, fuckin, ggas, bitch, tch, dick, pussy
+  Dimension 7
+    (+) eddie, richard, richards, murphy, sits, step, note, lifeboat, rashon, motherfucker, original, fuck, walks, shit, seek, fucking, cosby, says, room, stage
+    (-) f, cking, sh, motherf, gga, cked, cker, t, ggas, tch, guy, cause, guys, doing, b, ckers, trump, kids, feel, sex
+  Dimension 8
+    (+) f, cking, eddie, richard, gga, motherf, sh, richards, murphy, ggas, tch, cker, cked, t, sits, b, step, note, rashon, lifeboat
+    (-) fucking, fuck, fuckin, goes, thank, silverman, love, mom, guys, great, lets, guy, lindsey, sarah, thought, pop, trump, went, year, mean
+  Dimension 9
+    (+) scratcher, poppoppoppoppop, pop, amuse, rednecks, chess, heavens, sophisticated, scratching, dallas, sheet, bubble, brush, background, texas, sake, wrap, joe, radio, play
+    (-) shit, nigga, fucking, fuck, gga, ima, fuckin, motherfucker, man, ass, bitch, dick, black, rob, motherfuckers, niggas, white, goddamn, compartment, pussy
+  Dimension 10
+    (+) silverman, sarah, lindsey, app, phillips, eddie, thank, great, wilson, love, hosting, solo, f, trump, stage, 32, carried, lot, richard, yes
+    (-) shit, nigga, ima, fuck, gga, poppoppoppoppop, scratcher, fucking, pop, motherfucker, rob, amuse, compartment, let, rednecks, chess, heavens, fuckin, sophisticated, man
+  Dimension 11
+    (+) silverman, shit, ima, sarah, lindsey, nigga, gga, rob, compartment, fuck, motherfucker, robbed, guns, gun, let, ass, dryer, bitch, compartments, alright
+    (-) daylight, trump, guy, eddie, saving, goes, things, guys, richard, f, lot, actually, election, president, thank, new, years, bit, year, thought
+  Dimension 12
+    (+) ima, daylight, rob, compartment, saving, robbed, guns, gun, dryer, compartments, washing, cows, house, clothes, wipe, let, household, farmers, machine, laundry
+    (-) nigga, fucking, gga, fuck, fuckin, motherfucker, niggas, motherfuckers, dick, shit, tch, pussy, ggas, silverman, black, goddamn, white, cause, bitch, b
+  Dimension 13
+    (+) daylight, saving, nigga, cows, farmers, gga, farm, fuel, germans, motherfucker, benefits, fuck, fucking, shit, psychotically, nonsense, benefit, wilhelm, morocco, kaiser
+    (-) ima, rob, compartment, robbed, guns, gun, dryer, compartments, washing, house, clothes, guys, wipe, guy, laundry, machine, let, household, huh, oven
+  Dimension 14
+    (+) fucking, fuckin, fuck, goes, f, cking, alright, daylight, guys, dick, mooney, dad, saving, mom, suck, went, cunt, guy, minutes, hope
+    (-) nigga, trump, president, election, niggas, motherfucker, white, black, ballots, gga, donald, vote, epstein, bitch, biden, motherfuckers, votes, man, states, trumps
+  Dimension 15
+    (+) fucking, trump, fuckin, election, president, ballots, fuck, f, votes, cking, biden, vote, epstein, donald, nigga, trumps, states, counted, fraud, rudy
+    (-) gga, gawain, bourbon, grunts, grunting, ggas, cause, god, tch, man, sighs, mom, motherf, panting, b, love, knight, old, marshmallow, elly
+  Dimension 16
+    (+) gga, ggas, trump, tch, motherf, b, election, president, jamie, tches, cker, ballots, foxx, man, shit, black, votes, biden, epstein, vote
+    (-) nigga, f, niggas, cking, anigga, marshmallow, goes, bourbon, bear, bitch, cause, motherfuckers, guy, motherfuckin, guys, wife, deray, thought, ima, marshmallows
+  Dimension 17
+    (+) bourbon, whiskey, liquor, jerry, drink, stores, bottles, alcohol, bourbons, kentucky, jefferson, bottle, forester, cuz, barrels, store, fireball, george, rye, drinking
+    (-) gawain, grunts, grunting, panting, knight, sighs, continues, elly, shang, thee, essel, katy, gasping, gasps, shakily, chi, heavily, softly, thunder, rustling
+  Dimension 18
+    (+) gawain, bourbon, grunts, fucking, fuckin, grunting, panting, knight, continues, sighs, thee, essel, shang, elly, trump, whiskey, gasping, katy, liquor, shakily
+    (-) marshmallow, bear, goes, cause, gga, marshmallows, guys, guy, mom, thank, lot, jewish, black, grizzly, old, stuff, trainer, girl, israel, mouth
+  Dimension 19
+    (+) marshmallow, bear, marshmallows, goes, grizzly, trainer, vacant, limp, bourbon, mouth, bert, bears, tongues, trump, scent, paws, tim, engage, 28, grabs
+    (-) love, glenn, cause, feel, israel, kind, women, mom, lot, palestinian, palestine, guys, sex, kids, er, jewish, things, yes, god, stuff
+  Dimension 20
+    (+) israel, palestinian, palestine, jewish, bethlehem, palestinians, epstein, genocide, glenn, israeli, jesus, khaled, gaza, conquest, magician, marnie, jews, molester, arabs, foreigners
+    (-) trump, election, president, ballots, carlin, er, george, votes, gazebo, man, lew, old, gary, kroeger, robot, stuff, mean, pepa, sex, counted
+  Dimension 21
+    (+) glenn, marnie, laird, la, antifa, j, episode, radical, o, billah, liberal, lesbian, yes, lesbians, penises, neighbor, uhh, buffalo, gio, fabrication
+    (-) palestinian, palestine, epstein, israel, jewish, bethlehem, palestinians, gga, israeli, genocide, gaza, khaled, election, gawain, magician, conquest, goes, lot, jews, ballots
+  Dimension 22
+    (+) foreigners, wife, cumin, tito, jews, busboy, foreigner, wifes, soda, screwed, jewish, table, sebastianlive, menu, foods, restaurant, restaurants, maniscalco, nuances, rosemary
+    (-) israel, epstein, palestine, palestinian, bethlehem, er, palestinians, god, conquest, magician, kirk, genocide, comedy, jesus, july, 9, bridges, charlie, israeli, gaza
+  Dimension 23
+    (+) carlin, george, fuckin, lew, kroeger, gary, loirn, er, prediction, goldman, indians, stephenson, sergeant, ox, indian, heston, pamela, cloth, senator, limping
+    (-) trump, mom, goes, josep, ballots, fuck, bourbon, shit, man, epstein, election, votes, cause, dad, god, guy, gawain, dude, women, biden
+  Dimension 24
+    (+) fuckin, er, epstein, entry, leonard, gga, isabelle, stoker, left, gazebo, tent, guy, rayburn, hope, jeffrey, pepa, bit, minutes, robot, guys
+    (-) carlin, george, fucking, god, lew, kroeger, mommy, son, gary, daddy, mary, fuck, ghost, shit, hole, everlasting, josep, prediction, dublin, goldman
+  Dimension 25
+    (+) er, god, entry, mommy, mary, hole, leonard, daddy, ghost, everlasting, son, fuckin, cupboard, dublin, holy, terrifying, father, flame, burnt, bloody
+    (-) epstein, carlin, george, guy, guys, gawain, cause, lew, women, jeffrey, kroeger, lot, gary, men, sex, mbs, man, kirk, gay, files
+  Dimension 26
+    (+) fuckin, epstein, god, mommy, gazebo, mary, pepa, robot, daddy, everlasting, ghost, goes, hole, son, holy, dublin, minutes, thank, terrifying, cupboard
+    (-) er, fucking, entry, leonard, fuck, isabelle, bit, shit, guns, indian, blah, indians, loirn, tent, brother, interviewer, hand, gawain, ox, sergeant
+  Dimension 27
+    (+) loirn, indians, indian, sergeant, ox, cloth, limping, youse, feather, passed, cowboys, fighters, massacre, horseplay, moccasins, birch, corrective, carlins, leaping, westerns
+    (-) er, carlin, george, lew, kroeger, entry, gary, leonard, prediction, goldman, stephenson, marshmallow, heston, isabelle, pamela, senator, gga, conan, fuckin, jon
+  Dimension 28
+    (+) epstein, jeffrey, er, mbs, files, arabia, adobe, fucking, god, saudi, mommy, premiere, kirk, son, daddy, khashoggi, mary, hole, george, ghost
+    (-) fuckin, palestinian, palestine, bethlehem, molester, gazebo, palestinians, seventies, election, mounds, genocide, pepa, cause, mild, robot, ballots, black, vote, president, racism
+  Dimension 29
+    (+) gazebo, pepa, robot, fucking, salt, songs, musical, gawain, ship, connecticut, hosting, prove, conan, activities, gentlemen, old, logon, leisurely, war, josiah
+    (-) fuckin, elly, stoker, rayburn, grunting, guys, carlin, shang, mom, cause, sighs, katy, man, guy, tentacular, george, aidan, chi, winnie, goes
+  Dimension 30
+    (+) gawain, knight, thee, essel, epstein, rustling, fuckin, thunder, er, continues, scavenger, chapel, singing, distantly, cause, winifred, creaking, green, carlin, thief
+    (-) elly, grunting, shang, sighs, katy, aidan, chi, mandarin, morris, grunts, alfie, shaun, gasps, xialing, screeching, argylle, gazebo, fucking, jean, english
+  Dimension 31
+    (+) stoker, rayburn, tentacular, winnie, steve, marc, wrestling, coyle, stadium, match, monster, coach, jimbo, jimothy, ray, gorge, champ, stupendous, wrestle, jr
+    (-) fuckin, er, molester, seventies, mounds, mild, black, cause, racism, child, entry, women, racist, white, went, jean, molesters, baptiste, leonard, gun
+  Dimension 32
+    (+) conan, twain, obrien, guns, nigga, gga, fucking, gun, sandman, conans, kevin, nra, award, mark, amendment, molester, blah, seventies, thank, sean
+    (-) josep, gazebo, shit, er, mom, pepa, robot, election, goes, ballots, ramy, entry, dude, carlin, trump, elly, nigger, leonard, votes, fuck
+  Dimension 33
+    (+) molester, seventies, mounds, mild, racism, child, racist, molesters, jean, baptiste, stoker, rayburn, black, teenage, mcdonalds, 70s, risk, tentacular, pizza, fighting
+    (-) conan, palestinian, ramy, twain, palestinians, genocide, guy, jewish, ramadan, bethlehem, lot, muhammad, obrien, israeli, gaza, arab, goes, habibi, kink, sext
+  Dimension 34
+    (+) conan, josep, shit, er, mom, twain, molester, seventies, mounds, election, obrien, entry, mild, epstein, ballots, man, goes, sandman, leonard, racism
+    (-) guns, gun, gga, nra, amendment, nigga, dickey, fuckin, jim, rayburn, manchin, stoker, kirk, control, lee, hussein, went, cdc, hole, government
+  Dimension 35
+    (+) smokers, oklahoma, vince, man, elmer, nigger, dinkley, moses, woo, shit, ya, jesus, generals, fingernails, pharaoh, lung, black, arkansas, ass, thank
+    (-) nigga, gga, josep, fucken, mom, goes, dad, tch, motherf, ramy, gun, guns, grandma, b, gawain, niggas, orangutan, jo, glenn, syndrome
+  Dimension 36
+    (+) blah, interviewer, burr, white, black, shit, nigger, privileged, fuckin, oppressed, moses, conan, privilege, mean, god, pharaoh, comedian, somebody, dude, powerful
+    (-) oklahoma, smokers, fucken, nigga, vince, josep, elmer, gga, fucking, dinkley, mom, thank, goes, fingernails, lung, tch, generals, motherf, arkansas, 600
+  Dimension 37
+    (+) blah, interviewer, burr, nigga, fucking, gga, privileged, oppressed, privilege, oklahoma, smokers, vince, ima, kink, comedian, election, sext, tch, motherf, feel
+    (-) nigger, fucken, moses, shit, pharaoh, nra, gun, black, amendment, fuckin, guns, dickey, conan, man, motherfucker, fuck, jesus, nam, clifton, ass
+  Dimension 38
+    (+) josep, blah, clifton, interviewer, mom, burr, jerry, dad, graduate, fuckin, jo, school, fact, poor, childhood, homogenized, ogrady, pupkin, privileged, oppressed
+    (-) kink, sext, conan, sexting, elly, sex, guy, cause, election, ballots, women, tie, bridget, boyfriend, god, aidan, love, experiences, d, fucking
+  Dimension 39
+    (+) ramy, habibi, ramadan, joe, muhammad, goes, south, black, pray, bro, michigan, dude, hostages, arab, prophet, america, aware, inspiring, prayers, joes
+    (-) bethlehem, ballots, fucken, bridget, elly, magician, trump, conquest, pennsylvania, clifton, josep, moses, old, israel, votes, jesus, bridges, nigger, baby, aidan
+  Dimension 40
+    (+) fucken, black, moose, cunt, went, goes, cock, egg, blah, coke, mum, porn, arse, white, jim, shang, wank, vibrator, laundry, pedophile
+    (-) nra, gun, clifton, elly, amendment, bridget, dickey, guns, jerry, manchin, aidan, kink, sext, fucking, josep, tied, sexting, graduate, cdc, alfie
+  Dimension 41
+    (+) josep, nra, gun, mom, dickey, amendment, elly, blah, guns, jo, manchin, conan, grandma, interviewer, nigger, burr, shit, moses, cdc, aidan
+    (-) clifton, jerry, fucking, graduate, man, tied, rose, pupkin, ogrady, homogenized, poor, exile, defective, passaic, athletics, langford, heave, bridget, maturity, curriculum
+  Dimension 42
+    (+) elly, fucken, aidan, alfie, ramy, argylle, sighs, bridget, blah, nigger, moses, division, ritter, habibi, muhammad, ramadan, bakunin, joe, interviewer, kevin
+    (-) shang, katy, chi, josep, mandarin, grunting, kink, sext, morris, sexting, guy, shaun, conan, xialing, black, screeching, trump, moose, jon, grunts
+  Dimension 43
+    (+) fucken, blah, clifton, kink, sext, sexting, conan, interviewer, nra, gun, election, burr, ballots, dickey, amendment, jerry, nigger, tied, guns, moses
+    (-) russian, kevin, casinos, russia, nominated, trump, mafia, putin, moose, collusion, josep, elly, candidate, fucking, money, movie, casino, sean, ukraine, film
+  Dimension 44
+    (+) elly, fucken, kink, sext, aidan, russian, josep, sexting, casinos, alfie, guy, russia, trump, argylle, mafia, man, collusion, putin, tie, black
+    (-) ballots, election, shang, katy, votes, epstein, chi, morris, mandarin, grunting, old, moses, counted, shaun, bridget, nigger, women, screeching, xialing, fraud
+  Dimension 45
+    (+) moose, elly, black, laundry, aidan, chicken, motels, white, chickens, ballots, alfie, motel, chainsmokers, housekeeping, sh, hotels, goat, election, argylle, fucking
+    (-) bridget, fucken, russian, shang, jeanine, casinos, katy, russia, kevin, government, chi, mafia, morris, grunting, blah, mandarin, nominated, ramy, tonight, nigger
+  Dimension 46
+    (+) josep, bridget, kevin, black, nominated, tonight, president, fucken, bethlehem, kink, sext, man, sexting, jeanine, sean, white, mom, ha, vote, jo
+    (-) goes, russian, casinos, conan, russia, mafia, trump, collusion, putin, casino, candidate, moses, laundering, ukraine, money, stooge, putins, mobsters, brokers, kgb
+  Dimension 47
+    (+) josep, hussein, jean, jo, mum, americans, grandma, marguerite, cause, hitler, carrouges, pierre, ha, jacques, war, ka, german, milord, sh, asylum
+    (-) bridget, moose, goes, jeanine, laundry, nra, gun, motels, dickey, amendment, guy, bethlehem, chickens, housekeeping, motel, hotels, chainsmokers, dude, chicken, fucken
+  Dimension 48
+    (+) moose, josep, bridget, laundry, motels, moses, jean, chickens, chicken, nigger, motel, chainsmokers, genocide, marguerite, hotels, horse, jesus, pharaoh, goat, carrouges
+    (-) bethlehem, conquest, niece, elly, magician, gay, black, man, guys, syndrome, buddy, fuck, dude, bridges, women, crowd, pennsylvania, gawain, comedy, trust
+  Dimension 49
+    (+) bridget, jeanine, black, everett, track, hussein, mommy, josep, stephanie, bridgets, conan, suckle, pong, hmm, olivia, sh, ping, mum, elly, baby
+    (-) kevin, jean, nominated, man, bethlehem, moses, marguerite, nigger, sean, kink, goes, sext, carrouges, pierre, sexting, pharaoh, orangutan, wife, jacques, magician
+  Dimension 50
+    (+) bethlehem, hussein, conquest, magician, bridget, ramy, buddy, bridges, country, jean, americans, moses, claus, iraqi, comedy, undivide, canaanites, marguerite, pennsylvania, nigger
+    (-) genocide, jewish, palestinian, israeli, palestinians, khaled, president, kevin, fucken, white, cause, definition, propaganda, guys, indica, women, dj, shared, military, bombing
+  Dimension 51
+    (+) jean, marguerite, carrouges, pierre, jacques, milord, le, gris, milady, man, women, sh, squire, men, indistinct, whinnies, nra, woman, chatter, horse
+    (-) hussein, moses, nigger, gawain, pharaoh, elly, molester, shang, nam, seventies, americans, kink, sext, ha, mounds, ryan, katy, sexting, motherfucker, jesus
+  Dimension 52
+    (+) president, hamilton, ryan, fell, running, sh, renegotiate, old, tuesday, fall, fucken, adult, women, heaven, government, falling, faced, jeopardy, stopping, pro
+    (-) kevin, ballots, election, nominated, goes, votes, cause, award, counted, tom, hart, ghb, ha, fraud, hussein, actors, movie, movies, film, mum
+  Dimension 53
+    (+) goes, president, alright, ghb, orangutan, bridget, man, hussein, old, dad, renegotiate, jean, tuesday, dive, covid, heroine, water, donkeys, jeopardy, faced
+    (-) moose, women, syndrome, russian, gay, niece, casinos, ramy, fucken, josep, god, laundry, love, men, mafia, white, nominated, clifton, russia, kevin
+  Dimension 54
+    (+) jamie, ryan, foxx, hamilton, fell, bridget, kirk, jean, hussein, black, fall, charlie, clone, running, adult, marguerite, addicted, carrouges, holly, falling
+    (-) josep, president, tch, motherf, cause, women, vote, sh, b, men, renegotiate, greenland, need, ramy, tuesday, cker, planet, faced, tches, ggas
+  Dimension 55
+    (+) jamie, foxx, clone, holly, atlanta, stroke, maddy, nurses, josep, halle, cause, anelise, goin, stay, says, guitar, bridget, man, damn, gon
+    (-) motherf, tch, hussein, women, jean, syndrome, b, gay, marguerite, niece, carrouges, pierre, kirk, guys, cker, asylum, jacques, milord, white, black
+  Dimension 56
+    (+) hussein, kirk, fuck, jamie, shit, americans, charlie, asylum, war, khomeini, army, foxx, oil, merkel, wmd, tyler, moose, saddam, iran, bundeswehr
+    (-) ha, mum, black, pedophile, sh, fucking, moses, ryan, guten, nigger, xhosa, trevor, german, apartheid, hamilton, pharaoh, motherf, fell, old, woo
+  Dimension 57
+    (+) sh, asylum, kirk, jamie, t, charlie, moses, migrants, foxx, nigger, immigration, pharaoh, tyler, jurors, seekers, jury, gga, orangutan, syndrome, mom
+    (-) hussein, shit, ryan, nra, dickey, hamilton, fell, man, running, epstein, ballots, motherf, manchin, americans, gun, old, young, amendment, fall, moose
+  Dimension 58
+    (+) asylum, migrants, shit, immigration, seekers, man, administration, u, jurors, motherf, kirk, berta, border, s, jury, josep, cause, 42, moose, charlie
+    (-) sh, hussein, t, syndrome, jamie, mom, moses, women, niece, foxx, president, gga, nigger, pharaoh, guys, orangutan, americans, fucking, nigga, heaven
+  Dimension 59
+    (+) kirk, charlie, tyler, motherf, pro, josep, mommies, israel, shootings, ha, heathers, cker, mum, man, went, matthew, ballots, snake, violence, dance
+    (-) sh, asylum, t, migrants, immigration, women, seekers, epstein, ssy, orangutan, jurors, fuck, u, jury, palestine, dickey, hussein, nra, year, s
+  Dimension 60
+    (+) sh, t, kirk, charlie, josep, ssy, tyler, ggas, man, platonic, ballots, crack, goes, kevin, israel, pork, cause, guy, colin, nominated
+    (-) syndrome, asylum, niece, cking, jamie, dad, mom, mum, coach, family, foxx, president, migrants, orangutan, ha, immigration, maddy, nicked, epstein, jean
+  Dimension 61
+    (+) kirk, charlie, tyler, love, motherfucker, lucy, jim, nigger, oklahoma, lee, syndrome, desi, kimmel, moses, jimmy, niece, vince, israel, orangutan, guns
+    (-) mommies, pro, alright, matthew, heathers, unto, ghb, heaven, cuz, mushrooms, asylum, marky, ephesians, thee, dance, bible, perkins, steve, shall, bunny
+  Dimension 62
+    (+) renegotiate, tuesday, pro, mommies, covid, government, faced, heathers, jeopardy, griffin, responders, november, cause, baldwin, mean, jim, old, senate, dance, jamie
+    (-) alright, greenland, ghb, wacky, planet, ryan, asylum, comedian, sir, hamilton, warrior, legacy, fell, dummy, tweeted, dumb, matt, mr, tom, slavish
+  Dimension 63
+    (+) maddy, lucy, desi, alright, asylum, hussein, syndrome, ghb, guys, lucille, tom, niece, moses, girls, nigga, jess, migrants, motherf, coach, doing
+    (-) orangutan, old, shit, jon, donkeys, lady, dive, bridget, pro, jurors, women, 2057, york, greenland, wacky, mommies, white, deaf, smart, jury
+  Dimension 64
+    (+) maddy, orangutan, man, dive, sh, donkeys, dad, 2057, matt, syndrome, mom, matthew, bees, quack, deaf, high, hotels, knapsack, unto, dude
+    (-) alright, old, ghb, josep, jamie, lady, goes, guys, foxx, tom, electricity, ladies, women, falls, moses, oo, heroine, nigger, life, june
+  Dimension 65
+    (+) lucy, desi, lucille, jess, ricky, sighs, madelyn, ethel, jurors, jury, john, goes, lucys, shit, perkins, mm, fuck, fred, arnaz, morris
+    (-) asylum, migrants, kevin, immigration, seekers, elly, sh, syndrome, love, jean, man, guys, mom, maddy, fucking, berta, nigga, aidan, moses, marguerite
+  Dimension 66
+    (+) mommies, pro, lucy, heathers, desi, asylum, christmas, dance, bunny, marky, lucille, kevin, syndrome, crosses, sh, annoy, migrants, easter, non, jess
+    (-) matthew, unto, mushrooms, thee, perkins, steve, ephesians, shall, headmaster, bridget, god, church, rhetorical, buddha, pete, yard, women, white, snake, jurors
+  Dimension 67
+    (+) maddy, kirk, matt, liz, asylum, old, orangutan, yes, dad, love, tch, lady, mum, charlie, mm, dick, christmas, ha, tyler, matthew
+    (-) syndrome, niece, coach, jon, jurors, jury, man, school, gay, basketball, nicked, family, doo, john, josep, perkins, renegotiate, remember, chris, bees
+  Dimension 68
+    (+) old, lady, electricity, lucy, falls, fucking, ladies, maddy, oo, desi, eletricity, euugh, propriety, quack, lucille, guys, jewey, connect, knapsack, bees
+    (-) ghb, goes, mum, dad, fuck, mommies, pro, bridget, woman, heathers, shit, heroine, ryan, eff, cause, men, tom, panda, bunny, president
+  Dimension 69
+    (+) jon, doo, george, genetic, sh, shit, alright, syndrome, lucy, mum, ghb, asylum, kirk, desi, fuck, niece, family, wonderful, school, rhetoric
+    (-) jurors, jury, guys, fucking, quack, bees, knapsack, christmas, cause, jamie, santa, john, bee, race, lew, dude, kroeger, motherf, foxx, cah
+  Dimension 70
+    (+) maddy, jim, jurors, lee, jury, guns, jon, liz, ghb, goes, race, prosecutors, alright, john, matt, juror, danbury, barbara, tsa, security
+    (-) perkins, headmaster, dickey, sh, asylum, nra, unto, lucy, manchin, kirk, desi, cdc, t, speech, charlie, award, cause, senator, ha, hollywood
+  Dimension 71
+    (+) maddy, perkins, headmaster, syndrome, old, sh, shit, cruz, liz, speech, kimmel, niece, john, lady, jurors, fcc, school, fired, jury, myprick
+    (-) asylum, lucy, women, desi, orangutan, mum, lucille, migrants, june, men, dive, gay, josep, pride, immigration, ballots, sean, seekers, planet, jess
+  Dimension 72
+    (+) jon, george, doo, hijab, genetic, helen, kanye, trump, guys, muslim, whites, donald, kyrie, kevin, house, isis, rhetoric, missile, doing, bro
+    (-) kirk, mum, perkins, charlie, vote, headmaster, tyler, syndrome, jurors, gay, eff, men, women, panda, jury, ghb, niece, government, maddy, girls
+  Dimension 73
+    (+) jim, lee, guns, cause, maddy, asylum, goes, bees, perkins, isis, white, award, barbara, quack, knapsack, went, furball, headmaster, hollywood, immigration
+    (-) jurors, jury, john, ha, christmas, fucken, guys, peanut, dickey, love, kirk, bubba, kevin, walter, danbury, prosecutors, nra, jon, juror, santa
+  Dimension 74
+    (+) asylum, maddy, perkins, motherf, headmaster, migrants, ballots, hijab, kanye, vote, immigration, norm, came, guns, cker, kirk, seekers, guy, helen, bridget
+    (-) alright, cruz, bees, quack, knapsack, fcc, ghb, planet, kimmel, counties, jon, jimmy, bee, josep, jamaican, cah, syndrome, eff, acetaminophen, aceta
+  Dimension 75
+    (+) maddy, liz, fucking, jon, june, women, matt, cause, dickey, marion, masks, motherf, pride, jordan, oscar, york, genetic, gay, baby, nra
+    (-) lee, jim, guns, christmas, old, barbara, matthew, fuck, unto, santa, tsa, security, scrooge, peanut, bubba, mushrooms, kevin, caucus, carol, walter
+  Dimension 76
+    (+) indian, india, russell, chinese, motherf, kevin, syndrome, shit, dad, york, malaysia, asian, june, yes, niece, peters, new, mom, planet, china
+    (-) lorca, bar, black, stanhope, jon, ralphie, josep, ha, girl, asylum, jurors, pedophile, cause, doug, dude, pussy, rebound, jury, hussein, fuck
+  Dimension 77
+    (+) jurors, jury, cause, heaven, hijab, lady, helen, lucy, old, kevin, desi, therapist, kanye, starving, mom, sean, men, dad, hungry, electricity
+    (-) christmas, guys, june, jon, jim, masks, lee, santa, dude, peanut, scrooge, bubba, york, mnah, pride, perkins, walter, carol, guns, jeff
+  Dimension 78
+    (+) perkins, headmaster, motherf, man, women, jon, heaven, men, myprick, cker, goes, mean, starving, fucking, guns, asylum, christmas, girls, nigga, felattio
+    (-) maddy, lorca, bar, ralphie, fuck, stanhope, york, jim, matt, lee, tch, new, doug, rebound, horses, coach, matthew, night, fucked, car
+  Dimension 79
+    (+) eff, panda, kevin, mum, perkins, man, hijab, helen, pandora, effy, headmaster, brownies, kanye, twister, muslim, orangutan, love, bro, jj, katie
+    (-) ha, planet, mnah, german, pedophile, care, maddy, heaven, syndrome, jamie, mean, guten, win, indian, trevor, xhosa, kids, mimes, apartheid, hitler
+  Dimension 80
+    (+) alright, hijab, helen, ghb, kanye, orangutan, planet, christmas, kyrie, tom, missile, jews, muslim, heroine, ha, therapist, lebanon, cause, crazy, earth
+    (-) goes, indian, dad, leeann, ila, jon, india, lorca, girl, ralphie, stanhope, russell, sir, malaysia, bar, girls, doug, chinese, perkins, georgia
+  Dimension 81
+    (+) perkins, headmaster, shootings, tch, president, maddy, myprick, whites, black, trump, isis, news, wu, gorilla, tang, cooper, planet, felattio, nominated, b
+    (-) motherf, man, cruz, guns, fcc, kimmel, jimmy, counties, vote, cker, ballots, license, aceta, acetaminophen, government, goodfellas, senator, humperdinck, cause, hijab
+  Dimension 82
+    (+) christmas, goes, santa, cause, scrooge, jon, leeann, carol, ila, peanut, bubba, marnell, dad, fuck, went, achmed, jim, mum, wife, walter
+    (-) alright, orangutan, wiki, guys, indian, perkins, fucken, mnah, mosque, josep, moonlight, gangster, ego, fucking, media, trevor, mexican, dive, cletus, mission
+  Dimension 83
+    (+) christmas, lorca, stanhope, bar, indian, ralphie, ghb, india, girl, doug, scrooge, heaven, motherf, tim, peanut, rebound, carol, russell, santa, bubba
+    (-) mnah, perkins, jim, headmaster, lee, gay, kevin, goes, midget, baby, midgets, leeann, guys, cruz, unto, anthony, pride, teeth, shit, norm
+  Dimension 84
+    (+) motherf, eff, cker, panda, jurors, pandora, jury, effy, brownies, mum, mnah, twister, mean, isis, indianapolis, jj, katie, furball, love, josep
+    (-) ha, perkins, hijab, motherfucker, headmaster, maddy, tobacco, tch, lee, kanye, helen, guns, jim, john, german, government, anthony, women, gga, lorca
+  Dimension 85
+    (+) kevin, motherf, tom, lee, man, jim, women, cker, hart, orangutan, black, kev, maddy, heaven, men, indianapolis, brady, fucking, ghb, perkins
+    (-) tch, mosque, hijab, eff, fuck, helen, dick, muslim, kanye, b, panda, jurors, bro, sir, yes, indian, wiki, goes, mm, pandora
+  Dimension 86
+    (+) tobacco, anthony, heaven, togo, john, license, uruguay, norm, love, elderly, marlboro, dad, swimsuit, starving, companies, tiko, kevin, motherf, cuomo, eff
+    (-) gay, mnah, cause, june, goes, josep, syndrome, christmas, mimes, jurors, white, tch, russell, helen, hijab, jury, indian, b, niece, midget
+  Dimension 87
+    (+) kevin, tobacco, hart, tom, goes, togo, mosque, jeff, uruguay, wiki, swimsuit, tiko, companies, baby, john, pedophile, josep, marlboro, brady, leeann
+    (-) nominated, jim, guys, lee, motherf, alright, indian, yorgos, oscar, doordash, margot, eff, muhammad, guy, oscars, heaven, panda, actors, sandra, dashers
+  Dimension 88
+    (+) tobacco, mnah, motherf, togo, marlboro, uruguay, gay, midget, tiko, swimsuit, midgets, john, jeff, cker, pmi, nominated, teeth, lottery, companies, packaging
+    (-) jurors, kevin, jury, tch, thank, alright, ghb, wiki, hart, ego, license, russian, mosque, heaven, stephanie, b, motherfucker, masks, women, moonlight
+  Dimension 89
+    (+) guys, kevin, indian, lee, jim, india, russell, gga, mnah, asian, hart, guy, dude, chinese, malaysia, jurors, dad, nigga, moses, peters
+    (-) nominated, wiki, cause, elderly, york, oscar, mosque, license, syndrome, motherf, stephanie, moonlight, cuomo, yorgos, nana, new, car, niece, guns, kids
+  Dimension 90
+    (+) anthony, norm, mnah, lee, porn, new, dad, ramy, jewish, hed, midget, audience, elderly, tom, says, midgets, matthew, grandma, dude, great
+    (-) doordash, muhammad, dashers, tobacco, politicians, house, john, cause, ordered, directions, hijab, togo, door, heaven, guns, jax, starving, june, arab, eff
+  Dimension 91
+    (+) motherf, cker, anthony, june, norm, indianapolis, lee, jim, mike, goes, ckers, ggas, month, ha, epps, grandparents, sh, plowing, pandemic, jamie
+    (-) mnah, midget, heaven, tom, tch, elderly, license, midgets, gga, vote, teeth, gay, starving, motherfucker, kevin, york, cause, america, cuomo, nana
+  Dimension 92
+    (+) guns, slaves, australia, constitution, fuck, anthony, muskets, protection, sandy, sarah, went, massacre, ballots, agree, stephanie, cooper, home, responsible, 34, massacres
+    (-) lee, jim, wiki, moonlight, wild, gangster, heaven, mission, fucking, dickey, mexican, quincea, starving, goes, hijab, rap, helen, phallus, girl, manchin
+  Dimension 93
+    (+) planet, guns, motherf, kevin, lorca, cletus, stanhope, ralphie, perkins, viruses, eddie, york, love, plastic, worried, doug, kasady, news, bar, additives
+    (-) lee, man, stephanie, indigo, alright, tobacco, yo, jim, doordash, wiki, muhammad, motherfucker, oscar, brexit, gangster, tig, mate, fluff, dashers, togo
+  Dimension 94
+    (+) cause, love, alright, tch, trump, b, kids, jamie, porn, fucking, new, white, dude, jesus, girls, foxx, need, license, perkins, sean
+    (-) mnah, mosque, norm, heaven, anthony, doordash, starving, muhammad, shit, dashers, gay, tom, fuck, midget, louis, stephanie, midgets, indigo, goes, eclipse
+  Dimension 95
+    (+) wiki, doordash, muhammad, anthony, dashers, moonlight, wild, coronavirus, christmas, china, gangster, kevin, mission, quincea, politicians, black, maddy, planet, mexican, billion
+    (-) mosque, heaven, president, mimes, starving, guys, thank, shit, lee, stephanie, car, cletus, eclipse, muslims, corinne, egg, jim, alright, band, louis
+  Dimension 96
+    (+) stephanie, planet, indigo, goes, ballots, fluff, scooting, plastic, tig, yo, white, indian, russell, ribbons, tobacco, viruses, max, girls, black, country
+    (-) mosque, trump, doordash, muhammad, mnah, anthony, motherf, dashers, inauguration, bannon, guys, jamie, baby, pardon, trumps, corinne, eclipse, nate, inside, muslims
+  Dimension 97
+    (+) stephanie, motherf, indigo, scooting, tig, cker, fluff, adele, richard, cause, indian, ribbons, doordash, mosque, muhammad, gosh, girls, hall, mnah, max
+    (-) cletus, eddie, kasady, anthony, anne, norm, brock, guy, kimmel, wiki, chris, man, venom, shite, oscar, jimmy, starving, murdered, moonlight, went
+  Dimension 98
+    (+) stephanie, indigo, mnah, coronavirus, tig, scooting, theories, fluff, conspiracy, tch, adele, ribbons, china, u, max, helen, guns, heaven, pandemic, hijab
+    (-) mosque, doordash, ego, media, muhammad, dashers, goes, anthony, norm, asylum, followers, social, eclipse, cause, corinne, motherf, tobacco, mimes, ballots, yes
+  Dimension 99
+    (+) cletus, kasady, eddie, anne, brock, coronavirus, goes, dan, conspiracy, venom, theories, mean, jim, bitch, indian, estes, frances, cause, norm, sorry
+    (-) richard, planet, jax, richards, tch, murphy, kevin, plastic, note, wiki, frankie, fluffy, car, rice, sits, mexican, guys, mom, step, viruses
+  Dimension 100
+    (+) cletus, eddie, kasady, anthony, anne, court, brock, stephanie, baby, indigo, electoral, democrats, republicans, senate, malls, kanye, venom, mean, kids, dan
+    (-) theories, coronavirus, conspiracy, richard, ego, cause, goes, dude, social, media, covid, virus, followers, man, pandemic, chris, china, richards, murphy, bridget
+  Dimension 101
+    (+) anthony, guys, norm, nate, sean, mean, fuck, nashville, vermont, dog, ha, mike, stephanie, drummers, guns, cause, white, hamnet, nigge, jesus
+    (-) kevin, ego, media, mnah, valentines, achimedes, ewe, followers, kev, wife, mosque, dani, jos, hijab, jax, love, cooper, social, helen, oscars
+  Dimension 102
+    (+) ego, media, brexit, followers, eu, social, motherf, britain, influencer, wiki, mnah, fuck, border, president, zealand, goes, dopamine, moonlight, theresa, norm
+    (-) mosque, gga, indian, guy, chris, muslims, eclipse, kevin, corinne, india, stephanie, ebola, kingman, leone, malaysia, u, men, inauguration, china, man
+  Dimension 103
+    (+) planet, cletus, plastic, guys, women, brexit, kasady, viruses, trump, eddie, eu, worried, britain, men, species, porn, man, additives, hijab, border
+    (-) ego, media, followers, malls, social, eff, mean, republicans, influencer, senate, richard, electoral, donut, heaven, ha, lot, mosque, alright, mcconnell, court
+  Dimension 104
+    (+) kimmel, tom, jimmy, speech, pelosi, fcc, cause, albania, aberbaijan, nate, ronny, brady, santa, asian, authors, government, england, affiliates, christmas, ballots
+    (-) mimes, anthony, counties, norm, senator, valentines, justice, aceta, acetaminophen, alright, humperdinck, fuck, cruz, ewe, achimedes, goodfellas, imitating, ego, guns, trump
+  Dimension 105
+    (+) tch, christmas, fuck, b, tobacco, nate, jacksonville, ballots, mean, santa, rice, nashville, togo, niggas, stroke, isis, vermont, kevin, malaysia, uruguay
+    (-) valentines, achimedes, ewe, jos, goes, leeann, bitch, kids, cupid, gga, bubba, ila, wife, ha, brexit, rigged, damn, walter, eu, colluding
+  Dimension 106
+    (+) brexit, eu, cletus, dude, christmas, britain, border, zealand, eddie, santa, kasady, ego, theresa, nate, kevin, planet, social, gga, followers, senate
+    (-) norm, dani, valentines, achimedes, ewe, jos, sarah, anthony, yes, mimes, coronavirus, richard, cooper, mnah, cupid, walter, bubba, abo, scooter, mr
+  Dimension 107
+    (+) cause, tom, dad, valentines, achimedes, ewe, song, oona, jos, brady, kevin, jenny, john, love, tch, peanut, drummers, sort, gronk, nigge
+    (-) women, christmas, nate, men, dani, santa, dog, nashville, kanye, ego, leeann, big, vermont, media, goes, followers, na, woman, bro, adidas
+  Dimension 108
+    (+) tom, brady, gronk, dani, randy, porn, leeann, mimes, fuck, josep, ha, ila, goes, abo, kind, coach, tch, guy, ego, kanye
+    (-) jax, alright, mom, anthony, frankie, cause, baby, brexit, fluffy, eu, mnah, police, martin, danbury, car, gabriel, biscuits, fucking, balloons, zealand
+  Dimension 109
+    (+) ego, media, alright, cause, followers, man, nate, social, russell, indian, bannon, trump, anthony, stephanie, kids, influencer, indigo, norm, rudy, yo
+    (-) fuck, tom, bro, eu, brexit, guys, electoral, motherf, britain, dani, zealand, drummers, republicans, court, police, hummus, brady, mcconnell, theresa, senate
+  Dimension 110
+    (+) tch, b, court, electoral, mcconnell, niggas, norm, man, jacksonville, jax, senate, republicans, fluffy, stroke, barrett, frankie, went, supreme, christmas, mitch
+    (-) dog, mimes, motherfucker, brexit, eu, love, gga, bitch, wife, britain, guys, zealand, alright, ggas, goddamn, sheriff, dorner, murdered, motherfuckers, kids
+  Dimension 111
+    (+) jax, tom, indian, brady, f, frankie, mom, nate, russell, gronk, motherfucker, fluffy, car, india, er, tacos, cause, bitch, mimes, nigge
+    (-) malaysia, brexit, eu, yo, dad, singapore, rice, tch, man, britain, dude, zealand, mosque, cking, asian, kanye, chinese, british, b, kimmel
+  Dimension 112
+    (+) anthony, tch, shit, isis, norm, kids, russell, malls, brexit, b, eu, lm, leeann, nate, organization, nashville, shootings, india, ila, jacksonville
+    (-) jax, malaysia, fuck, mimes, mom, rice, singapore, gay, asian, pussy, chinese, ha, bitch, gga, rudy, bannon, remember, biscuits, tiki, movie
+  Dimension 113
+    (+) indian, tom, man, mean, russell, tch, cooper, india, john, sarah, jax, jewish, peters, oona, nate, brady, brexit, eu, gronk, gay
+    (-) porn, alright, mimes, leeann, dani, malaysia, ila, shite, wee, china, u, rice, guy, s, guys, white, ego, kimmel, georgia, mate
+  Dimension 114
+    (+) mimes, dog, nate, gay, malaysia, bo, nashville, man, electoral, singapore, republicans, men, hijab, fuck, leeann, cking, vermont, court, prolonged, donald
+    (-) brexit, cause, eu, jax, dani, mosque, border, britain, fat, government, nigge, inauguration, zealand, porn, ha, rs, motherfucker, went, tom, dick
+  Dimension 115
+    (+) mimes, cking, tom, tacos, anthony, snake, jax, brady, trevor, fluffy, indian, women, frankie, mosque, sarah, gronk, men, dracula, cat, nigger
+    (-) porn, f, dani, dena, chris, danbury, cause, mama, hrer, abo, minister, miranda, pope, lebanese, america, chamberlain, john, sex, usa, hitler
+  Dimension 116
+    (+) song, bo, dani, nate, nashville, prolonged, vermont, anthem, rudy, mom, rice, drummers, abo, songs, berkeley, pussy, opry, repeat, dad, gay
+    (-) malaysia, guys, singapore, ha, guy, ego, indigo, media, kids, ballots, ya, conspiracy, coronavirus, theories, president, sheriff, tiki, scrooge, girls, mimes
+  Dimension 117
+    (+) mimes, jax, dani, cking, danbury, john, mama, porn, abo, dena, lebanese, norm, kanye, man, anthony, spock, dracula, captain, ballots, chris
+    (-) fuck, f, rudy, pardon, hrer, sarah, hitler, german, shite, chamberlain, minister, cooper, ggas, motherf, hughley, klause, lindell, wee, bitch, battered
+  Dimension 118
+    (+) malaysia, singapore, sarah, mama, theories, conspiracy, cooper, porn, bo, leeann, baby, scooter, coronavirus, mrpillow, tiki, nate, tiffany, kavin, miranda, chris
+    (-) guy, danbury, silverman, dani, china, ego, hitler, u, hrer, kevin, stroke, anthony, women, sheriff, minister, trump, chamberlain, s, jax, followers
+  Dimension 119
+    (+) tom, malaysia, nate, singapore, anthony, jax, nigge, brady, cause, nashville, mean, dog, rs, gronk, vermont, dena, fatih, organization, s, u
+    (-) shit, chris, bo, christmas, prolonged, scrooge, mimes, kids, women, carol, repeat, marnell, norm, drummers, dick, malls, dad, sort, russell, achmed
+  Dimension 120
+    (+) alright, kevin, mimes, dani, norm, nigge, theories, rs, conspiracy, court, ya, hart, indian, motherfucker, abo, balloons, isis, yea, guns, lebanese
+    (-) danbury, fuck, tom, malls, police, john, sarah, chris, shite, america, ghb, wee, ego, kind, fat, jacksonville, s, u, stephanie, media
+  Dimension 121
+    (+) motherfucker, jax, man, women, motherfuckers, ha, rice, bro, men, drummers, nigge, guys, maria, theories, chinese, asian, slade, rs, dave, pork
+    (-) mimes, fuck, dani, tiffany, dog, kids, chris, porn, anthony, niggas, mosque, la, mama, jesus, cause, kevin, baby, dorner, cat, dead
+  Dimension 122
+    (+) sarah, cooper, dani, scooter, jax, asian, dude, mrpillow, chinese, jordana, lm, coronavirus, anthony, cking, rice, abo, black, qanon, lebanese, gay
+    (-) danbury, dena, lindsey, tiffany, alright, malaysia, singapore, silverman, mama, cuz, bro, klause, kind, battered, john, niggas, baby, sport, balloon, ya
+  Dimension 123
+    (+) drummers, jax, norm, malaysia, song, bo, anthony, singapore, drummer, drums, band, prolonged, cymbal, drum, leeann, georgia, jazz, sort, tiki, kits
+    (-) berkeley, ha, john, fuck, nate, guys, government, oona, dude, kimmel, bro, journalists, mean, jimmy, lm, fcc, valentines, stroke, guy, alright
+  Dimension 124
+    (+) jax, cking, theories, nate, conspiracy, dead, niggas, valentines, shite, wee, motherfucking, fuck, ewe, achimedes, england, anthem, biscuits, kev, nashville, vermont
+    (-) mimes, dad, oona, malls, f, fatih, organization, motherfucker, jenny, china, pope, motherfuckers, big, u, fluffy, smallpox, yannis, mike, frankie, bo
+  Dimension 125
+    (+) danbury, john, ha, sarah, cooper, alright, dani, shit, scooter, organization, dog, mrpillow, ego, china, ali, drummers, goddamn, kevin, smallpox, jordana
+    (-) white, fuck, porn, mask, dena, hrer, mimes, stroke, hitler, helicopter, germany, miranda, counted, homeless, cornfield, country, covid, chamberlain, minister, fluffy
+  Dimension 126
+    (+) jax, biscuits, kids, man, cemetery, gay, f, lm, porn, hardees, bo, catherine, government, dad, maldives, yo, miranda, tom, guys, craig
+    (-) frankie, fluffy, tiffany, women, cking, gabriel, men, cuz, nate, snoop, nashville, norm, bam, martin, paas, mimes, parasites, vermont, jim, ha
+  Dimension 127
+    (+) theories, conspiracy, rice, cause, jacob, anthony, dad, shit, dani, asian, fucking, ghb, hrer, da, malls, minister, malaysia, mum, prime, chamberlain
+    (-) fuck, alright, tiffany, bo, berkeley, jax, russell, prolonged, pavarotti, china, cuz, went, organization, parasites, ha, smallpox, sarah, mate, miranda, health
+  Dimension 128
+    (+) berkeley, mimes, pussy, mama, fatih, chris, yannis, germans, german, iranians, wee, goes, jane, asian, enissa, lai, kids, tart, guys, shite
+    (-) dani, lm, tacos, snake, alright, bo, frankie, russell, fluffy, oona, tom, fuck, prolonged, abo, danbury, yo, motherfucker, gay, gabriel, sheriff
+  Dimension 129
+    (+) mimes, lm, dude, porn, rudy, jimmy, government, miranda, kevin, danbury, fat, malls, dave, frankie, cause, gay, maria, regime, asian, malaysia
+    (-) wife, lot, coffee, snake, tom, baby, journalists, tonight, ballots, paas, ted, mick, london, frog, guy, brady, rice, mask, pavarotti, alright
+
+──────────────────────────────────────────────────────────────────────
+CHUNK-LEVEL INDEX
+──────────────────────────────────────────────────────────────────────
+  130 dimensions
+
+  Dimension 0
+    (+) people, got, think, said, want, shit, say, good, fucking, man, time, fuck, going, did, look, really, love, come, cause, thank
+    (-) connais, jaime, grandm, avons, dedans, chambres, dois, partir, parce, poulet, poitrines, appris, sommes, voudrais, quickie, furburger, shlong, jerkoff, crud, doniker
+  Dimension 1
+    (+) thank, guys, love, good, coming, great, god, thanks, appreciate, night, yes, tonight, welcome, nice, special, wow, hello, gentlemen, really, lets
+    (-) shit, fuck, said, white, black, people, fucking, got, kids, ass, nigga, motherfucker, women, cause, goes, old, bitch, man, car, went
+  Dimension 2
+    (+) said, goes, went, dad, got, did, mom, thought, told, son, wife, night, day, says, room, phone, little, car, looked, school
+    (-) people, white, black, love, think, women, lot, country, shit, men, america, racist, hate, gay, world, f, person, things, mean, guys
+  Dimension 3
+    (+) shit, fuck, fucking, man, got, thank, dick, motherfucker, ass, nigga, bitch, white, women, gga, pussy, god, black, goddamn, come, dude
+    (-) people, said, think, really, say, things, lot, thing, feel, mean, did, good, went, actually, thought, kind, way, years, bit, want
+  Dimension 4
+    (+) said, white, black, people, thank, shit, man, f, say, went, nigga, motherfucker, did, ass, gga, racist, cking, bitch, word, came
+    (-) want, think, love, fucking, women, good, kids, little, feel, men, going, sex, really, life, guys, dick, make, way, kid, mom
+  Dimension 5
+    (+) f, cking, got, man, sh, t, come, guys, guy, little, women, good, time, cked, old, dick, motherf, b, woman, tch
+    (-) fucking, love, fuck, people, said, want, say, ha, goes, think, gay, shit, hate, dog, mom, person, fucked, bitch, country, says
+  Dimension 6
+    (+) want, women, love, men, said, say, woman, dick, man, gay, f, think, sex, girl, guys, guy, girls, cking, feel, pussy
+    (-) got, people, kids, old, dog, dad, fucking, years, mom, year, kid, going, school, went, day, time, house, little, new, parents
+  Dimension 7
+    (+) love, kids, want, dad, mom, baby, dog, kid, got, old, parents, f, white, son, shit, year, house, cking, home, school
+    (-) think, fucking, guy, dick, women, men, guys, fuck, look, goes, going, ha, gay, thank, did, really, mean, thing, woman, say
+  Dimension 8
+    (+) want, got, baby, thank, come, kids, going, white, tell, let, need, car, black, nigga, say, phone, shit, lets, kid, talk
+    (-) ha, love, fucking, f, gay, women, cking, men, think, guy, woman, dick, dog, went, did, really, laugh, funny, years, hate
+  Dimension 9
+    (+) f, fucking, cking, want, people, fuck, say, shit, said, gay, thank, kids, die, t, sh, ha, shut, word, hate, going
+    (-) white, black, women, got, man, men, woman, good, guy, look, little, girl, time, old, guys, dick, come, girls, dog, baby
+  Dimension 10
+    (+) ha, want, come, baby, black, yes, kids, white, look, laugh, kid, ah, tell, boy, say, mm, lets, wanted, ass, little
+    (-) love, fucking, gay, think, dick, fuck, dog, f, men, women, said, shit, cking, guy, went, hate, woman, years, life, cat
+  Dimension 11
+    (+) dog, got, love, dogs, look, want, come, cat, going, guy, big, need, little, people, bit, eat, cats, walk, car, food
+    (-) kids, dad, old, mom, kid, gay, years, parents, school, year, women, think, fuck, men, son, man, shit, say, thank, young
+  Dimension 12
+    (+) fucking, guy, goes, white, black, want, dad, dog, guys, gay, mom, kids, went, old, f, kid, women, school, girl, thank
+    (-) shit, say, good, got, come, fuck, nigga, think, time, motherfucker, really, ass, man, things, feel, people, bitch, mean, love, pussy
+  Dimension 13
+    (+) dog, think, women, kids, baby, got, thank, gay, men, little, old, said, people, dogs, ha, shit, year, kid, woman, lot
+    (-) good, love, guy, come, goes, god, man, fucking, black, yes, doing, going, white, dad, did, mom, time, night, sorry, lets
+  Dimension 14
+    (+) got, fucking, people, love, want, said, gay, women, went, old, new, years, guys, married, year, going, men, lot, guy, york
+    (-) dog, god, think, mom, dad, say, baby, goes, shit, did, look, dogs, good, white, come, mean, black, f, fuck, cat
+  Dimension 15
+    (+) gay, dick, say, guy, dog, people, guys, come, man, dad, suck, goes, mean, dude, want, got, dicks, did, friends, marriage
+    (-) think, fucking, women, baby, white, look, woman, need, said, men, f, cking, going, love, car, life, babies, money, things, thinking
+  Dimension 16
+    (+) good, baby, gay, think, said, kids, fucking, want, great, guys, really, feel, bad, black, got, man, shit, friends, pretty, having
+    (-) say, women, old, goes, come, dad, going, men, woman, did, thank, years, tell, car, fuck, mom, yes, love, year, door
+  Dimension 17
+    (+) good, dog, say, women, fuck, time, fucking, white, did, men, dogs, want, kids, sex, dick, got, really, black, lot, yes
+    (-) baby, look, god, gay, think, little, love, come, people, guy, car, goes, going, babies, man, jesus, need, fat, bit, big
+  Dimension 18
+    (+) think, man, god, want, got, shit, did, jesus, really, dog, love, believe, dad, trump, guy, day, nigga, money, ha, mean
+    (-) baby, dick, look, say, good, people, women, little, fucking, time, babies, having, sex, big, feel, woman, girl, men, said, lets
+  Dimension 19
+    (+) man, old, years, gay, dog, come, year, time, people, god, men, women, look, going, good, life, said, woman, young, ago
+    (-) got, think, say, dick, guy, goes, white, love, dad, mom, black, guys, little, kids, phone, ha, fuck, lot, word, did
+  Dimension 20
+    (+) look, dick, people, god, old, said, want, good, dad, mom, suck, fat, big, thank, looking, shit, dicks, think, looks, goes
+    (-) baby, gay, say, guy, come, going, guys, did, fuck, man, car, black, lets, babies, went, word, great, house, home, mean
+  Dimension 21
+    (+) say, look, man, got, fucking, kids, kid, guy, mean, word, dad, good, thing, hate, dog, face, sorry, saying, woman, words
+    (-) dick, shit, going, fuck, day, did, white, time, need, night, went, guys, house, years, baby, think, nigga, want, new, feel
+  Dimension 22
+    (+) guy, old, shit, baby, goes, year, years, look, fuck, guys, did, want, new, really, man, love, life, mean, say, great
+    (-) come, god, going, little, fucking, gay, women, kids, white, men, dad, dick, bit, mom, yes, said, house, let, kid, home
+  Dimension 23
+    (+) god, fuck, women, got, gay, look, guys, mom, guy, men, good, did, people, believe, sex, lot, shit, bad, married, really
+    (-) man, dick, think, fucking, come, little, baby, white, bit, old, love, need, big, say, thank, year, suck, boy, home, day
+  Dimension 24
+    (+) god, did, dick, baby, fucking, say, black, years, old, year, want, got, yes, white, mean, went, jesus, life, day, believe
+    (-) goes, come, shit, dad, guys, people, look, need, said, good, women, kids, guy, mom, gay, think, going, men, lot, fuck
+  Dimension 25
+    (+) little, kids, look, white, shit, bit, gay, did, mean, really, day, school, say, kid, thought, guys, thing, cause, make, play
+    (-) got, baby, people, goes, man, dad, mom, dick, god, women, good, think, men, woman, come, ha, tell, fucking, babies, talk
+  Dimension 26
+    (+) come, did, fuck, look, think, dad, yes, guys, old, lets, got, baby, years, gay, f, want, year, white, play, mom
+    (-) shit, goes, god, say, little, man, going, feel, car, time, day, phone, thing, cause, make, bad, life, trying, way, things
+  Dimension 27
+    (+) kids, guy, fuck, going, dick, guys, man, god, kid, said, people, school, dog, doing, sex, children, great, way, car, suck
+    (-) gay, shit, mom, time, goes, did, fucking, got, dad, look, want, good, white, little, say, years, men, phone, night, went
+  Dimension 28
+    (+) going, old, good, say, think, goes, gay, yes, year, fuck, years, black, white, love, need, god, sir, kids, word, look
+    (-) really, did, man, dad, feel, mean, mom, lot, little, shit, people, fucking, guys, talk, women, kind, went, money, cause, stuff
+  Dimension 29
+    (+) little, fuck, goes, bit, people, good, really, old, man, went, fat, god, mean, yes, girl, year, boy, feel, doctor, thank
+    (-) going, look, guys, time, shit, fucking, dick, say, new, car, phone, gay, baby, tell, kids, need, guy, mom, dad, house
+  Dimension 30
+    (+) come, old, god, guy, guys, say, fucking, year, little, shit, years, said, new, girl, good, lets, time, think, fun, talk
+    (-) going, did, man, fuck, look, gay, goes, kids, yes, tell, mean, went, white, thank, phone, woman, thought, fat, really, sleep
+  Dimension 31
+    (+) goes, kids, did, come, wife, women, shit, god, feel, day, sleep, people, night, make, bed, school, fucking, men, let, sex
+    (-) dad, going, little, mom, fuck, bit, guy, old, son, big, trump, said, dads, want, president, guys, maybe, talk, black, really
+  Dimension 32
+    (+) did, shit, little, good, going, guy, people, yes, women, old, tell, men, bit, big, car, fucking, sir, year, black, lot
+    (-) time, fuck, day, really, white, mean, feel, cause, come, life, gay, got, phone, long, look, wife, home, sex, went, nigga
+  Dimension 33
+    (+) need, black, new, yes, phone, fuck, york, money, lets, make, gay, car, talk, way, kids, country, mom, let, sir, help
+    (-) going, white, really, shit, come, mean, guys, old, say, got, goes, people, want, look, lot, love, girl, years, thought, went
+  Dimension 34
+    (+) time, black, little, think, people, did, fuck, long, guy, love, sex, want, having, bit, look, remember, kids, man, tell, god
+    (-) really, need, white, mean, yes, new, old, thing, gay, year, bad, phone, house, mom, feel, shit, way, york, cool, work
+  Dimension 35
+    (+) black, feel, really, old, going, need, come, make, porn, sex, fat, cause, guys, bad, did, fucking, girls, thought, girl, year
+    (-) white, yes, new, guy, time, house, york, little, trump, country, great, america, god, women, men, good, phone, world, president, city
+  Dimension 36
+    (+) guys, need, tell, white, little, goes, time, porn, lets, talk, old, let, feel, sex, did, phone, girl, man, lot, fucking
+    (-) guy, day, went, big, black, come, women, fat, good, thank, men, shit, eat, kids, door, thought, mean, way, life, food
+  Dimension 37
+    (+) car, feel, white, did, need, eat, guy, house, day, old, people, fat, make, good, life, bad, home, say, food, mom
+    (-) black, really, goes, new, thing, yes, shit, big, doing, york, great, went, america, lot, porn, president, watch, news, world, trump
+  Dimension 38
+    (+) mean, time, car, tell, need, guy, really, old, way, let, going, goes, does, thank, jesus, got, women, love, kids, kid
+    (-) day, guys, went, man, say, mom, doing, night, make, eat, room, sex, porn, food, house, look, people, friends, girls, think
+  Dimension 39
+    (+) car, new, guys, york, goes, make, black, women, city, look, men, good, live, fuck, day, drive, driving, feel, way, little
+    (-) need, guy, porn, yes, sex, watch, fat, time, girl, shit, tell, woman, thing, big, talk, having, room, eat, white, watching
+  Dimension 40
+    (+) tell, need, mean, good, story, let, big, money, friends, thing, went, fat, guys, little, told, life, cause, everybody, doctor, true
+    (-) yes, car, feel, time, really, porn, make, dad, sex, lets, old, sir, watch, shit, bad, sorry, got, black, people, sure
+  Dimension 41
+    (+) mean, make, guys, day, yes, dad, life, does, eat, work, goes, lets, fat, food, years, shit, trump, black, maybe, job
+    (-) really, car, phone, went, new, tell, thing, porn, york, girl, mom, house, think, guy, white, say, gay, good, kids, cause
+  Dimension 42
+    (+) feel, make, dad, bad, guy, white, come, better, thing, new, life, time, things, money, goes, country, makes, trump, going, shit
+    (-) mean, car, mom, day, porn, sex, house, guys, yes, people, night, lets, really, watch, nice, phone, black, drive, friends, girl
+  Dimension 43
+    (+) porn, thing, sex, watch, new, feel, mean, phone, bad, watching, way, news, york, doing, day, kid, thank, movie, trump, come
+    (-) really, need, went, big, time, guys, yes, fat, house, friends, great, eat, care, sorry, married, lot, drink, work, men, shit
+  Dimension 44
+    (+) mom, feel, yes, tell, guy, let, story, bad, phone, little, going, way, mother, bitch, tonight, moms, nice, come, really, woman
+    (-) dad, need, thing, car, sex, did, god, good, big, things, went, lets, white, say, guys, doctor, stuff, porn, baby, work
+  Dimension 45
+    (+) day, tell, dad, really, car, yes, doing, life, little, guy, let, story, great, work, wife, maybe, women, men, married, look
+    (-) mom, big, new, fat, make, mean, york, time, sex, went, cause, eat, girl, man, lot, god, lets, say, food, going
+  Dimension 46
+    (+) thing, make, car, doing, tell, mom, way, cause, white, years, yes, thought, trying, money, fun, stop, let, went, work, sure
+    (-) new, day, feel, need, york, going, mean, say, porn, phone, little, people, bad, girl, dad, did, god, city, bed, watch
+  Dimension 47
+    (+) make, really, porn, work, phone, big, new, watch, lot, guy, fun, tell, fat, job, maybe, let, dad, york, white, cause
+    (-) went, thing, guys, feel, need, yes, way, bad, car, shit, school, mom, doctor, gun, mean, world, america, wrong, country, kind
+  Dimension 48
+    (+) big, tell, fat, yes, dad, new, car, guys, girl, feel, girls, ass, way, york, porn, cause, sex, story, let, went
+    (-) mom, need, phone, doing, years, guy, little, things, work, money, going, come, job, did, thing, look, dick, stuff, house, men
+  Dimension 49
+    (+) sex, new, life, woman, married, thing, york, maybe, shit, going, yes, friends, make, come, little, mom, nice, having, city, relationship
+    (-) big, doing, watch, porn, phone, feel, men, went, women, house, bad, nigga, money, news, mean, watching, room, lot, country, old
+  Dimension 50
+    (+) phone, thing, guys, fat, time, old, cause, yes, really, did, hate, eat, day, people, house, let, picture, dead, cell, food
+    (-) lot, lets, went, car, talk, porn, doing, great, watch, years, feel, friends, money, new, sex, married, need, look, school, tell
+  Dimension 51
+    (+) doing, day, phone, talk, big, lot, sex, feel, talking, stuff, fat, girl, school, kid, car, girls, white, mean, new, things
+    (-) house, porn, watch, really, make, watching, nigga, world, guys, cat, say, news, way, years, room, movie, good, life, home, die
+  Dimension 52
+    (+) doing, house, night, dad, phone, mean, room, feel, years, married, wife, friends, door, bed, great, sleep, black, new, best, went
+    (-) day, mom, porn, lot, time, big, need, car, hate, really, watch, goes, school, money, america, country, remember, world, kid, thing
+  Dimension 53
+    (+) went, make, phone, school, thought, cause, porn, mean, nigga, dad, doctor, dog, good, bitch, stop, white, fun, women, story, high
+    (-) house, big, thing, lot, feel, stuff, black, said, way, things, room, cat, president, door, trump, eat, great, talk, lets, mom
+  Dimension 54
+    (+) doing, fat, new, eat, porn, york, mom, cause, guys, stop, need, watch, life, food, jesus, time, women, kid, did, great
+    (-) phone, lot, sex, lets, talk, went, make, big, house, night, room, girls, trump, feel, look, guy, school, bed, girl, friends
+  Dimension 55
+    (+) lets, talk, eat, cause, fat, thing, da, food, talking, bitch, years, la, maybe, eating, song, year, trump, night, kill, minutes
+    (-) big, sex, make, money, house, need, doing, yes, life, way, say, work, fuck, day, tell, guys, porn, little, car, job
+  Dimension 56
+    (+) cause, nigga, way, pussy, lot, bitch, ass, money, real, sex, girl, motherfucker, jesus, work, job, niggas, da, dad, talking, fucking
+    (-) lets, fat, make, porn, tell, shit, car, big, mean, thing, fuck, mom, maybe, watch, went, bit, women, dick, phone, kids
+  Dimension 57
+    (+) lot, life, things, phone, years, married, porn, car, way, yes, friends, come, eat, stuff, fuck, guys, word, watch, ago, wife
+    (-) sex, day, make, house, doing, really, old, talk, lets, thing, time, cat, new, people, trump, play, nigga, tell, year, job
+  Dimension 58
+    (+) lot, cause, tell, old, eat, house, stuff, yes, went, new, year, room, make, things, fun, men, home, mean, york, dick
+    (-) big, life, years, lets, pussy, nigga, real, married, bitch, maybe, girl, woman, really, way, phone, mom, country, sex, people, play
+  Dimension 59
+    (+) cause, way, lets, life, big, thought, mom, old, funny, sleep, nice, year, bed, kid, laugh, great, die, white, talk, need
+    (-) sex, fat, pussy, eat, years, car, lot, house, da, food, la, woman, jesus, nigga, bad, country, america, trump, saying, phone
+  Dimension 60
+    (+) way, sex, phone, work, maybe, great, word, lets, shit, cat, door, doctor, open, does, kind, nice, person, tell, jesus, wife
+    (-) thing, life, da, girl, yes, la, girls, mean, sleep, school, nigga, money, crazy, make, hate, house, need, live, bed, everybody
+  Dimension 61
+    (+) great, way, friends, girl, best, pussy, da, fat, year, la, life, girls, word, friend, america, world, funny, did, time, school
+    (-) jesus, years, thought, maybe, cause, money, lets, big, guys, mm, let, sex, ago, wife, stuff, feel, doctor, bad, remember, good
+  Dimension 62
+    (+) great, jesus, cause, da, years, la, big, night, sleep, need, car, bed, mom, pussy, doctor, make, kind, word, kids, sorry
+    (-) money, lets, life, kid, went, house, school, real, hate, stuff, thought, fat, work, way, eat, girls, doing, let, year, bitch
+  Dimension 63
+    (+) jesus, life, maybe, night, talk, things, lot, bed, real, la, stop, da, kid, year, doing, room, thought, story, saying, door
+    (-) cause, great, money, married, years, thing, work, friends, eat, feel, let, nice, dad, em, wife, job, going, lets, food, cool
+  Dimension 64
+    (+) cause, life, house, great, talk, sex, maybe, thought, pussy, car, things, year, went, goes, president, porn, real, america, trump, phone
+    (-) way, lot, thing, night, school, work, da, la, play, years, woman, sleep, face, sorry, high, bed, hard, room, let, ass
+  Dimension 65
+    (+) great, pussy, jesus, da, lets, la, school, thought, phone, kid, cat, eat, cool, high, let, house, life, maybe, porn, friends
+    (-) fat, trump, president, girl, night, country, girls, bed, sleep, talk, car, kids, married, trying, cause, america, talking, donald, news, doing
+  Dimension 66
+    (+) jesus, way, school, eat, make, friends, high, really, let, doing, years, talk, dude, bad, girls, women, sex, food, best, son
+    (-) maybe, woman, fat, thought, work, money, great, nice, play, nigga, da, kind, bitch, lot, job, person, song, la, funny, feel
+  Dimension 67
+    (+) jesus, woman, maybe, girl, friends, house, work, girls, nice, porn, christ, married, year, friend, job, talk, fun, thing, wife, does
+    (-) sex, pussy, doctor, things, life, sleep, bed, eat, really, room, night, guy, kid, yes, men, let, white, tell, die, cat
+  Dimension 68
+    (+) fat, friends, kid, jesus, lot, room, lets, great, school, money, sex, night, best, play, thought, fun, friend, car, having, trump
+    (-) da, la, talk, maybe, went, things, kids, work, eat, try, nice, cat, girls, guys, way, girl, years, food, make, big
+  Dimension 69
+    (+) da, fat, la, house, way, friends, talk, day, hate, married, sex, cause, friend, fun, years, word, yes, ba, best, wife
+    (-) girl, eat, woman, maybe, great, night, food, girls, cat, hot, sleep, things, country, america, bed, school, world, pussy, jesus, kind
+  Dimension 70
+    (+) money, friends, thought, way, cat, kids, night, real, eat, food, sorry, women, word, hell, talk, jesus, wanted, da, pay, cats
+    (-) school, work, things, house, high, gun, cause, let, kid, great, woman, maybe, ass, guns, went, fat, does, water, stuff, kill
+  Dimension 71
+    (+) maybe, school, sex, cause, la, thought, night, kid, da, money, high, gun, fun, play, hate, country, men, girls, america, years
+    (-) woman, went, pussy, nigga, make, life, lets, doctor, lot, bitch, thing, kids, room, day, jesus, ass, talk, job, nice, best
+  Dimension 72
+    (+) work, life, jesus, da, great, la, money, hate, sex, doctor, lets, hard, does, cat, girl, mm, job, real, girls, home
+    (-) maybe, pussy, word, nigga, day, married, kid, make, friends, way, need, fun, best, saying, door, eat, big, funny, comedy, woman
+  Dimension 73
+    (+) cat, woman, money, kid, things, talk, bad, cats, talking, make, great, crazy, word, door, kill, dead, wife, day, gun, hate
+    (-) work, pussy, thought, maybe, trump, thing, job, kids, eat, best, women, mm, hard, mom, stop, president, night, feel, better, dog
+  Dimension 74
+    (+) thought, da, let, lot, la, married, world, woman, doing, hate, care, country, ask, kid, america, big, friends, year, question, best
+    (-) money, talk, school, fat, way, remember, things, kind, jesus, years, nigga, movie, house, yes, work, maybe, stuff, thing, high, nice
+  Dimension 75
+    (+) word, house, cat, thought, lets, real, girls, cause, things, remember, school, sorry, years, mm, song, used, tell, bad, doctor, high
+    (-) let, talk, money, great, went, kid, maybe, crazy, way, year, hate, wife, jesus, gun, eat, la, fuckin, say, room, ask
+  Dimension 76
+    (+) cat, hate, friends, maybe, let, die, cats, pussy, went, saying, best, stop, dead, kind, lot, men, job, year, remember, kill
+    (-) woman, da, room, school, eat, la, way, home, kid, really, food, cause, money, talk, years, thought, life, high, says, dog
+  Dimension 77
+    (+) let, talk, kid, work, sorry, doctor, play, thought, kind, friends, hard, used, stuff, cat, eat, bad, funny, movie, best, half
+    (-) maybe, lets, hate, lot, doing, tell, mm, room, door, really, way, walk, america, make, girls, kids, everybody, need, da, mom
+  Dimension 78
+    (+) cat, school, things, room, married, eat, friends, cats, big, funny, wife, high, work, feel, hard, hate, thought, bitch, nigga, friend
+    (-) let, doctor, word, house, girl, bad, life, kid, lot, girls, sorry, great, em, years, real, way, remember, maybe, women, song
+  Dimension 79
+    (+) hate, pussy, kid, bad, remember, work, night, woman, house, sleep, tell, trump, stuff, jesus, dude, things, word, used, lets, money
+    (-) let, school, cat, room, lot, maybe, fat, hear, real, girls, nigga, men, ask, walk, question, sir, tonight, high, world, thing
+  Dimension 80
+    (+) pussy, doctor, money, fun, wife, girls, cause, play, getting, real, maybe, does, married, watch, saying, year, day, la, da, jesus
+    (-) thought, nigga, great, word, hate, remember, eat, bitch, motherfucker, talk, stop, years, sex, bad, women, nice, kill, crazy, work, night
+  Dimension 81
+    (+) hate, room, word, remember, mm, feel, real, sorry, talk, kind, old, world, america, everybody, country, english, hear, best, try, french
+    (-) bad, thought, job, things, cat, way, trump, da, great, lets, la, girls, need, news, fat, people, boy, seen, year, president
+  Dimension 82
+    (+) doctor, nigga, real, friends, bitch, nice, night, sleep, way, woman, crazy, care, maybe, house, believe, better, things, weird, mm, kid
+    (-) room, pussy, door, hard, face, talk, thought, remember, life, gun, girls, wife, open, married, stop, water, money, boy, movie, beautiful
+  Dimension 83
+    (+) real, kid, years, dude, funny, mm, stuff, crazy, great, believe, ago, fun, feel, job, hand, cat, minutes, door, sure, laugh
+    (-) bad, wife, play, money, ass, sorry, night, friends, remember, doing, news, old, ask, school, maybe, home, best, cause, try, better
+  Dimension 84
+    (+) hate, things, play, sorry, let, sex, girl, funny, years, world, job, song, home, room, movie, comedy, story, game, day, end
+    (-) mm, stuff, trump, word, hard, remember, trying, school, cat, president, sleep, hmm, talking, porn, maybe, high, getting, doctor, try, drink
+  Dimension 85
+    (+) thought, hate, doctor, school, way, pussy, hear, talk, let, mm, porn, sleep, question, crazy, wife, door, fat, word, ask, weird
+    (-) water, remember, bad, drink, real, friends, sex, best, better, coffee, movie, hard, face, gun, seen, friend, picture, work, men, nigga
+  Dimension 86
+    (+) play, lot, cat, wife, kill, live, life, eat, movie, song, does, feel, trump, dead, saying, stop, game, nigga, cause, food
+    (-) things, let, job, bad, money, friends, fat, room, mm, better, walk, best, pussy, water, hear, world, jesus, word, nice, hot
+  Dimension 87
+    (+) bad, sorry, mm, maybe, room, hate, doctor, cat, job, fun, person, hmm, face, men, trump, ass, eat, news, cause, friends
+    (-) dead, home, nice, word, feel, saying, getting, let, ask, wife, die, things, night, pussy, thought, kill, water, coming, real, care
+  Dimension 88
+    (+) kid, sorry, nice, trying, mm, married, better, r, went, things, hmm, wife, house, whoa, thing, sir, porn, women, sleep, country
+    (-) stuff, doctor, woman, crazy, let, boy, care, best, girls, kids, does, hate, friend, remember, bit, kind, hit, movie, watch, home
+  Dimension 89
+    (+) job, men, stuff, word, better, cat, blow, life, song, kid, believe, nice, night, best, wife, really, ass, person, hand, morning
+    (-) funny, things, mm, die, em, dead, friends, women, work, weird, laugh, kill, care, hear, coming, bad, dude, doctor, hot, stop
+  Dimension 90
+    (+) home, work, crazy, kid, gun, bad, saying, world, person, mm, hard, wrong, hear, cause, word, kill, fine, guns, better, girl
+    (-) water, trump, getting, hot, play, body, president, woman, remember, house, things, watch, hate, doctor, fun, stop, cool, nice, ass, cold
+  Dimension 91
+    (+) let, mm, remember, play, em, woman, went, nice, parents, room, hmm, used, kind, trump, tom, care, need, night, ass, things
+    (-) sorry, water, doctor, wife, stop, school, ask, porn, nigga, crazy, story, says, sir, hear, dead, does, start, sleep, question, walk
+  Dimension 92
+    (+) men, nice, funny, best, ass, water, talk, house, kill, live, everybody, bad, does, fine, die, care, kid, years, ladies, hate
+    (-) sorry, remember, better, door, women, crazy, things, stuff, let, real, wife, great, talking, getting, open, person, married, saying, president, bitch
+  Dimension 93
+    (+) mm, talking, job, doctor, saying, remember, men, hear, kid, friend, play, better, things, hmm, die, dead, hot, believe, crazy, face
+    (-) trying, stuff, hard, sorry, women, night, em, bed, woman, hate, gun, cat, bad, way, let, talk, sir, pussy, ass, coffee
+  Dimension 94
+    (+) remember, sorry, nice, does, best, boy, kid, year, job, face, pussy, came, weird, sir, seen, friend, lot, em, kind, die
+    (-) play, saying, ass, hard, mm, water, real, trying, funny, better, person, stuff, things, hear, drink, song, thought, wife, care, great
+  Dimension 95
+    (+) best, song, play, talk, door, women, crazy, friends, friend, country, years, care, doctor, try, ass, porn, feel, head, live, long
+    (-) wife, men, funny, movie, real, bit, ask, bad, hate, comedy, actually, word, question, kevin, talking, family, married, let, laugh, does
+  Dimension 96
+    (+) real, men, stop, trump, dead, door, home, cool, woman, trying, bad, gga, high, friend, friends, turn, nice, years, play, open
+    (-) better, used, country, america, getting, looking, women, stuff, world, funny, room, kid, dude, live, wrong, fuckin, job, ass, jesus, doctor
+  Dimension 97
+    (+) real, remember, ass, job, doctor, stop, hand, wife, home, hard, lot, married, america, house, funny, boy, drink, laugh, women, everybody
+    (-) ask, does, cool, room, word, nigga, men, question, better, bitch, girl, stuff, play, mm, work, cat, dude, trump, years, em
+  Dimension 98
+    (+) mm, water, job, stuff, best, woman, sorry, sleep, play, way, die, hmm, son, wife, em, bed, dead, feel, friend, care
+    (-) doctor, person, getting, hard, nice, everybody, dude, nigga, door, men, kind, home, trump, kid, married, bad, looking, body, walk, jesus
+  Dimension 99
+    (+) nice, funny, stop, stuff, saying, crazy, kill, sorry, laugh, wrong, parents, dude, men, remember, life, fun, years, job, hear, cause
+    (-) real, dead, year, talk, body, wife, half, knew, bitch, women, sleep, believe, work, doing, family, married, kid, movie, problem, face
+  Dimension 100
+    (+) home, fun, care, water, cool, crazy, drink, die, live, married, word, cat, sorry, door, pussy, life, maybe, president, funny, america
+    (-) best, saying, better, face, house, world, song, wife, person, somebody, everybody, sleep, trying, weird, seen, coming, hear, does, bed, ask
+  Dimension 101
+    (+) wife, stuff, care, thought, men, movie, watch, nice, world, doctor, remember, dude, hard, sorry, ass, friend, walk, son, talking, better
+    (-) everybody, job, believe, drink, porn, getting, room, hear, coming, does, water, song, kind, cause, question, crazy, women, came, blow, play
+  Dimension 102
+    (+) saying, cat, dude, home, boy, start, getting, water, best, live, drink, woman, coffee, hear, men, work, hate, watch, tom, news
+    (-) stuff, dead, does, everybody, job, door, ass, kind, food, open, die, chinese, care, bitch, fun, sleep, stop, person, walk, hand
+  Dimension 103
+    (+) hard, room, everybody, dead, girls, try, care, die, fun, nice, year, believe, stuff, sorry, knew, remember, trying, nigga, woman, thought
+    (-) does, home, face, ass, life, seen, wrong, funny, mm, cool, son, old, comedy, weird, women, head, kind, friend, night, used
+  Dimension 104
+    (+) saying, stuff, bad, nice, em, bitch, porn, play, home, chinese, sorry, die, used, wife, year, room, actually, believe, getting, dude
+    (-) watch, movie, ass, trying, word, ask, gun, kid, friends, sir, house, try, question, things, song, better, care, wait, feel, person
+  Dimension 105
+    (+) everybody, stop, gun, weird, cool, crazy, better, nice, thought, year, kind, care, watch, work, guns, hand, talking, high, movie, room
+    (-) hard, try, song, laugh, ask, friends, home, hot, kid, funny, dead, stuff, trump, maybe, coming, sir, tonight, hit, fuckin, seen
+  Dimension 106
+    (+) watch, door, bitch, open, trying, hard, wrong, nice, sleep, believe, son, everybody, fine, word, does, news, stop, saying, boy, turn
+    (-) song, porn, minutes, weird, crazy, men, ass, coffee, walk, hit, question, night, wife, dead, happy, country, r, gun, ask, bad
+  Dimension 107
+    (+) crazy, hear, water, mm, seen, drink, let, stuff, girl, wife, try, ready, looking, sure, nice, tom, home, family, kind, trying
+    (-) saying, gun, funny, job, real, sorry, says, room, word, guns, girls, eat, used, talking, boy, bitch, maybe, sir, body, hand
+  Dimension 108
+    (+) face, story, room, hear, seen, girl, bit, stop, used, sir, let, looking, care, lets, die, person, true, weed, dead, work
+    (-) ask, remember, tonight, em, better, question, believe, wait, door, year, girls, everybody, ready, try, home, water, answer, bad, food, says
+  Dimension 109
+    (+) crazy, everybody, sorry, ass, believe, hot, face, used, dude, word, person, men, trying, coming, wife, different, die, saw, home, years
+    (-) stop, remember, long, nice, married, talking, gun, away, half, story, night, doctor, nigga, bad, thinking, comedy, minutes, bit, point, read
+  Dimension 110
+    (+) trying, dude, world, night, cool, girls, wrong, porn, year, stop, long, boy, men, does, things, tell, sir, married, job, tonight
+    (-) news, girl, nice, funny, story, ass, read, gun, better, women, true, bed, wife, let, watch, problem, hear, real, coffee, song
+  Dimension 111
+    (+) fun, hard, food, face, let, nigga, saying, body, night, believe, hear, cool, porn, fuckin, seen, head, hair, party, better, true
+    (-) parents, room, does, water, read, trying, real, getting, home, watch, crazy, stuff, kill, weird, world, beautiful, ass, boy, help, happy
+  Dimension 112
+    (+) better, everybody, kind, stop, home, funny, getting, men, girl, away, looking, great, girls, america, tell, cake, best, happy, bitch, years
+    (-) story, ass, year, hard, dude, room, nice, bed, boy, chinese, says, number, movie, balls, talking, sure, women, read, wrong, job
+  Dimension 113
+    (+) talking, crazy, door, boy, night, live, movie, knew, better, care, water, open, old, saw, school, bad, long, married, men, read
+    (-) home, sir, year, ah, fun, girl, family, stop, plane, chinese, saying, try, horse, room, nigga, everybody, weird, sit, things, women
+  Dimension 114
+    (+) fun, boy, talking, stuff, ask, coming, sorry, everybody, looking, getting, body, question, son, saying, gun, face, em, mm, night, start
+    (-) cool, wife, girls, remember, believe, funny, does, let, live, actually, laugh, coffee, dude, bit, trying, says, year, r, bed, better
+  Dimension 115
+    (+) hear, trying, talking, die, fuckin, does, hard, ah, home, song, head, dude, everybody, night, year, weird, men, live, family, ready
+    (-) stop, fun, saying, world, kill, sleep, sure, work, person, r, crazy, long, wait, wrong, tonight, tom, room, special, boy, believe
+  Dimension 116
+    (+) face, stop, getting, song, bit, question, real, better, hard, hit, crazy, bitch, ask, kill, believe, fun, watch, things, ass, eat
+    (-) person, walk, try, nigga, seen, play, hand, friend, news, coffee, sleep, talking, funny, weird, saying, trying, fine, half, looking, body
+  Dimension 117
+    (+) em, long, kill, everybody, married, ass, eat, world, believe, bitch, drink, work, girl, end, night, half, start, men, away, dude
+    (-) better, crazy, family, hard, boy, beautiful, kevin, body, years, came, food, care, head, hot, tom, chinese, bed, does, tonight, nigga
+  Dimension 118
+    (+) care, boy, cool, everybody, saying, year, son, ready, half, song, special, coming, comedy, dude, ass, does, kevin, hear, tonight, balls
+    (-) says, live, home, wanted, weird, movie, understand, crazy, looking, em, believe, talking, fuckin, different, weed, girls, world, coffee, old, story
+  Dimension 119
+    (+) movie, getting, says, trying, kevin, nice, dead, try, girl, ready, leave, believe, wrong, saying, doctor, song, bad, nigga, old, start
+    (-) talking, fuckin, live, hard, half, news, better, kind, head, weird, world, hear, wait, year, happy, horse, sleep, chinese, girls, dude
+  Dimension 120
+    (+) cool, kind, hard, body, best, coffee, song, ask, america, trying, end, actually, leave, happy, em, person, friend, home, saying, minutes
+    (-) play, knew, gun, face, dude, work, fuckin, parents, hot, family, seen, men, weird, 00, morning, indian, read, believe, hear, remember
+  Dimension 121
+    (+) song, looking, watch, boy, better, fun, body, laugh, family, face, minutes, beautiful, nice, son, sir, horse, sit, let, bad, funny
+    (-) getting, hear, bitch, movie, friend, weird, hard, kind, girl, em, ass, stop, english, news, men, called, country, happy, does, tonight
+  Dimension 122
+    (+) believe, dude, stop, girl, wanted, weird, called, care, used, seen, ready, family, happy, bit, beautiful, sleep, gga, try, getting, head
+    (-) says, chinese, girls, hot, understand, kind, crazy, does, watch, kill, trying, wait, hear, hit, long, sure, best, night, cream, thought
+  Dimension 123
+    (+) movie, die, weird, live, song, hot, fine, fun, actually, long, ass, parents, 00, everybody, ask, leave, home, door, point, says
+    (-) coffee, used, news, fuckin, tom, gun, play, does, kevin, start, beautiful, crazy, called, trying, away, doctor, kill, ah, guns, hitler
+  Dimension 124
+    (+) coffee, does, year, sleep, world, different, em, kill, hard, family, friends, beautiful, movie, sorry, wrong, funny, balls, high, doctor, wait
+    (-) dude, parents, problem, kevin, head, story, sir, blah, dead, kind, pee, wanted, news, door, start, trying, person, best, die, bitch
+  Dimension 125
+    (+) friends, body, believe, song, die, tonight, half, hair, number, food, family, hell, chinese, gun, fight, watch, bitch, news, world, home
+    (-) friend, getting, fine, best, better, boy, parents, wrong, dead, live, minutes, sleep, box, used, wait, real, took, bring, fun, hard
+  Dimension 126
+    (+) face, year, care, em, girls, fine, story, wrong, happy, stuff, news, ass, hand, number, married, told, parents, actually, r, left
+    (-) wife, dude, boy, hear, kind, whoa, bit, old, water, ah, kill, everybody, fun, job, friend, movie, trump, nah, son, girl
+  Dimension 127
+    (+) face, half, used, parents, wanted, wife, care, wait, hit, person, looking, hear, hot, job, stop, watch, kill, year, cold, help
+    (-) seen, news, ass, came, away, long, crazy, actually, family, happy, bit, girls, son, best, eat, english, married, hair, rich, thinking
+  Dimension 128
+    (+) sir, walk, person, getting, start, does, r, bed, help, nigga, hair, head, year, em, hard, leave, talking, away, hit, high
+    (-) trying, happy, bitch, says, came, use, saying, pretty, turn, ask, looking, minutes, seen, story, problem, care, gga, heres, 9, family
+  Dimension 129
+    (+) chinese, weird, thinking, em, coffee, cool, r, asian, kill, boy, actually, problem, parents, different, hear, watch, gga, bitch, married, lady
+    (-) understand, seen, ass, girls, says, coming, half, read, kind, used, food, talking, wrong, year, stop, wife, party, live, ready, try
+

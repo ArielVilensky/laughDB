@@ -57,9 +57,11 @@ interface RagPanelProps {
   query: string
   visibleResults: SearchResult[]
   hasResults: boolean
+  externalTrigger?: number
+  inline?: boolean
 }
 
-function RagPanel({ query, visibleResults, hasResults }: RagPanelProps): JSX.Element | null {
+function RagPanel({ query, visibleResults, hasResults, externalTrigger, inline }: RagPanelProps): JSX.Element | null {
   const [isOpen, setIsOpen] = useState(false)
   const [vibes, setVibes] = useState<string[]>([])
   const [summary, setSummary] = useState('')
@@ -73,7 +75,6 @@ function RagPanel({ query, visibleResults, hasResults }: RagPanelProps): JSX.Ele
   const phraseTimer = useRef<number | null>(null)
   const abortRef = useRef<AbortController | null>(null)
 
-  // Query changed — full reset
   useEffect(() => {
     abortRef.current?.abort()
     setSummary('')
@@ -83,9 +84,9 @@ function RagPanel({ query, visibleResults, hasResults }: RagPanelProps): JSX.Ele
     setUsedQuestionIds([])
     setActiveQuestionLabel(null)
     lastSummarizedQuery.current = null
+    if (!inline) setIsOpen(false)
   }, [query])
 
-  // Visible results changed while same query was summarized — mark stale
   useEffect(() => {
     if (lastSummarizedQuery.current !== null && lastSummarizedQuery.current === query) {
       setStale(true)
@@ -139,7 +140,7 @@ function RagPanel({ query, visibleResults, hasResults }: RagPanelProps): JSX.Ele
     }
 
     let fullText = ''
-    let vibesProcessed = followup !== null  // follow-ups have no VIBES line; stream text immediately
+    let vibesProcessed = followup !== null
     let summaryStart = 0
 
     const reader = response.body!.getReader()
@@ -177,7 +178,6 @@ function RagPanel({ query, visibleResults, hasResults }: RagPanelProps): JSX.Ele
               }
               onText(fullText.slice(summaryStart).trimStart())
             }
-            // still buffering the first line — don't update text yet
           } else {
             onText(fullText.slice(summaryStart).trimStart())
           }
@@ -225,23 +225,83 @@ function RagPanel({ query, visibleResults, hasResults }: RagPanelProps): JSX.Ele
   }
 
   const handleOpen = () => {
-    setIsOpen(true)
+    if (!inline) setIsOpen(true)
     if (!summary && !loading) void callApi()
   }
+
+  useEffect(() => {
+    if (externalTrigger && externalTrigger > 0) handleOpen()
+  }, [externalTrigger])
 
   const remainingQuestions = FOLLOW_UP_QUESTIONS.filter(q => !usedQuestionIds.includes(q.id))
   const allQuestionsUsed = summary && !loading && usedQuestionIds.length === FOLLOW_UP_QUESTIONS.length
 
-  if (!query.trim()) {
+  if (!query.trim() || !hasResults) return null
+
+  // ── Inline mode (rendered inside sidebar) ─────────────────────────────────
+  if (inline) {
     return (
-      <button className="rag-fab rag-fab-hint" disabled>
-        ✨ Search to summarize
-      </button>
+      <div className="rag-inline">
+        {vibes.length > 0 && (
+          <div className="rag-vibes">
+            {vibes.map(v => <span key={v} className="rag-vibe-pill">{v}</span>)}
+          </div>
+        )}
+
+        {loading && (
+          <div className="rag-loading">
+            {activeQuestionLabel && <p className="rag-active-question">"{activeQuestionLabel}"</p>}
+            <div className="rag-dots"><span /><span /><span /></div>
+            <p className="rag-phrase">{LOADING_PHRASES[phraseIndex]}</p>
+          </div>
+        )}
+
+        {!loading && stale && summary && (
+          <button className="rag-stale-btn" onClick={() => void callApi()}>
+            ↺ Results changed — refresh
+          </button>
+        )}
+
+        {!loading && summary && (
+          <>
+            {activeQuestionLabel && (
+              <p className="rag-followup-label">"{activeQuestionLabel}"</p>
+            )}
+            <p className="rag-summary">{summary}</p>
+          </>
+        )}
+
+        {!loading && !summary && (
+          <button className="ai-btn" onClick={() => void callApi()}>
+            ✨ Generate summary
+          </button>
+        )}
+
+        {!loading && summary && !stale && !allQuestionsUsed && remainingQuestions.length > 0 && (
+          <div className="rag-questions">
+            <p className="rag-questions-label">Explore further</p>
+            {remainingQuestions.map(q => (
+              <button key={q.id} className="rag-question-btn" onClick={() => void callApi(q)}>
+                {q.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {allQuestionsUsed && (
+          <p className="rag-done-msg">Try a different search to explore more!</p>
+        )}
+
+        {!loading && summary && !stale && (
+          <button className="rag-refresh-btn" style={{ marginTop: '10px' }} onClick={() => void callApi()}>
+            ↺ Refresh summary
+          </button>
+        )}
+      </div>
     )
   }
 
-  if (!hasResults) return null
-
+  // ── Float mode (legacy, not used when inline) ─────────────────────────────
   return (
     <>
       {!isOpen && (
@@ -258,23 +318,16 @@ function RagPanel({ query, visibleResults, hasResults }: RagPanelProps): JSX.Ele
           </div>
 
           <div className="rag-panel-body">
-            {/* Vibe pills — persist through follow-ups */}
             {vibes.length > 0 && (
               <div className="rag-vibes">
-                {vibes.map(v => (
-                  <span key={v} className="rag-vibe-pill">{v}</span>
-                ))}
+                {vibes.map(v => <span key={v} className="rag-vibe-pill">{v}</span>)}
               </div>
             )}
 
             {loading && (
               <div className="rag-loading">
-                {activeQuestionLabel && (
-                  <p className="rag-active-question">"{activeQuestionLabel}"</p>
-                )}
-                <div className="rag-dots">
-                  <span /><span /><span />
-                </div>
+                {activeQuestionLabel && <p className="rag-active-question">"{activeQuestionLabel}"</p>}
+                <div className="rag-dots"><span /><span /><span /></div>
                 <p className="rag-phrase">{LOADING_PHRASES[phraseIndex]}</p>
               </div>
             )}
@@ -286,7 +339,12 @@ function RagPanel({ query, visibleResults, hasResults }: RagPanelProps): JSX.Ele
             )}
 
             {!loading && summary && (
-              <p className="rag-summary">{summary}</p>
+              <>
+                {activeQuestionLabel && (
+                  <p className="rag-followup-label">"{activeQuestionLabel}"</p>
+                )}
+                <p className="rag-summary">{summary}</p>
+              </>
             )}
 
             {!loading && !summary && (
@@ -295,25 +353,18 @@ function RagPanel({ query, visibleResults, hasResults }: RagPanelProps): JSX.Ele
               </button>
             )}
 
-            {/* Follow-up questions */}
             {!loading && summary && !stale && !allQuestionsUsed && remainingQuestions.length > 0 && (
               <div className="rag-questions">
                 <p className="rag-questions-label">Explore further</p>
                 {remainingQuestions.map(q => (
-                  <button
-                    key={q.id}
-                    className="rag-question-btn"
-                    onClick={() => void callApi(q)}
-                  >
+                  <button key={q.id} className="rag-question-btn" onClick={() => void callApi(q)}>
                     {q.label}
                   </button>
                 ))}
               </div>
             )}
 
-            {allQuestionsUsed && (
-              <p className="rag-done-msg">Try a different search query to explore more!</p>
-            )}
+            {allQuestionsUsed && <p className="rag-done-msg">Try a different search query to explore more!</p>}
           </div>
 
           {!loading && summary && !stale && (
