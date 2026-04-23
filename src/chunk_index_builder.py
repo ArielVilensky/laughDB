@@ -3,7 +3,6 @@ from collections import defaultdict
 from typing import Tuple, List, Dict, Any, Optional
 
 import numpy as np
-from sentence_transformers import SentenceTransformer
 
 from index_builder import (
     clean_and_tokenize_text,
@@ -13,16 +12,17 @@ from index_builder import (
 
 EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
 
-_EMBEDDING_MODEL: Optional[SentenceTransformer] = None
+_EMBEDDING_MODEL = None
 
 MIN_CHUNK_SENTENCES = 3
 MIN_CHUNK_WORDS = 80
 SEMANTIC_BREAK_THRESHOLD = 0.14
 
 
-def get_embedding_model(model_name: str = EMBEDDING_MODEL_NAME) -> SentenceTransformer:
+def get_embedding_model(model_name: str = EMBEDDING_MODEL_NAME):
     global _EMBEDDING_MODEL
     if _EMBEDDING_MODEL is None:
+        from sentence_transformers import SentenceTransformer
         _EMBEDDING_MODEL = SentenceTransformer(model_name)
     return _EMBEDDING_MODEL
 
