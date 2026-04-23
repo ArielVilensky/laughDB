@@ -640,17 +640,17 @@ function App(): JSX.Element {
           <div className="sb-heading">Filters</div>
 
           <div className="sb-sect">
-            <div className="sb-lbl">Comedian</div>
+            <div className="sb-lbl">Comedian{comedian && <button className="sb-clear-x" onClick={() => setComedian('')}>×</button>}</div>
             <ComedianInput value={comedian} onChange={setComedian} suggestions={comedianList} />
           </div>
           <div className="sb-sect">
-            <div className="sb-lbl">Special type</div>
+            <div className="sb-lbl">Special type{specialType && <button className="sb-clear-x" onClick={() => setSpecialType('')}>×</button>}</div>
             <select className="sb-sel" value={specialType} onChange={e => setSpecialType(e.target.value)}>
               {SPECIAL_TYPE_OPTIONS.map(o => <option key={o} value={o}>{o || 'Any type'}</option>)}
             </select>
           </div>
           <div className="sb-sect">
-            <div className="sb-lbl">Year range</div>
+            <div className="sb-lbl">Year range{(yearMin !== YEAR_MIN || yearMax !== YEAR_MAX) && <button className="sb-clear-x" onClick={() => { setYearMin(YEAR_MIN); setYearMax(YEAR_MAX) }}>×</button>}</div>
             <div className="range-wrap">
               <div className="range-vals"><span>{yearMin}</span><span>{yearMax}</span></div>
               <input type="range" className="range-from" min={YEAR_MIN} max={YEAR_MAX} value={yearMin}

@@ -291,13 +291,13 @@ def cosine_scores_sparse(query_vec: np.ndarray, matrix) -> np.ndarray:
 def snippet_word_count(sentences: List[str]) -> int:
     return len(re.findall(r"[A-Za-z0-9']+", " ".join(sentences)))
 
-def trim_snippet_to_word_limit(text: str, max_words: int = 250) -> str:
+def trim_snippet_to_word_limit(text: str, max_words: int = 190) -> str:
     words = text.split()
     if len(words) <= max_words:
         return text
     return " ".join(words[:max_words]) + " ..."
 
-def trim_snippet_sentences_to_word_limit(sentences: List[str], max_words: int = 250) -> List[str]:
+def trim_snippet_sentences_to_word_limit(sentences: List[str], max_words: int = 190) -> List[str]:
     count = 0
     result = []
     for s in sentences:
@@ -997,7 +997,7 @@ def build_result_object(
             global_snippet_start = snippet_start
             global_snippet_end = snippet_end
             display_snippet = " ".join(chunk_sentences)
-        display_snippet = trim_snippet_to_word_limit(display_snippet, 250)
+        display_snippet = trim_snippet_to_word_limit(display_snippet, 190)
         best_sentence_index = None
         best_sentence = ""
         sentence_score = 0.0
@@ -1019,7 +1019,7 @@ def build_result_object(
             source_sentences=source_sentences,
             best_global_idx=best_idx,
         )
-        display_snippet = trim_snippet_to_word_limit(display_snippet, 250)
+        display_snippet = trim_snippet_to_word_limit(display_snippet, 190)
 
         best_sentence_index = best_idx
         global_snippet_start = snippet_start
@@ -1044,7 +1044,7 @@ def build_result_object(
             idf=idf,
         )
 
-        display_snippet = trim_snippet_to_word_limit(display_snippet, 250)
+        display_snippet = trim_snippet_to_word_limit(display_snippet, 190)
 
     comedian_feature = 1.0 if (
         resolved_comedian
@@ -1090,7 +1090,7 @@ def build_result_object(
         "best_sentence": best_sentence,
         "best_sentence_index": best_sentence_index,
         "sentence_score": sentence_score,
-        "snippet_sentences": trim_snippet_sentences_to_word_limit(snippet_sentences, 250),
+        "snippet_sentences": trim_snippet_sentences_to_word_limit(snippet_sentences, 190),
         "snippet_sentence_start": snippet_start,
         "snippet_sentence_end": snippet_end,
         "global_snippet_start": global_snippet_start,
