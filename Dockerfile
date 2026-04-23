@@ -28,11 +28,10 @@ WORKDIR $CONTAINER_HOME
 
 RUN apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p $CONTAINER_HOME/src/data && \
-    BASE=https://github.com/ArielVilensky/laughDB/releases/download/v1-indices && \
-    wget -q -O $CONTAINER_HOME/src/data/transcript_docs.pkl          $BASE/transcript_docs.pkl && \
-    wget -q -O $CONTAINER_HOME/src/data/transcript_search_index.pkl  $BASE/transcript_search_index.pkl && \
-    wget -q -O $CONTAINER_HOME/src/data/chunk_search_index.pkl       $BASE/chunk_search_index.pkl
+RUN wget -q -O /tmp/chunk_search_index.pkl \
+    https://github.com/ArielVilensky/laughDB/releases/download/v1-indices/chunk_search_index.pkl && \
+    mkdir -p $CONTAINER_HOME/src/data && \
+    mv /tmp/chunk_search_index.pkl $CONTAINER_HOME/src/data/chunk_search_index.pkl
 
 COPY --from=python-deps /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
 COPY src/ $CONTAINER_HOME/src/
