@@ -38,4 +38,4 @@ RUN mkdir -p $CONTAINER_HOME/src/data && \
     wget -q -O $CONTAINER_HOME/src/data/transcript_search_index.pkl  $BASE/transcript_search_index.pkl && \
     wget -q -O $CONTAINER_HOME/src/data/chunk_search_index.pkl       $BASE/chunk_search_index.pkl
 
-CMD ["python", "-m", "gunicorn", "--chdir", "src", "app:app", "--bind", "0.0.0.0:5000", "--log-level", "debug"]
+CMD ["python", "-m", "gunicorn", "--chdir", "src", "app:app", "--bind", "0.0.0.0:5000", "--log-level", "debug", "--preload"]

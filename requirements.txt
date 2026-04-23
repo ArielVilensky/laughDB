@@ -7,7 +7,7 @@ gunicorn==25.0.3
 python-dotenv
 git+https://github.com/MrPeterss/infosci-spark-client.git
 numpy
-scikit-learn
+scikit-learn==1.8.0
 joblib
 scipy
 nltk

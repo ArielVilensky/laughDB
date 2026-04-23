@@ -12,5 +12,8 @@
     "flask",
     "react",
     "template"
-  ]
+  ],
+  "main": "index.js",
+  "author": "",
+  "license": "ISC"
 }
