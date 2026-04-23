@@ -11,4 +11,3 @@ scikit-learn
 joblib
 scipy
 nltk
-sentence-transformers
