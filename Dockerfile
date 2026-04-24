@@ -27,6 +27,7 @@ RUN mkdir -p $CONTAINER_HOME/src/data && \
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
+ARG CACHEBUST=1
 COPY src/ $CONTAINER_HOME/src/
 COPY --from=frontend-build /app/frontend/dist $CONTAINER_HOME/frontend/dist
 

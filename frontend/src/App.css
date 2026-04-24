@@ -1025,11 +1025,29 @@ body.dark .rcard-tag-teal  { background: #042f2e; color: #5eead4; }
 
 .svd-explanation-box {
   margin-bottom: 10px;
-  padding: 10px 13px;
-  border-radius: 12px;
-  background: var(--sb);
-  border: 1px solid var(--border);
 }
+.svd-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: #eef1f7;
+  border: 1px solid #c8d4e8;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #3d5a8a;
+  cursor: pointer;
+  font-family: 'Open Sans', sans-serif;
+  user-select: none;
+  transition: opacity 0.15s;
+}
+.svd-toggle-btn:hover { opacity: 0.8; }
+.svd-chev { font-size: 0.6rem; transition: transform 0.2s; margin-left: 4px; }
+.svd-toggle-btn.open .svd-chev { transform: rotate(180deg); }
+
+body.dark .svd-toggle-btn { background: #1e2a40; border-color: #2e4060; color: #7fa8d8; }
 
 .svd-positive, .svd-negative { margin-top: 8px; padding-left: 10px; border-left: 3px solid transparent; }
 .svd-positive { border-left-color: #7a5cfa; }

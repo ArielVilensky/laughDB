@@ -481,6 +481,7 @@ function App(): JSX.Element {
   const [llmSuggestions, setLlmSuggestions] = useState<LlmSuggestions | null>(null)
   const [ragTrigger, setRagTrigger] = useState(0)
   const [searchPhrase, setSearchPhrase] = useState(SEARCH_LOADING_PHRASES[0])
+  const [expandedSvd, setExpandedSvd] = useState<Set<string>>(new Set())
 
   const debounceRef = useRef<number | null>(null)
   const latestRef = useRef(0)
@@ -810,7 +811,18 @@ function App(): JSX.Element {
 
                         {result.retrieval_mode === 'svd' && (
                           <div className="svd-explanation-box">
-                            {(() => {
+                            <button
+                              className={`svd-toggle-btn${expandedSvd.has(result.chunk_id) ? ' open' : ''}`}
+                              onClick={() => setExpandedSvd(prev => {
+                                const next = new Set(prev)
+                                next.has(result.chunk_id) ? next.delete(result.chunk_id) : next.add(result.chunk_id)
+                                return next
+                              })}
+                            >
+                              <span>{expandedSvd.has(result.chunk_id) ? 'Hide SVD explanation' : 'Show SVD explanation'}</span>
+                              <span className="svd-chev">▼</span>
+                            </button>
+                            {expandedSvd.has(result.chunk_id) && (() => {
                               const dimNames = result.result_scope === 'chunks' ? CHUNK_DIMENSION_NAMES : TRANSCRIPT_DIMENSION_NAMES
                               return (<>
                                 {result.svd_positive_dimensions && result.svd_positive_dimensions.length > 0 && (
