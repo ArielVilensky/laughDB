@@ -72,7 +72,7 @@ MIN_DISPLAY_SNIPPET_WORDS = 85
 SVD_EXPLAIN_TOP_DIMS = 3
 SVD_EXPLAIN_TOP_TERMS = 6
 
-BUILD_CHUNK_INDEX_AT_STARTUP = True
+BUILD_CHUNK_INDEX_AT_STARTUP = False
 DEFAULT_USE_PROXIMITY_SCORING = True
 DEFAULT_SHOW_SVD_EXPLANATIONS = True
 
@@ -83,6 +83,9 @@ _SEARCH_INDEX: Dict[str, Optional[Dict[str, Any]]] = {
     "transcript": None,
     "chunk": None,
 }
+
+import threading as _threading
+_chunk_index_lock = _threading.Lock()
 
 def get_rerank_candidate_limit(result_scope: str) -> int:
     return RERANK_CANDIDATES_FULL if result_scope == "full" else RERANK_CANDIDATES_CHUNKS
@@ -947,7 +950,9 @@ def get_transcript_index() -> Dict[str, Any]:
 def get_chunk_index() -> Dict[str, Any]:
     global _SEARCH_INDEX
     if _SEARCH_INDEX["chunk"] is None:
-        _SEARCH_INDEX["chunk"] = load_or_build_chunk_search_index()
+        with _chunk_index_lock:
+            if _SEARCH_INDEX["chunk"] is None:
+                _SEARCH_INDEX["chunk"] = load_or_build_chunk_search_index()
     return _SEARCH_INDEX["chunk"]
 
 
