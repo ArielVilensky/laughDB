@@ -482,6 +482,7 @@ function App(): JSX.Element {
   const [ragTrigger, setRagTrigger] = useState(0)
   const [searchPhrase, setSearchPhrase] = useState(SEARCH_LOADING_PHRASES[0])
   const [expandedSvd, setExpandedSvd] = useState<Set<string>>(new Set())
+  const [chunkIndexReady, setChunkIndexReady] = useState(false)
 
   const debounceRef = useRef<number | null>(null)
   const latestRef = useRef(0)
@@ -583,7 +584,7 @@ function App(): JSX.Element {
     } catch {
       if (id === latestRef.current) setAllResults([])
     } finally {
-      if (id === latestRef.current) { setLoading(false); stopSearchPhrases() }
+      if (id === latestRef.current) { setLoading(false); stopSearchPhrases(); if (resultScope === 'chunks') setChunkIndexReady(true) }
     }
   }
 
@@ -768,7 +769,11 @@ function App(): JSX.Element {
               {loading && (
                 <div className="search-loading-banner">
                   <div className="slb-dots"><span /><span /><span /></div>
-                  <span className="slb-phrase">{searchPhrase}</span>
+                  <span className="slb-phrase">
+                    {resultScope === 'chunks' && !chunkIndexReady
+                      ? 'Loading chunk index for first use — should take about 30 seconds...'
+                      : searchPhrase}
+                  </span>
                 </div>
               )}
               {!loading && hasSearched && visibleResults.length === 0 && <div className="info-banner">No results found.</div>}

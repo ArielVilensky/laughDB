@@ -1,6 +1,5 @@
 import json
 import os
-import threading
 from dotenv import load_dotenv
 from flask import Flask
 
@@ -9,7 +8,7 @@ load_dotenv()
 from flask_cors import CORS
 from models import db, Episode, Review
 from routes import register_routes
-from retrieval_updated import initialize_search, get_chunk_index
+from retrieval_updated import initialize_search
 
 # src/ directory and project root (one level up)
 current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -71,7 +70,6 @@ init_db()
 # we skip the parent to avoid loading the indices twice.
 if os.environ.get("WERKZEUG_RUN_MAIN") != "false":
     initialize_search()
-    threading.Thread(target=get_chunk_index, daemon=True).start()
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5001)
