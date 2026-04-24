@@ -580,11 +580,11 @@ function App(): JSX.Element {
       const data: SearchResponse = await fetch(`/api/search?${buildParams(searchQuery, searchComedian)}`).then(r => r.json())
       if (id !== latestRef.current) { stopSearchPhrases(); return }
       setAllResults(data.results ?? []); setResolvedComedian(data.resolved_comedian ?? null); setPage(0)
-      if ((data.results ?? []).length > 0) setRagTrigger(t => t + 1)
+      if ((data.results ?? []).length > 0) { setRagTrigger(t => t + 1); if (resultScope === 'chunks') setChunkIndexReady(true) }
     } catch {
       if (id === latestRef.current) setAllResults([])
     } finally {
-      if (id === latestRef.current) { setLoading(false); stopSearchPhrases(); if (resultScope === 'chunks') setChunkIndexReady(true) }
+      if (id === latestRef.current) { setLoading(false); stopSearchPhrases() }
     }
   }
 
