@@ -21,8 +21,24 @@ ENV CONTAINER_HOME=/var/www
 WORKDIR $CONTAINER_HOME
 
 RUN mkdir -p $CONTAINER_HOME/src/data && \
-    wget -q -O $CONTAINER_HOME/src/data/chunk_search_index.pkl \
-    https://github.com/ArielVilensky/laughDB/releases/download/v1-indices/chunk_search_index.pkl
+    wget -q -O $CONTAINER_HOME/src/data/chunk_meta.pkl \
+    https://github.com/ArielVilensky/laughDB/releases/download/v2-indices/chunk_meta.pkl && \
+    wget -q -O $CONTAINER_HOME/src/data/chunk_shard_0.pkl \
+    https://github.com/ArielVilensky/laughDB/releases/download/v2-indices/chunk_shard_0.pkl && \
+    wget -q -O $CONTAINER_HOME/src/data/chunk_shard_1.pkl \
+    https://github.com/ArielVilensky/laughDB/releases/download/v2-indices/chunk_shard_1.pkl && \
+    wget -q -O $CONTAINER_HOME/src/data/chunk_shard_2.pkl \
+    https://github.com/ArielVilensky/laughDB/releases/download/v2-indices/chunk_shard_2.pkl && \
+    wget -q -O $CONTAINER_HOME/src/data/chunk_shard_3.pkl \
+    https://github.com/ArielVilensky/laughDB/releases/download/v2-indices/chunk_shard_3.pkl && \
+    wget -q -O $CONTAINER_HOME/src/data/chunk_shard_4.pkl \
+    https://github.com/ArielVilensky/laughDB/releases/download/v2-indices/chunk_shard_4.pkl && \
+    wget -q -O $CONTAINER_HOME/src/data/chunk_shard_5.pkl \
+    https://github.com/ArielVilensky/laughDB/releases/download/v2-indices/chunk_shard_5.pkl && \
+    wget -q -O $CONTAINER_HOME/src/data/chunk_shard_6.pkl \
+    https://github.com/ArielVilensky/laughDB/releases/download/v2-indices/chunk_shard_6.pkl && \
+    wget -q -O $CONTAINER_HOME/src/data/chunk_shard_7.pkl \
+    https://github.com/ArielVilensky/laughDB/releases/download/v2-indices/chunk_shard_7.pkl
 
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt

@@ -517,7 +517,7 @@ function App(): JSX.Element {
     setSearchPhrase(SEARCH_LOADING_PHRASES[Math.floor(Math.random() * SEARCH_LOADING_PHRASES.length)])
     searchPhraseTimerRef.current = window.setInterval(() => {
       setSearchPhrase(SEARCH_LOADING_PHRASES[Math.floor(Math.random() * SEARCH_LOADING_PHRASES.length)])
-    }, 1800)
+    }, 3000)
   }
 
   const runSearch = async (query: string) => {

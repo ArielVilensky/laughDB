@@ -50,6 +50,8 @@ TRANSCRIPTS_PATH = os.path.join(DATA_DIR, "4300_transcripts_2.json")
 TRANSCRIPT_DOCS_PATH = os.path.join(DATA_DIR, "transcript_docs.pkl")
 TRANSCRIPT_INDEX_PATH = os.path.join(DATA_DIR, "transcript_search_index.pkl")
 CHUNK_INDEX_PATH = os.path.join(DATA_DIR, "chunk_search_index.pkl")
+CHUNK_META_PATH = os.path.join(DATA_DIR, "chunk_meta.pkl")
+N_CHUNK_SHARDS = 8
 
 RERANK_CANDIDATES_FULL = 300
 RERANK_CANDIDATES_CHUNKS = 400
@@ -107,6 +109,56 @@ def save_pickle(path: str, obj: Any) -> None:
 
 def load_pickle(path: str) -> Any:
     return joblib.load(path)
+
+
+def chunk_shard_path(n: int) -> str:
+    return os.path.join(DATA_DIR, f"chunk_shard_{n}.pkl")
+
+
+def chunk_shards_exist() -> bool:
+    return pickle_exists(CHUNK_META_PATH) and all(
+        pickle_exists(chunk_shard_path(n)) for n in range(N_CHUNK_SHARDS)
+    )
+
+
+def save_sharded_chunk_index(index: Dict[str, Any]) -> None:
+    items = index["items"]
+    tfidf_matrix = index["tfidf_matrix"]
+    svd_matrix = index["svd_matrix"]
+    n = len(items)
+    shard_size = (n + N_CHUNK_SHARDS - 1) // N_CHUNK_SHARDS
+
+    meta = {
+        "sharded": True,
+        "n_shards": N_CHUNK_SHARDS,
+        "transcript_chunk_ids": index.get("transcript_chunk_ids"),
+        "idf": index["idf"],
+        "vocab": index["vocab"],
+        "word_to_index": index["word_to_index"],
+        "index_to_word": index["index_to_word"],
+        "svd_model": index["svd_model"],
+        "dimension_terms": index["dimension_terms"],
+        "known_comedians": get_known_comedians(items),
+        "known_special_types": sorted(
+            {item.get("special_type", "") for item in items if item.get("special_type", "")}
+        ),
+        "total_items": n,
+    }
+    save_pickle(CHUNK_META_PATH, meta)
+    print(f"Saved chunk meta ({n} total items) to {CHUNK_META_PATH}")
+
+    for shard_n in range(N_CHUNK_SHARDS):
+        start = shard_n * shard_size
+        end = min(start + shard_size, n)
+        shard = {
+            "start_idx": start,
+            "items": items[start:end],
+            "tfidf_matrix": tfidf_matrix[start:end],
+            "svd_matrix": svd_matrix[start:end] if svd_matrix is not None else None,
+        }
+        path = chunk_shard_path(shard_n)
+        save_pickle(path, shard)
+        print(f"Saved chunk shard {shard_n} ({end - start} items) to {path}")
 
 
 # ---  gzip/pickle approach  ---
@@ -911,6 +963,7 @@ def build_chunk_search_index() -> Dict[str, Any]:
 
     save_start = time.perf_counter()
     save_pickle(CHUNK_INDEX_PATH, index)
+    save_sharded_chunk_index(index)
 
     return index
 
@@ -952,7 +1005,10 @@ def get_chunk_index() -> Dict[str, Any]:
     if _SEARCH_INDEX["chunk"] is None:
         with _chunk_index_lock:
             if _SEARCH_INDEX["chunk"] is None:
-                _SEARCH_INDEX["chunk"] = load_or_build_chunk_search_index()
+                if chunk_shards_exist():
+                    _SEARCH_INDEX["chunk"] = load_pickle(CHUNK_META_PATH)
+                else:
+                    _SEARCH_INDEX["chunk"] = load_or_build_chunk_search_index()
     return _SEARCH_INDEX["chunk"]
 
 
@@ -1226,7 +1282,232 @@ def sort_indices_for_filter_only_browse(
         )
 
     return sorted(indices, key=sort_key, reverse=True)
-  
+
+
+def _search_chunks_sharded(
+    query: str,
+    meta: Dict[str, Any],
+    top_k: int,
+    retrieval_mode: str,
+    comedian: Optional[str],
+    year_min: Optional[int],
+    year_max: Optional[int],
+    special_type: Optional[str],
+    exclude_profanity: bool,
+    max_chunks_per_doc: int,
+    use_expensive_proximity_scoring: bool,
+    show_svd_explanations: bool,
+) -> Dict[str, Any]:
+    # docs live in the transcript index to avoid a second 250MB copy in memory
+    docs = get_transcript_index()["docs"]
+    idf = meta["idf"]
+    word_to_index = meta["word_to_index"]
+    svd_model = meta["svd_model"]
+    dimension_terms = meta["dimension_terms"]
+    known_comedians = meta["known_comedians"]
+    known_special_types = meta["known_special_types"]
+    n_shards = meta["n_shards"]
+
+    if not comedian:
+        comedian, query = extract_comedian_from_query(query, known_comedians)
+    resolved_comedian = resolve_comedian_name(comedian, known_comedians)
+
+    query = query.strip()
+    query_tokens = clean_and_tokenize_text(query)
+
+    if query:
+        query_vec = vectorize_query(query, word_to_index, idf)
+        if retrieval_mode == "svd" and svd_model is not None:
+            q_latent = normalize(svd_model.transform(query_vec.reshape(1, -1)))[0]
+        else:
+            q_latent = None
+    else:
+        query_vec = None
+        q_latent = None
+
+    # Collect scored candidates from each shard one at a time to bound peak memory.
+    # Each entry: (global_idx, raw_score, item_dict, item_latent_or_None)
+    all_filtered: List[Tuple[int, float, Dict[str, Any], Any]] = []
+
+    for shard_n in range(n_shards):
+        shard = load_pickle(chunk_shard_path(shard_n))
+        shard_items = shard["items"]
+        shard_tfidf = shard["tfidf_matrix"]
+        shard_svd = shard["svd_matrix"]
+        start_idx = shard["start_idx"]
+
+        local_filtered = [
+            i for i, item in enumerate(shard_items)
+            if item_passes_filters(
+                item=item,
+                resolved_comedian=resolved_comedian,
+                year_min=year_min,
+                year_max=year_max,
+                special_type=special_type,
+                exclude_profanity=exclude_profanity,
+            )
+        ]
+
+        if local_filtered:
+            if query_vec is None:
+                for i in local_filtered:
+                    all_filtered.append((start_idx + i, 1.0, shard_items[i], None))
+            elif retrieval_mode == "svd" and svd_model is not None and shard_svd is not None:
+                raw_scores = cosine_scores_dense(q_latent, shard_svd)
+                for i in local_filtered:
+                    all_filtered.append((
+                        start_idx + i,
+                        float(max(0.0, raw_scores[i])),
+                        shard_items[i],
+                        shard_svd[i].copy(),
+                    ))
+            else:
+                raw_scores = cosine_scores_sparse(query_vec, shard_tfidf)
+                for i in local_filtered:
+                    all_filtered.append((
+                        start_idx + i,
+                        float(max(0.0, raw_scores[i])),
+                        shard_items[i],
+                        None,
+                    ))
+
+        del shard, shard_items, shard_tfidf, shard_svd
+
+    if not all_filtered:
+        return {
+            "query": query,
+            "results": [],
+            "resolved_comedian": resolved_comedian,
+            "known_comedians": known_comedians,
+            "known_special_types": known_special_types,
+        }
+
+    # Browse mode (no query): sort by release date / comedian / title
+    if query_vec is None:
+        def _browse_key(entry: Tuple) -> Tuple:
+            item = entry[2]
+            try:
+                year = int(str(item.get("release_date", "")).strip())
+            except Exception:
+                year = -1
+            return (year, str(item.get("comedian", "")).lower(), str(item.get("special_title", item.get("title", ""))).lower())
+
+        sorted_candidates = sorted(all_filtered, key=_browse_key, reverse=True)
+
+        selected_results = []
+        per_doc_counts: Dict[int, int] = defaultdict(int)
+        accepted_snippets_by_doc: Dict[int, List[List[str]]] = defaultdict(list)
+
+        for _, _, item, _ in sorted_candidates:
+            doc_id = item["doc_id"]
+            if per_doc_counts[doc_id] >= max_chunks_per_doc:
+                continue
+            result = build_result_object(
+                query="", item=item, docs=docs, base_score=1.0, final_score=1.0,
+                proximity_feature=0.0, retrieval_mode=retrieval_mode,
+                resolved_comedian=resolved_comedian, word_to_index=word_to_index,
+                idf=idf, is_full_transcript=False, include_svd_explanations=False,
+                exclude_profanity=exclude_profanity, q_latent=None, item_latent=None,
+                dimension_terms=dimension_terms,
+            )
+            result["similarity_score"] = None
+            result["similarity_percent"] = None
+            result["retrieval_mode"] = retrieval_mode
+            current_snippet = result.get("snippet_sentences", []) or []
+            if any(snippets_overlap_enough(current_snippet, prev) for prev in accepted_snippets_by_doc[doc_id]):
+                continue
+            accepted_snippets_by_doc[doc_id].append(current_snippet)
+            per_doc_counts[doc_id] += 1
+            selected_results.append(result)
+            if len(selected_results) >= top_k:
+                break
+
+        return {
+            "query": query, "results": selected_results,
+            "resolved_comedian": resolved_comedian,
+            "known_comedians": known_comedians,
+            "known_special_types": known_special_types,
+        }
+
+    # Scored mode: normalize globally then rerank
+    raw_scores_list = [score for _, score, _, _ in all_filtered]
+    normalized_scores = normalize_scores_to_unit_interval(raw_scores_list)
+
+    gidx_to_norm: Dict[int, float] = {}
+    gidx_to_item: Dict[int, Dict[str, Any]] = {}
+    gidx_to_latent: Dict[int, Any] = {}
+    all_gidx: List[int] = []
+
+    for (gidx, _, item, item_latent), norm in zip(all_filtered, normalized_scores):
+        gidx_to_norm[gidx] = norm
+        gidx_to_item[gidx] = item
+        gidx_to_latent[gidx] = item_latent
+        all_gidx.append(gidx)
+
+    base_ranked = sorted(all_gidx, key=lambda g: gidx_to_norm[g], reverse=True)
+    rerank_limit = get_rerank_candidate_limit("chunks")
+    rerank_gidx = base_ranked[:min(len(base_ranked), rerank_limit)]
+
+    distinct_query_terms = list(dict.fromkeys(query_tokens))
+    proximity_by_gidx: Dict[int, float] = {}
+
+    for gidx in rerank_gidx:
+        item_tokens = gidx_to_item[gidx].get("tokens", [])
+        if len(distinct_query_terms) < 2:
+            proximity_by_gidx[gidx] = 0.0
+        elif use_expensive_proximity_scoring:
+            proximity_by_gidx[gidx] = compute_full_window_proximity_score(query_tokens, item_tokens)
+        else:
+            proximity_by_gidx[gidx] = compute_token_window_proximity_score(query_tokens, item_tokens)
+
+    final_by_gidx = {
+        gidx: BASE_SCORE_WEIGHT * gidx_to_norm[gidx] + PROXIMITY_SCORE_WEIGHT * proximity_by_gidx[gidx]
+        for gidx in rerank_gidx
+    }
+
+    ranked_gidx = sorted(
+        rerank_gidx,
+        key=lambda g: (final_by_gidx[g], proximity_by_gidx[g], gidx_to_norm[g]),
+        reverse=True,
+    )
+
+    selected_results = []
+    per_doc_counts: Dict[int, int] = defaultdict(int)
+    accepted_snippets_by_doc: Dict[int, List[List[str]]] = defaultdict(list)
+
+    for gidx in ranked_gidx:
+        item = gidx_to_item[gidx]
+        doc_id = item["doc_id"]
+        if per_doc_counts[doc_id] >= max_chunks_per_doc:
+            continue
+        result = build_result_object(
+            query=query, item=item, docs=docs,
+            base_score=float(gidx_to_norm[gidx]),
+            final_score=float(final_by_gidx[gidx]),
+            proximity_feature=float(proximity_by_gidx[gidx]),
+            retrieval_mode=retrieval_mode, resolved_comedian=resolved_comedian,
+            word_to_index=word_to_index, idf=idf, is_full_transcript=False,
+            include_svd_explanations=show_svd_explanations,
+            exclude_profanity=exclude_profanity, q_latent=q_latent,
+            item_latent=gidx_to_latent[gidx], dimension_terms=dimension_terms,
+        )
+        current_snippet = result.get("snippet_sentences", []) or []
+        if any(snippets_overlap_enough(current_snippet, prev) for prev in accepted_snippets_by_doc[doc_id]):
+            continue
+        selected_results.append(result)
+        accepted_snippets_by_doc[doc_id].append(current_snippet)
+        per_doc_counts[doc_id] += 1
+        if len(selected_results) >= top_k:
+            break
+
+    return {
+        "query": query, "results": selected_results,
+        "resolved_comedian": resolved_comedian,
+        "known_comedians": known_comedians,
+        "known_special_types": known_special_types,
+    }
+
+
 def search_chunks(
     query: str,
     top_k: int = DEFAULT_TOP_K,
@@ -1248,6 +1529,16 @@ def search_chunks(
         retrieval_mode = "tfidf"
 
     index = get_transcript_index() if result_scope == "full" else get_chunk_index()
+
+    if result_scope == "chunks" and index.get("sharded"):
+        return _search_chunks_sharded(
+            query=query, meta=index, top_k=top_k, retrieval_mode=retrieval_mode,
+            comedian=comedian, year_min=year_min, year_max=year_max,
+            special_type=special_type, exclude_profanity=exclude_profanity,
+            max_chunks_per_doc=max_chunks_per_doc,
+            use_expensive_proximity_scoring=use_expensive_proximity_scoring,
+            show_svd_explanations=show_svd_explanations,
+        )
 
     items = index["items"]
     docs = index["docs"]
