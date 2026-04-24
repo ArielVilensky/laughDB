@@ -115,6 +115,34 @@ def chunk_shard_path(n: int) -> str:
     return os.path.join(DATA_DIR, f"chunk_shard_{n}.pkl")
 
 
+# Fields that can be reconstructed from docs at search time — stripped before saving shards
+# to keep each shard ~15x smaller and deserializable in seconds instead of minutes.
+_SHARD_STRIP_KEYS = frozenset({"content", "tokens", "chunk_sentences", "chunk_sentence_tokens"})
+
+
+def _strip_chunk_item(item: Dict[str, Any]) -> Dict[str, Any]:
+    return {k: v for k, v in item.items() if k not in _SHARD_STRIP_KEYS}
+
+
+def _enrich_chunk_item(item: Dict[str, Any], docs: List[Dict[str, Any]]) -> Dict[str, Any]:
+    if "chunk_sentences" in item:
+        return item  # already full (e.g. loaded from old-format full index)
+    doc = docs[item["doc_id"]]
+    start = item.get("sentence_start", 0)
+    end = item.get("sentence_end", 0)
+    chunk_sentences = doc.get("sentences", [])[start: end + 1]
+    content = " ".join(chunk_sentences)
+    tokens = clean_and_tokenize_text(content)
+    chunk_sentence_tokens = [clean_and_tokenize_text(s) for s in chunk_sentences]
+    return {
+        **item,
+        "chunk_sentences": chunk_sentences,
+        "content": content,
+        "tokens": tokens,
+        "chunk_sentence_tokens": chunk_sentence_tokens,
+    }
+
+
 def chunk_shards_exist() -> bool:
     return pickle_exists(CHUNK_META_PATH) and all(
         pickle_exists(chunk_shard_path(n)) for n in range(N_CHUNK_SHARDS)
@@ -152,7 +180,7 @@ def save_sharded_chunk_index(index: Dict[str, Any]) -> None:
         end = min(start + shard_size, n)
         shard = {
             "start_idx": start,
-            "items": items[start:end],
+            "items": [_strip_chunk_item(item) for item in items[start:end]],
             "tfidf_matrix": tfidf_matrix[start:end],
             "svd_matrix": svd_matrix[start:end] if svd_matrix is not None else None,
         }
@@ -1399,6 +1427,7 @@ def _search_chunks_sharded(
         accepted_snippets_by_doc: Dict[int, List[List[str]]] = defaultdict(list)
 
         for _, _, item, _ in sorted_candidates:
+            item = _enrich_chunk_item(item, docs)
             doc_id = item["doc_id"]
             if per_doc_counts[doc_id] >= max_chunks_per_doc:
                 continue
@@ -1447,6 +1476,10 @@ def _search_chunks_sharded(
     base_ranked = sorted(all_gidx, key=lambda g: gidx_to_norm[g], reverse=True)
     rerank_limit = get_rerank_candidate_limit("chunks")
     rerank_gidx = base_ranked[:min(len(base_ranked), rerank_limit)]
+
+    # Reconstruct stripped text fields for top candidates before scoring/building
+    for gidx in rerank_gidx:
+        gidx_to_item[gidx] = _enrich_chunk_item(gidx_to_item[gidx], docs)
 
     distinct_query_terms = list(dict.fromkeys(query_tokens))
     proximity_by_gidx: Dict[int, float] = {}
