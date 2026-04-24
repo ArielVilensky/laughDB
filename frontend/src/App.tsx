@@ -487,6 +487,7 @@ function App(): JSX.Element {
   const debounceRef = useRef<number | null>(null)
   const latestRef = useRef(0)
   const searchPhraseTimerRef = useRef<number | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   useEffect(() => { fetch('/api/config').then(r => r.json()).then(d => setUseLlm(d.use_llm)) }, [])
   useEffect(() => { fetch('/api/comedians').then(r => r.json()).then(d => setComedianList(d)).catch(() => {}) }, [])
@@ -531,6 +532,9 @@ function App(): JSX.Element {
       setModifiedQuery(null); setQueryWasModified(false); setLlmSuggestions(null); return
     }
     const id = latestRef.current + 1; latestRef.current = id
+    if (abortControllerRef.current) abortControllerRef.current.abort()
+    const abort = new AbortController()
+    abortControllerRef.current = abort
     setLoading(true); setHasSearched(true); setCardTags({})
     setModifiedQuery(null); setQueryWasModified(false); setLlmSuggestions(null)
     startSearchPhrases()
@@ -553,6 +557,7 @@ function App(): JSX.Element {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ query: trimmed }),
+          signal: abort.signal,
         }).then(r => r.ok ? r.json() : null).catch(() => null)
 
         if (id !== latestRef.current) { stopSearchPhrases(); return }
@@ -578,11 +583,12 @@ function App(): JSX.Element {
     }
 
     try {
-      const data: SearchResponse = await fetch(`/api/search?${buildParams(searchQuery, searchComedian)}`).then(r => r.json())
+      const data: SearchResponse = await fetch(`/api/search?${buildParams(searchQuery, searchComedian)}`, { signal: abort.signal }).then(r => r.json())
       if (id !== latestRef.current) { stopSearchPhrases(); return }
       setAllResults(data.results ?? []); setResolvedComedian(data.resolved_comedian ?? null); setPage(0)
       if ((data.results ?? []).length > 0) { setRagTrigger(t => t + 1); if (resultScope === 'chunks') setChunkIndexReady(true) }
-    } catch {
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return
       if (id === latestRef.current) setAllResults([])
     } finally {
       if (id === latestRef.current) { setLoading(false); stopSearchPhrases() }

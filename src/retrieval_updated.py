@@ -89,6 +89,12 @@ _SEARCH_INDEX: Dict[str, Optional[Dict[str, Any]]] = {
 import threading as _threading
 _chunk_index_lock = _threading.Lock()
 
+# Shard cache: keep all shards in memory after first load so subsequent
+# chunk searches don't re-deserialize from disk. With text fields stripped,
+# all 8 shards together are ~160MB — fits alongside transcript (200MB) + meta (65MB).
+_shard_cache: Dict[int, Dict[str, Any]] = {}
+_shard_cache_lock = _threading.Lock()
+
 def get_rerank_candidate_limit(result_scope: str) -> int:
     return RERANK_CANDIDATES_FULL if result_scope == "full" else RERANK_CANDIDATES_CHUNKS
 
@@ -113,6 +119,14 @@ def load_pickle(path: str) -> Any:
 
 def chunk_shard_path(n: int) -> str:
     return os.path.join(DATA_DIR, f"chunk_shard_{n}.pkl")
+
+
+def get_cached_shard(n: int) -> Dict[str, Any]:
+    if n not in _shard_cache:
+        with _shard_cache_lock:
+            if n not in _shard_cache:
+                _shard_cache[n] = load_pickle(chunk_shard_path(n))
+    return _shard_cache[n]
 
 
 # Fields that can be reconstructed from docs at search time — stripped before saving shards
@@ -1003,16 +1017,21 @@ def load_or_build_chunk_search_index() -> Dict[str, Any]:
     return build_chunk_search_index()
 
 
+def _preload_shards_background() -> None:
+    for n in range(N_CHUNK_SHARDS):
+        get_cached_shard(n)
+
+
 def initialize_search() -> None:
     global _SEARCH_INDEX
 
-    total_start = time.perf_counter()
-
-    transcript_start = time.perf_counter()
     _SEARCH_INDEX["transcript"] = load_or_build_transcript_search_index()
 
-    if BUILD_CHUNK_INDEX_AT_STARTUP:
-        chunk_start = time.perf_counter()
+    if chunk_shards_exist():
+        _SEARCH_INDEX["chunk"] = load_pickle(CHUNK_META_PATH)
+        t = _threading.Thread(target=_preload_shards_background, daemon=True, name="shard-preload")
+        t.start()
+    elif BUILD_CHUNK_INDEX_AT_STARTUP:
         _SEARCH_INDEX["chunk"] = load_or_build_chunk_search_index()
 
 
@@ -1358,7 +1377,7 @@ def _search_chunks_sharded(
     all_filtered: List[Tuple[int, float, Dict[str, Any], Any]] = []
 
     for shard_n in range(n_shards):
-        shard = load_pickle(chunk_shard_path(shard_n))
+        shard = get_cached_shard(shard_n)
         shard_items = shard["items"]
         shard_tfidf = shard["tfidf_matrix"]
         shard_svd = shard["svd_matrix"]
@@ -1398,8 +1417,6 @@ def _search_chunks_sharded(
                         shard_items[i],
                         None,
                     ))
-
-        del shard, shard_items, shard_tfidf, shard_svd
 
     if not all_filtered:
         return {
