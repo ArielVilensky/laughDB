@@ -3,9 +3,66 @@ Routes: React app serving and transcript search API.
 
 To enable AI chat, set USE_LLM = True below. See llm_routes.py for AI code.
 """
+import hashlib
+import json
 import os
+import sqlite3
+import threading
+import time
 from flask import send_from_directory, request, jsonify
 from retrieval_updated import search_chunks, initialize_search
+
+_CACHE_DB_PATH = os.path.join(os.path.dirname(__file__), "data", "search_cache.db")
+_CACHE_MAX_ENTRIES = 500
+_cache_lock = threading.Lock()
+_cache_conn: sqlite3.Connection | None = None
+
+
+def _get_cache_conn() -> sqlite3.Connection:
+    global _cache_conn
+    if _cache_conn is None:
+        os.makedirs(os.path.dirname(_CACHE_DB_PATH), exist_ok=True)
+        _cache_conn = sqlite3.connect(_CACHE_DB_PATH, check_same_thread=False)
+        _cache_conn.execute(
+            "CREATE TABLE IF NOT EXISTS search_cache "
+            "(key TEXT PRIMARY KEY, result_json TEXT NOT NULL, created_at REAL NOT NULL)"
+        )
+        _cache_conn.commit()
+    return _cache_conn
+
+
+def _cache_key(*args) -> str:
+    return hashlib.sha256(json.dumps(args, sort_keys=True).encode()).hexdigest()
+
+
+def _cache_get(key: str):
+    try:
+        row = _get_cache_conn().execute(
+            "SELECT result_json FROM search_cache WHERE key = ?", (key,)
+        ).fetchone()
+        return json.loads(row[0]) if row else None
+    except Exception:
+        return None
+
+
+def _cache_set(key: str, result) -> None:
+    try:
+        with _cache_lock:
+            conn = _get_cache_conn()
+            conn.execute(
+                "INSERT OR REPLACE INTO search_cache (key, result_json, created_at) VALUES (?,?,?)",
+                (key, json.dumps(result), time.time()),
+            )
+            count = conn.execute("SELECT COUNT(*) FROM search_cache").fetchone()[0]
+            if count > _CACHE_MAX_ENTRIES:
+                conn.execute(
+                    "DELETE FROM search_cache WHERE key IN "
+                    "(SELECT key FROM search_cache ORDER BY created_at ASC LIMIT ?)",
+                    (count - _CACHE_MAX_ENTRIES,),
+                )
+            conn.commit()
+    except Exception:
+        pass
 
 # USE_LLM = False
 USE_LLM = True
@@ -113,6 +170,14 @@ def register_routes(app):
             True,
         )
 
+        ck = _cache_key(
+            query, result_scope, retrieval_mode, comedian,
+            year_min, year_max, special_type, exclude_profanity, max_chunks_per_doc,
+        )
+        cached = _cache_get(ck)
+        if cached is not None:
+            return jsonify(cached)
+
         results = search_chunks(
             query=query,
             top_k=top_k,
@@ -127,6 +192,7 @@ def register_routes(app):
             use_expensive_proximity_scoring=use_expensive_proximity_scoring,
             show_svd_explanations=show_svd_explanations,
         )
+        _cache_set(ck, results)
         return jsonify(results)
 
     if USE_LLM:

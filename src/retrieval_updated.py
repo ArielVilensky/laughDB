@@ -138,6 +138,18 @@ def _strip_chunk_item(item: Dict[str, Any]) -> Dict[str, Any]:
     return {k: v for k, v in item.items() if k not in _SHARD_STRIP_KEYS}
 
 
+def _build_shard_inverted_index(tfidf_matrix) -> Dict[int, np.ndarray]:
+    """Build {token_idx: int32 array of local chunk IDs} from a shard's TF-IDF matrix.
+    Built once at shard-save time; stored in the shard so query-time pre-filtering
+    touches only chunks that contain at least one query token.
+    """
+    inv: Dict[int, List[int]] = defaultdict(list)
+    cx = tfidf_matrix.tocoo()
+    for local_id, token_idx in zip(cx.row.tolist(), cx.col.tolist()):
+        inv[token_idx].append(local_id)
+    return {k: np.array(v, dtype=np.int32) for k, v in inv.items()}
+
+
 def _enrich_chunk_item(item: Dict[str, Any], docs: List[Dict[str, Any]]) -> Dict[str, Any]:
     if "chunk_sentences" in item:
         return item  # already full (e.g. loaded from old-format full index)
@@ -192,11 +204,14 @@ def save_sharded_chunk_index(index: Dict[str, Any]) -> None:
     for shard_n in range(N_CHUNK_SHARDS):
         start = shard_n * shard_size
         end = min(start + shard_size, n)
+        shard_tfidf = tfidf_matrix[start:end].astype(np.float32)
+        shard_svd = svd_matrix[start:end].astype(np.float32) if svd_matrix is not None else None
         shard = {
             "start_idx": start,
             "items": [_strip_chunk_item(item) for item in items[start:end]],
-            "tfidf_matrix": tfidf_matrix[start:end],
-            "svd_matrix": svd_matrix[start:end] if svd_matrix is not None else None,
+            "tfidf_matrix": shard_tfidf,
+            "svd_matrix": shard_svd,
+            "token_to_local_ids": _build_shard_inverted_index(shard_tfidf),
         }
         path = chunk_shard_path(shard_n)
         save_pickle(path, shard)
@@ -1372,6 +1387,9 @@ def _search_chunks_sharded(
         query_vec = None
         q_latent = None
 
+    # Pre-compute query token indices once for inverted-index pre-filtering.
+    query_token_indices = [word_to_index[t] for t in query_tokens if t in word_to_index]
+
     # Collect scored candidates from each shard one at a time to bound peak memory.
     # Each entry: (global_idx, raw_score, item_dict, item_latent_or_None)
     all_filtered: List[Tuple[int, float, Dict[str, Any], Any]] = []
@@ -1382,8 +1400,10 @@ def _search_chunks_sharded(
         shard_tfidf = shard["tfidf_matrix"]
         shard_svd = shard["svd_matrix"]
         start_idx = shard["start_idx"]
+        token_to_local_ids = shard.get("token_to_local_ids")
 
-        local_filtered = [
+        # Step 1: metadata filter
+        meta_filtered: set = {
             i for i, item in enumerate(shard_items)
             if item_passes_filters(
                 item=item,
@@ -1393,30 +1413,49 @@ def _search_chunks_sharded(
                 special_type=special_type,
                 exclude_profanity=exclude_profanity,
             )
-        ]
+        }
 
-        if local_filtered:
-            if query_vec is None:
-                for i in local_filtered:
-                    all_filtered.append((start_idx + i, 1.0, shard_items[i], None))
-            elif retrieval_mode == "svd" and svd_model is not None and shard_svd is not None:
-                raw_scores = cosine_scores_dense(q_latent, shard_svd)
-                for i in local_filtered:
-                    all_filtered.append((
-                        start_idx + i,
-                        float(max(0.0, raw_scores[i])),
-                        shard_items[i],
-                        shard_svd[i].copy(),
-                    ))
-            else:
-                raw_scores = cosine_scores_sparse(query_vec, shard_tfidf)
-                for i in local_filtered:
-                    all_filtered.append((
-                        start_idx + i,
-                        float(max(0.0, raw_scores[i])),
-                        shard_items[i],
-                        None,
-                    ))
+        if not meta_filtered:
+            continue
+
+        # Step 2: for TF-IDF mode, intersect with chunks that share ≥1 query token.
+        # SVD scores latent space so token overlap doesn't bound relevance — skip pre-filter.
+        if retrieval_mode != "svd" and query_token_indices and token_to_local_ids is not None:
+            token_candidates: set = set()
+            for ti in query_token_indices:
+                arr = token_to_local_ids.get(ti)
+                if arr is not None:
+                    token_candidates.update(arr.tolist())
+            local_filtered = sorted(meta_filtered & token_candidates)
+        else:
+            local_filtered = sorted(meta_filtered)
+
+        if not local_filtered:
+            continue
+
+        if query_vec is None:
+            for i in local_filtered:
+                all_filtered.append((start_idx + i, 1.0, shard_items[i], None))
+        elif retrieval_mode == "svd" and svd_model is not None and shard_svd is not None:
+            sub_svd = shard_svd[local_filtered]
+            raw_scores = cosine_scores_dense(q_latent, sub_svd)
+            for j, i in enumerate(local_filtered):
+                all_filtered.append((
+                    start_idx + i,
+                    float(max(0.0, raw_scores[j])),
+                    shard_items[i],
+                    sub_svd[j].copy(),
+                ))
+        else:
+            sub_tfidf = shard_tfidf[local_filtered]
+            raw_scores = cosine_scores_sparse(query_vec, sub_tfidf)
+            for j, i in enumerate(local_filtered):
+                all_filtered.append((
+                    start_idx + i,
+                    float(max(0.0, raw_scores[j])),
+                    shard_items[i],
+                    None,
+                ))
 
     if not all_filtered:
         return {
