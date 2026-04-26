@@ -400,6 +400,25 @@ def cosine_scores_sparse(query_vec: np.ndarray, matrix) -> np.ndarray:
     return np.divide(dots, denom, out=np.zeros_like(dots, dtype=float), where=denom != 0)
 
 
+SVD_FOCUS_TOP_K = 40  # keep only the N most-activated dimensions in the query latent vector
+
+
+def _focus_svd_query(q_latent: np.ndarray) -> np.ndarray:
+    """Zero out all but the SVD_FOCUS_TOP_K most-activated dimensions, then re-normalize.
+
+    Short queries activate many latent dimensions weakly due to corpus co-occurrence
+    patterns that have nothing to do with the query topic. Keeping only the strongest
+    activations sharpens the similarity search and reduces irrelevant dimension noise.
+    """
+    if SVD_FOCUS_TOP_K >= len(q_latent):
+        return q_latent
+    focused = q_latent.copy()
+    bottom_indices = np.argsort(np.abs(focused))[: len(focused) - SVD_FOCUS_TOP_K]
+    focused[bottom_indices] = 0.0
+    norm = np.linalg.norm(focused)
+    return focused / norm if norm > 0 else q_latent
+
+
 def snippet_word_count(sentences: List[str]) -> int:
     return len(re.findall(r"[A-Za-z0-9']+", " ".join(sentences)))
 
@@ -584,16 +603,27 @@ def find_best_matching_sentence_by_proximity(
     if not query_tokens:
         return None, "", 0.0, 0.0
 
+    # Pre-filter: only score sentences containing at least one query token.
+    # Long transcripts have 500-1500 sentences; most share no tokens with the query.
+    query_token_set = set(query_tokens)
+    candidate_indices = [
+        i for i, tokens in enumerate(sentence_tokens)
+        if any(t in query_token_set for t in tokens)
+    ]
+
+    if not candidate_indices:
+        return None, "", 0.0, 0.0
+
     best_idx = None
     best_sentence = ""
     best_score = 0.0
 
-    for i, (sentence, tokens) in enumerate(zip(sentences, sentence_tokens)):
-        score = compute_token_window_proximity_score(query_tokens, tokens)
+    for i in candidate_indices:
+        score = compute_token_window_proximity_score(query_tokens, sentence_tokens[i])
         if score > best_score:
             best_score = score
             best_idx = i
-            best_sentence = sentence
+            best_sentence = sentences[i]
 
     if best_idx is None:
         return None, "", 0.0, 0.0
@@ -1380,7 +1410,7 @@ def _search_chunks_sharded(
     if query:
         query_vec = vectorize_query(query, word_to_index, idf)
         if retrieval_mode == "svd" and svd_model is not None:
-            q_latent = normalize(svd_model.transform(query_vec.reshape(1, -1)))[0]
+            q_latent = _focus_svd_query(normalize(svd_model.transform(query_vec.reshape(1, -1)))[0])
         else:
             q_latent = None
     else:
@@ -1542,7 +1572,7 @@ def _search_chunks_sharded(
 
     for gidx in rerank_gidx:
         item_tokens = gidx_to_item[gidx].get("tokens", [])
-        if len(distinct_query_terms) < 2:
+        if retrieval_mode == "svd" or len(distinct_query_terms) < 2:
             proximity_by_gidx[gidx] = 0.0
         elif use_expensive_proximity_scoring:
             proximity_by_gidx[gidx] = compute_full_window_proximity_score(query_tokens, item_tokens)
@@ -1770,7 +1800,7 @@ def search_chunks(
     query_tokens = clean_and_tokenize_text(query)
 
     if retrieval_mode == "svd" and svd_model is not None and svd_matrix is not None:
-        q_latent = normalize(svd_model.transform(query_vec.reshape(1, -1)))[0]
+        q_latent = _focus_svd_query(normalize(svd_model.transform(query_vec.reshape(1, -1)))[0])
         raw_base_scores = cosine_scores_dense(q_latent, svd_matrix)
     else:
         q_latent = None
@@ -1798,7 +1828,7 @@ def search_chunks(
         item = items[idx]
         item_tokens = item.get("tokens", [])
 
-        if len(distinct_query_terms) < 2:
+        if retrieval_mode == "svd" or len(distinct_query_terms) < 2:
             proximity_score_by_idx[idx] = 0.0
         elif use_expensive_proximity_scoring:
             proximity_score_by_idx[idx] = compute_full_window_proximity_score(
