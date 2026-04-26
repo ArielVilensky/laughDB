@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SVD Panel Color Mockups</title>
+<style>
+  body {
+    font-family: 'Open Sans', sans-serif;
+    background: #f7f4ef;
+    padding: 40px;
+    color: #2b1e3f;
+  }
+  h1 { font-size: 1rem; font-weight: 700; margin-bottom: 4px; color: #2b1e3f; }
+  .subtitle { font-size: 0.8rem; color: #6b6475; margin-bottom: 40px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .option { }
+  .label { font-size: 0.75rem; font-weight: 700; color: #6b6475; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+
+  /* ── Shared card shell (mimics rcard) ── */
+  .rcard {
+    border-radius: 14px;
+    border: 1px solid #ddd8ec;
+    background: #fff;
+    padding: 14px 16px;
+    font-size: 0.84rem;
+  }
+  .snippet { color: #6b6475; font-size: 0.82rem; margin-bottom: 10px; line-height: 1.5; }
+
+  /* ── Toggle button (shared) ── */
+  .svd-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    user-select: none;
+  }
+
+  /* ── Option A — Soft violet (closest to existing --sb / --border) ── */
+  .opt-a .svd-toggle-btn {
+    background: #f0ecf8;
+    color: #5b43c7;
+    border: 1px solid #ddd8ec;
+  }
+
+  /* ── Option B — Slate blue-grey (neutral, tech-y) ── */
+  .opt-b .svd-toggle-btn {
+    background: #eef1f7;
+    color: #3d5a8a;
+    border: 1px solid #c8d4e8;
+  }
+
+  /* ── Option C — Rose/mauve (warm, distinct from purple) ── */
+  .opt-c .svd-toggle-btn {
+    background: #fdf0f3;
+    color: #b24757;
+    border: 1px solid #f5cad2;
+  }
+
+  /* ── Option D — Amber/sand (warm, like gold but softer) ── */
+  .opt-d .svd-toggle-btn {
+    background: #fef9ec;
+    color: #a3620a;
+    border: 1px solid #fde68a;
+  }
+
+  /* ── Option E — Cool mint/sage ── */
+  .opt-e .svd-toggle-btn {
+    background: #edf7f4;
+    color: #276551;
+    border: 1px solid #b8ddd4;
+  }
+
+  /* ── Option F — Steel/gunmetal (dark neutral) ── */
+  .opt-f .svd-toggle-btn {
+    background: #f0f1f3;
+    color: #3a4455;
+    border: 1px solid #cdd2db;
+  }
+</style>
+</head>
+<body>
+
+<h1>SVD Panel — Color Options</h1>
+<p class="subtitle">Light mode mockups. Each shows how the "Show SVD explanation" toggle pill would look on a result card.</p>
+
+<div class="grid">
+
+  <div class="option opt-a">
+    <div class="label">A — Soft Violet</div>
+    <div class="rcard">
+      <div class="snippet">…you know the thing about airplane food is that nobody actually…</div>
+      <button class="svd-toggle-btn">
+        <span>Show SVD explanation</span>
+        <span style="font-size:0.6rem">▼</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="option opt-b">
+    <div class="label">B — Slate Blue-Grey</div>
+    <div class="rcard">
+      <div class="snippet">…you know the thing about airplane food is that nobody actually…</div>
+      <button class="svd-toggle-btn">
+        <span>Show SVD explanation</span>
+        <span style="font-size:0.6rem">▼</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="option opt-c">
+    <div class="label">C — Rose / Mauve</div>
+    <div class="rcard">
+      <div class="snippet">…you know the thing about airplane food is that nobody actually…</div>
+      <button class="svd-toggle-btn">
+        <span>Show SVD explanation</span>
+        <span style="font-size:0.6rem">▼</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="option opt-d">
+    <div class="label">D — Amber / Sand</div>
+    <div class="rcard">
+      <div class="snippet">…you know the thing about airplane food is that nobody actually…</div>
+      <button class="svd-toggle-btn">
+        <span>Show SVD explanation</span>
+        <span style="font-size:0.6rem">▼</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="option opt-e">
+    <div class="label">E — Cool Mint / Sage</div>
+    <div class="rcard">
+      <div class="snippet">…you know the thing about airplane food is that nobody actually…</div>
+      <button class="svd-toggle-btn">
+        <span>Show SVD explanation</span>
+        <span style="font-size:0.6rem">▼</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="option opt-f">
+    <div class="label">F — Steel / Gunmetal</div>
+    <div class="rcard">
+      <div class="snippet">…you know the thing about airplane food is that nobody actually…</div>
+      <button class="svd-toggle-btn">
+        <span>Show SVD explanation</span>
+        <span style="font-size:0.6rem">▼</span>
+      </button>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
