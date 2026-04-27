@@ -321,22 +321,22 @@ type DemoPhase = 'typing' | 'loading' | 'results' | 'filter' | 'filter-reload' |
 
 const DEMO_DATA = [
   {
-    q: 'dating apps', activeFilter: 'chunks' as const,
-    r1: '<strong>Aziz Ansari</strong> · Modern Romance — "Every bad dating app decision happens on that phone."',
-    r2: '<strong>Ali Wong</strong> · Baby Cobra — "Dating apps: a catalogue of disappointment with better UI."',
-    ai: 'Comedians frame dating apps as manufactured intimacy — everyone curating a persona while hoping someone else forgot to.',
+    q: 'men not going to therapy', activeFilter: 'chunks' as const,
+    r1: '<strong>Trevor Noah</strong> · Son of Patricia — "Men will google symptoms for three hours before admitting they might need help."',
+    r2: '<strong>Ali Wong</strong> · Baby Cobra — "He\'s not broken, he\'s just never been asked how he feels. Ever."',
+    ai: 'Comedians dissect male emotional avoidance with equal parts frustration and sympathy — therapy as the punchline men keep refusing to get to.',
   },
   {
-    q: 'marriage', activeFilter: 'profanity' as const,
-    r1: '<strong>Jerry Seinfeld</strong> · I\'m Telling You — "One person thinks the other will change. They don\'t."',
-    r2: '<strong>Jim Gaffigan</strong> · Mr. Universe — "In marriage, one person is always right. That person is never me."',
-    ai: 'Marriage is stand-up\'s most reliable subject — comedians mine the gap between romantic expectation and daily reality.',
+    q: 'petition to ban dating apps', activeFilter: 'chunks' as const,
+    r1: '<strong>Aziz Ansari</strong> · Modern Romance — "Every bad decision I\'ve made in the last five years started with a swipe."',
+    r2: '<strong>John Mulaney</strong> · The Comeback Kid — "We replaced meeting people with scrolling past them at speed."',
+    ai: 'Comedians agree: dating apps promised infinite choice and delivered infinite anxiety — a catalogue of disappointment with better UI.',
   },
   {
-    q: 'growing up poor', activeFilter: 'year' as const,
-    r1: '<strong>Chris Rock</strong> · Bigger & Blacker — "Growing up poor, we couldn\'t afford to pay attention."',
-    r2: '<strong>Wanda Sykes</strong> · Ima Be Me — "Being poor teaches things no college ever will."',
-    ai: 'Comedians transform poverty into resilience and sharp social critique, finding dignity and dark humour in scarcity.',
+    q: 'pretending to have your life together', activeFilter: 'year' as const,
+    r1: '<strong>Mike Birbiglia</strong> · My Girlfriend\'s Boyfriend — "I bought a planner. That\'s as far as I got."',
+    r2: '<strong>Iliza Shlesinger</strong> · War Paint — "We\'re all performing adulthood for an audience that\'s also performing adulthood."',
+    ai: 'Comedians expose the shared performance of competence — everyone faking confidence while quietly hoping no one checks the group chat.',
   },
 ]
 
