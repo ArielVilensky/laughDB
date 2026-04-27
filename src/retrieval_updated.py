@@ -67,6 +67,9 @@ DEFAULT_RESULT_SCOPE = "full"
 
 SNIPPET_WINDOW = 2
 MIN_SHARED_SNIPPET_SENTENCES = 2
+
+# Doc IDs excluded from all results (review-style documents, not actual transcripts)
+EXCLUDED_DOC_IDS: set = {231}  # George Carlin: The Indian Drill Sergeant (third-person review)
 MIN_DISPLAY_SNIPPET_SENTENCES = 5
 TARGET_DISPLAY_SNIPPET_SENTENCES = 7
 MIN_DISPLAY_SNIPPET_WORDS = 85
@@ -818,6 +821,9 @@ def item_passes_filters(
     special_type: Optional[str],
     exclude_profanity: bool,
 ) -> bool:
+    if item.get("doc_id") in EXCLUDED_DOC_IDS:
+        return False
+
     if resolved_comedian and item.get("comedian", "").lower() != resolved_comedian.lower():
         return False
 
