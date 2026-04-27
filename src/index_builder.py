@@ -463,12 +463,37 @@ def strip_descriptive_blurb_before_speech(text: str) -> str:
         "prime video",
         "stand-up comedy",
         "stand-up special",
+        "aired on",
+        "main segment",
+        "other segments",
     ]
 
     if len(prefix.split()) >= 12 and any(sig in prefix_lc for sig in blurb_signals):
         return cleaned[earliest:].strip()
 
     return cleaned
+
+
+def strip_episode_metadata_header(text: str) -> str:
+    """Strip leading Season/Episode metadata blocks (LWT, SNL, Comedy Central, etc.)."""
+    if not text:
+        return text
+    # Allow up to 30 chars of prefix (e.g. "Saturday Night Live ") before Season/Episode
+    if not re.match(r'^.{0,30}(?:Season|Episode)\s*\d+', text, re.IGNORECASE):
+        return text
+    # LWT style: metadata ends before the host's standard opener
+    lwt_opener = re.search(r'\b(Tonight[,\s]|Hi there[,!\s]|Welcome to\s)', text, re.IGNORECASE)
+    if lwt_opener:
+        return text[lwt_opener.start():]
+    # Other Season/Episode cases (SNL, Comedy Central): strip just the label line and
+    # let strip_leading_presenter_intro handle any Announcer prefix that follows
+    label_m = re.match(
+        r'^.{0,30}Season\s*\d+[,:]?\s*(?:Episode\s*\d+)?\s*',
+        text, re.IGNORECASE,
+    )
+    if label_m:
+        return text[label_m.end():]
+    return text
 
 
 def strip_leading_title_line(text: str) -> str:
@@ -672,6 +697,11 @@ def clean_transcript_content(text: str, title: str = "") -> str:
     before = current
     current = strip_leading_title_line(current)
     _log("strip_leading_title_line", t0, before, current)
+
+    t0 = time.perf_counter()
+    before = current
+    current = strip_episode_metadata_header(current)
+    _log("strip_episode_metadata_header", t0, before, current)
 
     t0 = time.perf_counter()
     before = current
