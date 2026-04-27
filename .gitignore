@@ -31,7 +31,5 @@ src/data/search_index.pkl
 src/data/search_index.pkl
 
 src/data/chunk_search_index.pkl
-src/data/chunk_meta.pkl
-src/data/chunk_shard_*.pkl
 src/data/*.pkl.gz
 src/data/search_cache.db
