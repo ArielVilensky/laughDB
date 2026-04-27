@@ -446,7 +446,7 @@ function EmptyState({ onSearch }: { onSearch: (q: string) => void }): JSX.Elemen
           <span className="etag">✦ On this bit</span><span className="etag">500+ specials</span>
         </div>
         <div className="demo-chip-row" style={{ marginTop: '4px' }}>
-          {['dating apps', 'marriage', 'politics', 'airplane food'].map(q => (
+          {['men not going to therapy', 'petition to ban dating apps', 'pretending to have your life together'].map(q => (
             <button key={q} className="demo-chip" onClick={() => onSearch(q)}>{q}</button>
           ))}
         </div>

@@ -137,9 +137,9 @@ function HowItWorks(): JSX.Element {
               Words that <strong>define</strong> this dimension — they appear heavily in transcripts that score high on it. When your query and a result both have a high positive score on a dimension, these words hint at what shared theme pulled them together.
             </p>
             <div className="howto-card-when">
-              <div className="howto-when-label">Illustrative example</div>
+              <div className="howto-when-label">Example — Dim 7</div>
               <ul className="howto-when-list">
-                <li>A dimension with positive words like <em>married, wife, relationship, divorce, dating, sex, life</em> is capturing a <strong>relationships & marriage</strong> theme — transcripts heavy on this topic score high on it</li>
+                <li>Positive: <em>love, kids, dad, mom, baby, dog, kid, old</em> → dimension captures <strong>family & parenting</strong> comedy — specials that revolve around raising children, domestic life, and pets score high here</li>
               </ul>
             </div>
           </div>
@@ -154,9 +154,9 @@ function HowItWorks(): JSX.Element {
               Words that <strong>oppose</strong> this dimension — they appear heavily in transcripts that score low (negative) on it. A result with a strong negative dimension score is matching on the absence of the positive theme, or through an opposing concept.
             </p>
             <div className="howto-card-when">
-              <div className="howto-when-label">Illustrative example</div>
+              <div className="howto-when-label">Example — Dim 7</div>
               <ul className="howto-when-list">
-                <li>On the same dimension, negative words like <em>trump, president, country, america, vote, government</em> would mean <strong>political comedy</strong> specials sit at the opposite end — very different content, same axis</li>
+                <li>Negative: <em>fucking, guy, dick, women, men, guys, fuck</em> → crude, adult-perspective stand-up sits at the opposite end of the same axis — a completely different style of comedy captured by the same dimension</li>
               </ul>
             </div>
           </div>
