@@ -482,7 +482,6 @@ function App(): JSX.Element {
   const [ragTrigger, setRagTrigger] = useState(0)
   const [searchPhrase, setSearchPhrase] = useState(SEARCH_LOADING_PHRASES[0])
   const [expandedSvd, setExpandedSvd] = useState<Set<string>>(new Set())
-  const [chunkIndexReady, setChunkIndexReady] = useState(false)
 
   const debounceRef = useRef<number | null>(null)
   const latestRef = useRef(0)
@@ -586,7 +585,7 @@ function App(): JSX.Element {
       const data: SearchResponse = await fetch(`/api/search?${buildParams(searchQuery, searchComedian)}`, { signal: abort.signal }).then(r => r.json())
       if (id !== latestRef.current) { stopSearchPhrases(); return }
       setAllResults(data.results ?? []); setResolvedComedian(data.resolved_comedian ?? null); setPage(0)
-      if ((data.results ?? []).length > 0) { setRagTrigger(t => t + 1); if (resultScope === 'chunks') setChunkIndexReady(true) }
+      if ((data.results ?? []).length > 0) { setRagTrigger(t => t + 1) }
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') return
       if (id === latestRef.current) setAllResults([])
@@ -776,11 +775,7 @@ function App(): JSX.Element {
               {loading && (
                 <div className="search-loading-banner">
                   <div className="slb-dots"><span /><span /><span /></div>
-                  <span className="slb-phrase">
-                    {resultScope === 'chunks' && !chunkIndexReady
-                      ? 'Loading chunk index for first use — should take about 30 seconds...'
-                      : searchPhrase}
-                  </span>
+                  <span className="slb-phrase">{searchPhrase}</span>
                 </div>
               )}
               {!loading && hasSearched && visibleResults.length === 0 && <div className="info-banner">No results found.</div>}
