@@ -470,6 +470,30 @@ def find_best_matching_sentence_from_tokens(
     return best_idx, best_sentence, max(0.0, best_score)
 
 
+def _find_best_sentence_by_svd(
+    sentences: List[str],
+    sentence_tokens: List[List[str]],
+    word_to_index: Dict[str, int],
+    idf: Dict[str, float],
+    svd_model,
+    q_latent: np.ndarray,
+) -> Tuple[Optional[int], str, float, float]:
+    """Project sentences into SVD latent space and return the one closest to q_latent."""
+    vecs = np.array([
+        vectorize_tokens(tokens, word_to_index, idf, normalize_tf=True)
+        for tokens in sentence_tokens
+    ])
+    if vecs.shape[0] == 0:
+        return None, "", 0.0, 0.0
+    sentence_latent = normalize(svd_model.transform(vecs))
+    scores = cosine_scores_dense(q_latent, sentence_latent)
+    best_local = int(np.argmax(scores))
+    best_score = float(scores[best_local])
+    if best_score <= 0:
+        return None, "", 0.0, 0.0
+    return best_local, sentences[best_local], best_score, 0.0
+
+
 def build_display_snippet_from_best_sentence(
     source_sentences: List[str],
     best_global_idx: Optional[int],
@@ -595,6 +619,8 @@ def find_best_matching_sentence_by_proximity(
     sentence_tokens: List[List[str]],
     word_to_index: Dict[str, int],
     idf: Dict[str, float],
+    svd_model=None,
+    q_latent: Optional[np.ndarray] = None,
 ) -> Tuple[Optional[int], str, float, float]:
     if not sentences or not sentence_tokens:
         return None, "", 0.0, 0.0
@@ -612,8 +638,10 @@ def find_best_matching_sentence_by_proximity(
     ]
 
     if not candidate_indices:
-        # No exact token overlap — SVD semantic match. Fall back to TF-IDF cosine per
-        # sentence so we can still highlight the most relevant sentence.
+        if svd_model is not None and q_latent is not None:
+            return _find_best_sentence_by_svd(
+                sentences, sentence_tokens, word_to_index, idf, svd_model, q_latent,
+            )
         fb_idx, fb_sentence, fb_score = find_best_matching_sentence_from_tokens(
             query=query,
             sentences=sentences,
@@ -645,6 +673,8 @@ def build_display_snippet_for_chunk(
     docs: List[Dict[str, Any]],
     word_to_index: Dict[str, int],
     idf: Dict[str, float],
+    svd_model=None,
+    q_latent: Optional[np.ndarray] = None,
 ) -> Tuple[str, Optional[int], str, float, float, int, int, List[str], int, int]:
     doc = docs[item["doc_id"]]
     source_sentences = doc.get("sentences", [])
@@ -661,6 +691,8 @@ def build_display_snippet_for_chunk(
         sentence_tokens=chunk_sentence_tokens,
         word_to_index=word_to_index,
         idf=idf,
+        svd_model=svd_model,
+        q_latent=q_latent,
     )
 
     if best_local_idx is None:
@@ -1141,6 +1173,7 @@ def build_result_object(
     q_latent: Optional[np.ndarray] = None,
     item_latent: Optional[np.ndarray] = None,
     dimension_terms: Optional[Dict[int, Dict[str, List[str]]]] = None,
+    svd_model=None,
 ) -> Dict[str, Any]:
     if not query:
         if is_full_transcript:
@@ -1175,6 +1208,8 @@ def build_result_object(
             sentence_tokens=source_sentence_tokens,
             word_to_index=word_to_index,
             idf=idf,
+            svd_model=svd_model,
+            q_latent=q_latent,
         )
 
         display_snippet, snippet_start, snippet_end, snippet_sentences = build_display_snippet_from_best_sentence(
@@ -1204,6 +1239,8 @@ def build_result_object(
             docs=docs,
             word_to_index=word_to_index,
             idf=idf,
+            svd_model=svd_model,
+            q_latent=q_latent,
         )
 
         display_snippet = trim_snippet_to_word_limit(display_snippet, 190)
@@ -1618,6 +1655,7 @@ def _search_chunks_sharded(
             include_svd_explanations=show_svd_explanations,
             exclude_profanity=exclude_profanity, q_latent=q_latent,
             item_latent=gidx_to_latent[gidx], dimension_terms=dimension_terms,
+            svd_model=svd_model,
         )
         current_snippet = result.get("snippet_sentences", []) or []
         if any(snippets_overlap_enough(current_snippet, prev) for prev in accepted_snippets_by_doc[doc_id]):
@@ -1894,6 +1932,7 @@ def search_chunks(
                 q_latent=q_latent,
                 item_latent=item_latent,
                 dimension_terms=dimension_terms,
+                svd_model=svd_model,
             )
             results.append(result)
 
@@ -1937,6 +1976,7 @@ def search_chunks(
             q_latent=q_latent,
             item_latent=item_latent,
             dimension_terms=dimension_terms,
+            svd_model=svd_model,
         )
 
         existing_snippets = accepted_snippets_by_doc[doc_id]
