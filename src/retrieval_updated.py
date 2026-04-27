@@ -476,9 +476,15 @@ def _find_best_sentence_by_svd(
     word_to_index: Dict[str, int],
     idf: Dict[str, float],
     svd_model,
-    q_latent: np.ndarray,
+    q_latent_unfocused: np.ndarray,
 ) -> Tuple[Optional[int], str, float, float]:
-    """Project sentences into SVD latent space and return the one closest to q_latent."""
+    """Project sentences into SVD latent space and return the one closest to the query.
+
+    Uses the un-focused query latent vector (all 130 dims) rather than the focused
+    version used for document retrieval. Within-document sentence ranking needs the
+    full semantic signal to discriminate between sentences that are all in the same
+    semantic neighbourhood.
+    """
     vecs = np.array([
         vectorize_tokens(tokens, word_to_index, idf, normalize_tf=True)
         for tokens in sentence_tokens
@@ -486,12 +492,9 @@ def _find_best_sentence_by_svd(
     if vecs.shape[0] == 0:
         return None, "", 0.0, 0.0
     sentence_latent = normalize(svd_model.transform(vecs))
-    scores = cosine_scores_dense(q_latent, sentence_latent)
+    scores = cosine_scores_dense(q_latent_unfocused, sentence_latent)
     best_local = int(np.argmax(scores))
-    best_score = float(scores[best_local])
-    if best_score <= 0:
-        return None, "", 0.0, 0.0
-    return best_local, sentences[best_local], best_score, 0.0
+    return best_local, sentences[best_local], float(scores[best_local]), 0.0
 
 
 def build_display_snippet_from_best_sentence(
@@ -621,6 +624,7 @@ def find_best_matching_sentence_by_proximity(
     idf: Dict[str, float],
     svd_model=None,
     q_latent: Optional[np.ndarray] = None,
+    q_latent_unfocused: Optional[np.ndarray] = None,
 ) -> Tuple[Optional[int], str, float, float]:
     if not sentences or not sentence_tokens:
         return None, "", 0.0, 0.0
@@ -638,9 +642,9 @@ def find_best_matching_sentence_by_proximity(
     ]
 
     if not candidate_indices:
-        if svd_model is not None and q_latent is not None:
+        if svd_model is not None and q_latent_unfocused is not None:
             return _find_best_sentence_by_svd(
-                sentences, sentence_tokens, word_to_index, idf, svd_model, q_latent,
+                sentences, sentence_tokens, word_to_index, idf, svd_model, q_latent_unfocused,
             )
         fb_idx, fb_sentence, fb_score = find_best_matching_sentence_from_tokens(
             query=query,
@@ -675,6 +679,7 @@ def build_display_snippet_for_chunk(
     idf: Dict[str, float],
     svd_model=None,
     q_latent: Optional[np.ndarray] = None,
+    q_latent_unfocused: Optional[np.ndarray] = None,
 ) -> Tuple[str, Optional[int], str, float, float, int, int, List[str], int, int]:
     doc = docs[item["doc_id"]]
     source_sentences = doc.get("sentences", [])
@@ -693,6 +698,7 @@ def build_display_snippet_for_chunk(
         idf=idf,
         svd_model=svd_model,
         q_latent=q_latent,
+        q_latent_unfocused=q_latent_unfocused,
     )
 
     if best_local_idx is None:
@@ -1174,6 +1180,7 @@ def build_result_object(
     item_latent: Optional[np.ndarray] = None,
     dimension_terms: Optional[Dict[int, Dict[str, List[str]]]] = None,
     svd_model=None,
+    q_latent_unfocused: Optional[np.ndarray] = None,
 ) -> Dict[str, Any]:
     if not query:
         if is_full_transcript:
@@ -1210,6 +1217,7 @@ def build_result_object(
             idf=idf,
             svd_model=svd_model,
             q_latent=q_latent,
+            q_latent_unfocused=q_latent_unfocused,
         )
 
         display_snippet, snippet_start, snippet_end, snippet_sentences = build_display_snippet_from_best_sentence(
@@ -1241,6 +1249,7 @@ def build_result_object(
             idf=idf,
             svd_model=svd_model,
             q_latent=q_latent,
+            q_latent_unfocused=q_latent_unfocused,
         )
 
         display_snippet = trim_snippet_to_word_limit(display_snippet, 190)
@@ -1456,12 +1465,15 @@ def _search_chunks_sharded(
     if query:
         query_vec = vectorize_query(query, word_to_index, idf)
         if retrieval_mode == "svd" and svd_model is not None:
-            q_latent = _focus_svd_query(normalize(svd_model.transform(query_vec.reshape(1, -1)))[0])
+            q_latent_unfocused = normalize(svd_model.transform(query_vec.reshape(1, -1)))[0]
+            q_latent = _focus_svd_query(q_latent_unfocused)
         else:
             q_latent = None
+            q_latent_unfocused = None
     else:
         query_vec = None
         q_latent = None
+        q_latent_unfocused = None
 
     # Pre-compute query token indices once for inverted-index pre-filtering.
     query_token_indices = [word_to_index[t] for t in query_tokens if t in word_to_index]
@@ -1655,7 +1667,7 @@ def _search_chunks_sharded(
             include_svd_explanations=show_svd_explanations,
             exclude_profanity=exclude_profanity, q_latent=q_latent,
             item_latent=gidx_to_latent[gidx], dimension_terms=dimension_terms,
-            svd_model=svd_model,
+            svd_model=svd_model, q_latent_unfocused=q_latent_unfocused,
         )
         current_snippet = result.get("snippet_sentences", []) or []
         if any(snippets_overlap_enough(current_snippet, prev) for prev in accepted_snippets_by_doc[doc_id]):
@@ -1847,10 +1859,12 @@ def search_chunks(
     query_tokens = clean_and_tokenize_text(query)
 
     if retrieval_mode == "svd" and svd_model is not None and svd_matrix is not None:
-        q_latent = _focus_svd_query(normalize(svd_model.transform(query_vec.reshape(1, -1)))[0])
+        q_latent_unfocused = normalize(svd_model.transform(query_vec.reshape(1, -1)))[0]
+        q_latent = _focus_svd_query(q_latent_unfocused)
         raw_base_scores = cosine_scores_dense(q_latent, svd_matrix)
     else:
         q_latent = None
+        q_latent_unfocused = None
         raw_base_scores = cosine_scores_sparse(query_vec, tfidf_matrix)
 
     filtered_base_scores = [float(max(0.0, raw_base_scores[i])) for i in filtered_indices]
@@ -1933,6 +1947,7 @@ def search_chunks(
                 item_latent=item_latent,
                 dimension_terms=dimension_terms,
                 svd_model=svd_model,
+                q_latent_unfocused=q_latent_unfocused,
             )
             results.append(result)
 
@@ -1977,6 +1992,7 @@ def search_chunks(
             item_latent=item_latent,
             dimension_terms=dimension_terms,
             svd_model=svd_model,
+            q_latent_unfocused=q_latent_unfocused,
         )
 
         existing_snippets = accepted_snippets_by_doc[doc_id]
