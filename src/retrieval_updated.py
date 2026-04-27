@@ -667,7 +667,25 @@ def find_best_matching_sentence_by_proximity(
             best_sentence = sentences[i]
 
     if best_idx is None:
-        return None, "", 0.0, 0.0
+        # Single-token query: proximity scorer returns 0 for all candidates (needs ≥2 terms).
+        # Fall back to cosine similarity restricted to the pre-filtered candidate sentences.
+        cand_sentences = [sentences[i] for i in candidate_indices]
+        cand_tokens = [sentence_tokens[i] for i in candidate_indices]
+        if svd_model is not None and q_latent_unfocused is not None:
+            local_idx, fb_sentence, fb_score, _ = _find_best_sentence_by_svd(
+                cand_sentences, cand_tokens, word_to_index, idf, svd_model, q_latent_unfocused,
+            )
+        else:
+            local_idx, fb_sentence, fb_score = find_best_matching_sentence_from_tokens(
+                query=query,
+                sentences=cand_sentences,
+                sentence_tokens=cand_tokens,
+                word_to_index=word_to_index,
+                idf=idf,
+            )
+        if local_idx is None:
+            return None, "", 0.0, 0.0
+        return candidate_indices[local_idx], fb_sentence, fb_score, 0.0
 
     return best_idx, best_sentence, 0.0, best_score
 

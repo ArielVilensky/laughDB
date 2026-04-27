@@ -184,8 +184,11 @@ SYSTEM_PROMPT_QUERY_REFORMULATE = (
     "flip the intent and search the satirized reality instead.\n"
     "7. For compound queries with AND/both ('comedy about family AND career'), "
     "include strong keywords for BOTH topics. Word limit is 4–10 words based on complexity.\n"
-    "8. Use-case queries ('for my parents', 'for a work party', 'to show kids'): extract implied "
-    "content constraints and search for those (e.g. clean wholesome safe).\n"
+    "8. Audience-framing queries that START with 'for my...', 'for a...', or 'to show...' "
+    "('for my parents', 'for a work party', 'to show kids'): extract implied content constraints "
+    "and search for those (e.g. clean wholesome safe). Do NOT apply this rule when 'my parents' "
+    "or similar phrases are the object of a verb in the query (e.g. 'sexting my parents', "
+    "'surprising my parents') — treat those as literal topic queries.\n"
     "9. Referential queries about a named event ('OJ trial', '9/11', 'the slap'): keep specific "
     "event terms exactly — do not broaden to themes.\n\n"
 
