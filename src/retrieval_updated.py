@@ -612,7 +612,17 @@ def find_best_matching_sentence_by_proximity(
     ]
 
     if not candidate_indices:
-        return None, "", 0.0, 0.0
+        # No exact token overlap — SVD semantic match. Fall back to TF-IDF cosine per
+        # sentence so we can still highlight the most relevant sentence.
+        limit = min(100, len(sentences))
+        fb_idx, fb_sentence, fb_score = find_best_matching_sentence_from_tokens(
+            query=query,
+            sentences=sentences[:limit],
+            sentence_tokens=sentence_tokens[:limit],
+            word_to_index=word_to_index,
+            idf=idf,
+        )
+        return fb_idx, fb_sentence, fb_score, 0.0
 
     best_idx = None
     best_sentence = ""
