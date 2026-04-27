@@ -122,7 +122,7 @@ function HowItWorks(): JSX.Element {
             SVD breaks the entire transcript corpus down into hidden axes of meaning — called <strong>latent dimensions</strong> — by finding groups of words that tend to appear together across specials. Each dimension captures a recurring theme, style, or context in the data: one might correspond to <em>racial identity and social commentary</em>, another to <em>family and parenting</em>, another to <em>political absurdity</em>.
           </p>
           <p className="howto-card-body" style={{ marginTop: 8 }}>
-            Neither your query nor any transcript is described in terms of the original words. Instead, both are projected into this 100-dimensional space, and similarity is measured there. That's why SVD can match on <em>concept</em> rather than exact wording.
+            Neither your query nor any transcript is described in terms of the original words. Instead, both are projected into this 130-dimensional space, and similarity is measured there. That's why SVD can match on <em>concept</em> rather than exact wording.
           </p>
         </div>
 
@@ -137,9 +137,9 @@ function HowItWorks(): JSX.Element {
               Words that <strong>define</strong> this dimension — they appear heavily in transcripts that score high on it. When your query and a result both have a high positive score on a dimension, these words hint at what shared theme pulled them together.
             </p>
             <div className="howto-card-when">
-              <div className="howto-when-label">Example</div>
+              <div className="howto-when-label">Illustrative example</div>
               <ul className="howto-when-list">
-                <li>Dim 17 positive: <em>bourbon, whiskey, liquor, drink, bottles, alcohol, kentucky</em> → dimension is about <strong>drinking culture & Southern identity</strong></li>
+                <li>A dimension with positive words like <em>married, wife, relationship, divorce, dating, sex, life</em> is capturing a <strong>relationships & marriage</strong> theme — transcripts heavy on this topic score high on it</li>
               </ul>
             </div>
           </div>
@@ -154,9 +154,9 @@ function HowItWorks(): JSX.Element {
               Words that <strong>oppose</strong> this dimension — they appear heavily in transcripts that score low (negative) on it. A result with a strong negative dimension score is matching on the absence of the positive theme, or through an opposing concept.
             </p>
             <div className="howto-card-when">
-              <div className="howto-when-label">Example</div>
+              <div className="howto-when-label">Illustrative example</div>
               <ul className="howto-when-list">
-                <li>Dim 17 negative: <em>gawain, grunts, grunting, panting, knight, sighs, continues</em> → transcripts about <strong>medieval re-enactment / character bits</strong> sit at the opposite end of this axis</li>
+                <li>On the same dimension, negative words like <em>trump, president, country, america, vote, government</em> would mean <strong>political comedy</strong> specials sit at the opposite end — very different content, same axis</li>
               </ul>
             </div>
           </div>
@@ -306,13 +306,14 @@ function HowItWorks(): JSX.Element {
         <h2 className="howto-section-title">✦ AI summary</h2>
         <div className="howto-card howto-card-ai">
           <p className="howto-card-body">
-            After running a search, hit <strong>✨ Summarize with AI</strong> (bottom right) to generate a paragraph
-            synthesising the top results. The AI reads the visible snippets and explains how different comedians
-            approach your topic — themes, patterns, differences in perspective.
+            Every search automatically generates an <strong>✦ AI Summary</strong> in the sidebar. The AI reads
+            the visible snippets and synthesises how different comedians approach your topic — themes, patterns,
+            and differences in perspective — without you having to do anything.
           </p>
           <p className="howto-card-body" style={{ marginTop: '10px' }}>
-            You can also ask follow-up questions like <em>"How has this topic evolved over the decades?"</em> or{' '}
-            <em>"How do these comedians approach it differently?"</em> to go deeper.
+            You can ask follow-up questions like <em>"How has this topic evolved over the decades?"</em> or{' '}
+            <em>"How do these comedians approach it differently?"</em> to go deeper. The summary updates
+            automatically whenever you run a new search.
           </p>
           <div className="howto-ai-note">AI summaries are generated fresh each time and are based only on the current page of results.</div>
         </div>
