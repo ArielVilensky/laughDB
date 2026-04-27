@@ -574,7 +574,7 @@ function App(): JSX.Element {
           setLlmSuggestions(Object.keys(sugg).length > 0 ? sugg : null)
 
           if (mq) { setModifiedQuery(mq); setQueryWasModified(!!queryChanged); searchQuery = mq }
-          if (llmComedian) { setComedian(llmComedian); searchComedian = llmComedian }
+          if (llmComedian) { searchComedian = llmComedian }
         }
       } catch { /* LLM failed — search with original query */ }
 
@@ -585,6 +585,7 @@ function App(): JSX.Element {
       const data: SearchResponse = await fetch(`/api/search?${buildParams(searchQuery, searchComedian)}`, { signal: abort.signal }).then(r => r.json())
       if (id !== latestRef.current) { stopSearchPhrases(); return }
       setAllResults(data.results ?? []); setResolvedComedian(data.resolved_comedian ?? null); setPage(0)
+      if (searchComedian && searchComedian !== comedian) setComedian(searchComedian)
       if ((data.results ?? []).length > 0) { setRagTrigger(t => t + 1) }
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') return
