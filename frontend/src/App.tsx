@@ -327,7 +327,7 @@ const DEMO_DATA = [
     ai: 'Comedians dissect male emotional avoidance with equal parts frustration and sympathy — therapy as the punchline men keep refusing to get to.',
   },
   {
-    q: 'petition to ban dating apps', activeFilter: 'chunks' as const,
+    q: 'petition to ban dating apps', activeFilter: 'profanity' as const,
     r1: '<strong>Aziz Ansari</strong> · Modern Romance — "Every bad decision I\'ve made in the last five years started with a swipe."',
     r2: '<strong>John Mulaney</strong> · The Comeback Kid — "We replaced meeting people with scrolling past them at speed."',
     ai: 'Comedians agree: dating apps promised infinite choice and delivered infinite anxiety — a catalogue of disappointment with better UI.',
