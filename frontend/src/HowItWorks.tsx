@@ -156,7 +156,7 @@ function HowItWorks(): JSX.Element {
             <div className="howto-card-when">
               <div className="howto-when-label">Example — Dim 7</div>
               <ul className="howto-when-list">
-                <li>Negative: <em>fucking, guy, dick, women, men, guys, fuck</em> → crude, adult-perspective stand-up sits at the opposite end of the same axis — a completely different style of comedy captured by the same dimension</li>
+                <li>Negative: <em>guy, women, men, guys, look</em> → adult-perspective, relationship-focused stand-up sits at the opposite end of the same axis — a completely different style of comedy captured by the same dimension</li>
               </ul>
             </div>
           </div>
